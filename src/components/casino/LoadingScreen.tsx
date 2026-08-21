@@ -210,8 +210,8 @@ export function LoadingScreen({
 
       {/* UI de carga sobre el fondo */}
       <div
-        className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(28px,env(safe-area-inset-bottom))]"
-        style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}
+        className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(28px,var(--sa-bottom))]"
+        style={{ paddingBottom: "max(28px, var(--sa-bottom))" }}
       >
         <p
           className="text-[11px] uppercase tracking-[0.5em] text-[var(--oro)]/80"

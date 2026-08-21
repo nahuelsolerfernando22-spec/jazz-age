@@ -171,7 +171,7 @@ export function GamesSheet({ open, onClose }: Props) {
         ref={containerRef}
         className="paria-paper paria-grime relative w-full overflow-hidden rounded-t-sm border-x-0 border-b-0 border-t-2 border-[var(--oro)]/45"
         style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom,0px) + 24px)",
+          paddingBottom: "calc(var(--sa-bottom) + 24px)",
           maxHeight: "85vh",
         }}
       >

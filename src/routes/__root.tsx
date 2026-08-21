@@ -525,7 +525,7 @@ function RootComponent() {
         closeButton
         offset="calc(var(--sa-top) + 84px)"
         mobileOffset={{
-          top: "calc(env(safe-area-inset-top, 0px) + 84px)",
+          top: "calc(var(--sa-top) + 84px)",
           left: "12px",
           right: "12px",
         }}

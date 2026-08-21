@@ -78,7 +78,7 @@ function PortadaPage() {
 
       <div
         className="relative mt-8 flex w-full max-w-xs flex-col gap-2.5"
-        style={{ paddingBottom: "calc(78px + env(safe-area-inset-bottom, 0px))" }}
+        style={{ paddingBottom: "calc(78px + var(--sa-bottom))" }}
       >
         <BrassButton variant="primary" size="lg" block onClick={() => navigate({ to: "/single" })}>
           Entrar al salón

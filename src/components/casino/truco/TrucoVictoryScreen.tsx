@@ -11,7 +11,7 @@ export function TrucoVictoryScreen() {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center"
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 pb-[max(0.75rem,var(--sa-bottom))] sm:items-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

@@ -134,7 +134,7 @@ export function SingleHostessCorner({
       }`}
       style={{
         fontFamily: "'Barlow', system-ui, sans-serif",
-        top: "calc(var(--hud-h) + env(safe-area-inset-top, 0px) + 4px)",
+        top: "calc(var(--hud-h) + var(--sa-top) + 4px)",
         transform: hidden
           ? "translateX(-50%) translateY(calc(-100% - var(--hud-h) - 24px))"
           : "translateX(-50%)",
@@ -143,8 +143,8 @@ export function SingleHostessCorner({
         maxWidth: "min(var(--cd-canvas-max, 560px), calc(100vw - 1rem))",
         /* Reservamos el ancho del botón "Atrás" de las mesas para que el
            retrato de la anfitriona no quede debajo del botón. */
-        paddingLeft: "calc(max(8px, env(safe-area-inset-left, 0px)) + var(--cd-back-inset, 0px))",
-        paddingRight: "max(8px, env(safe-area-inset-right, 0px))",
+        paddingLeft: "calc(max(8px, var(--sa-left)) + var(--cd-back-inset, 0px))",
+        paddingRight: "max(8px, var(--sa-right))",
         contain: "layout style",
         willChange: "transform",
       }}

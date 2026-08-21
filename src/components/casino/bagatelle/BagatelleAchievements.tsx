@@ -34,7 +34,7 @@ export function BagatelleAchievementToast() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 top-2 z-[70] flex justify-center px-3 sm:inset-x-auto sm:right-4 sm:top-4 sm:justify-end sm:px-0"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      style={{ paddingTop: "var(--sa-top)" }}
       aria-live="polite"
       aria-atomic="true"
     >
@@ -128,7 +128,7 @@ export function BagatelleAchievementsPanel({ onClose }: { onClose: () => void })
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
         className="flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-2xl border border-amber-400/40 bg-gradient-to-b from-neutral-950 to-amber-950/40 shadow-2xl sm:rounded-2xl"
         style={{
-          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingBottom: "var(--sa-bottom)",
         }}
       >
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-amber-400/20 px-4 py-3 sm:px-5">

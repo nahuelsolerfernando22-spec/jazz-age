@@ -2234,7 +2234,7 @@ iframe[src*="ovable.app"] {
   padding-right: max(var(--sa-right), 0px);
 }
 
-@supports (top: env(safe-area-inset-top)) {
+@supports (top: var(--sa-top)) {
   .hud-safe-top {
     top: max(var(--sa-top), 0px);
   }
@@ -5742,10 +5742,10 @@ a[href] {
 
 /* 4) Safe-area universal: notch, barra de gestos y modo horizontal. */
 :root {
-  --sa-top: env(safe-area-inset-top, 0px);
-  --sa-bottom: env(safe-area-inset-bottom, 0px);
-  --sa-left: env(safe-area-inset-left, 0px);
-  --sa-right: env(safe-area-inset-right, 0px);
+  --sa-top: var(--sa-top);
+  --sa-bottom: var(--sa-bottom);
+  --sa-left: var(--sa-left);
+  --sa-right: var(--sa-right);
   /* Colchón de la barra de gestos de Android en horizontal. */
   --gesture-bar: max(var(--sa-bottom), 8px);
 }

@@ -735,7 +735,7 @@ function EscobaPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
-              className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+6rem)] z-40 flex justify-center px-4"
+              className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--sa-bottom)+6rem)] z-40 flex justify-center px-4"
             >
               <div className="flex items-center gap-2 rounded-lg border border-[var(--oro)]/50 bg-[var(--verde-noche)]/95 px-4 py-2 text-sm text-[var(--oro-claro)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8)]">
                 <Sparkles className="h-3.5 w-3.5" />

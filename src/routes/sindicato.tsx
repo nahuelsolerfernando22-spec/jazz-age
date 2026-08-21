@@ -682,8 +682,8 @@ function SindicatoPage() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        .safe-pt { padding-top: max(1rem, env(safe-area-inset-top)); }
-        .safe-pb { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        .safe-pt { padding-top: max(1rem, var(--sa-top)); }
+        .safe-pb { padding-bottom: max(1rem, var(--sa-bottom)); }
         body { overflow: hidden; position: fixed; width: 100%; height: 100%; overscroll-behavior: none; }
       `,
         }}

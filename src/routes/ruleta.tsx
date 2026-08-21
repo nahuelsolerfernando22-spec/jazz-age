@@ -662,10 +662,10 @@ function RuletaPage() {
               style={{
                 // Hueco del botón "Atrás" + safe-area, para que el título nunca
                 // quede debajo del botón ni pegado al borde en pantallas chicas.
-                paddingLeft: "calc(var(--cd-back-inset, 0px) + env(safe-area-inset-left, 0px))",
+                paddingLeft: "calc(var(--cd-back-inset, 0px) + var(--sa-left))",
                 // Hueco del botón de pausa: en horizontal el dato "en juego"
                 // quedaba tapado por los flotantes de la esquina.
-                paddingRight: "calc(var(--hud-btn, 44px) + 14px + env(safe-area-inset-right, 0px))",
+                paddingRight: "calc(var(--hud-btn, 44px) + 14px + var(--sa-right))",
                 paddingTop: "6px",
               }}
             >

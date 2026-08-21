@@ -14,9 +14,9 @@ export function GameHud({ trailing }: { trailing?: ReactNode }) {
     <div
       className="relative shrink-0"
       style={{
-        paddingTop: "max(0.4rem, env(safe-area-inset-top))",
-        paddingLeft: "max(0.6rem, env(safe-area-inset-left))",
-        paddingRight: "max(0.6rem, env(safe-area-inset-right))",
+        paddingTop: "max(0.4rem, var(--sa-top))",
+        paddingLeft: "max(0.6rem, var(--sa-left))",
+        paddingRight: "max(0.6rem, var(--sa-right))",
       }}
     >
       <div

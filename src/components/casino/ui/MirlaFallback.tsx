@@ -54,7 +54,7 @@ export function MirlaFallback({
         ))}
       </div>
 
-      <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-1 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] text-center">
+      <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-1 px-4 pt-[max(1.25rem,var(--sa-top))] text-center">
         <p
           className="font-serif text-[0.65rem] uppercase tracking-[0.5em] text-[hsl(var(--brass)/0.75)] sm:text-xs"
           style={{ textShadow: "0 2px 6px rgba(0,0,0,0.9)" }}
@@ -76,7 +76,7 @@ export function MirlaFallback({
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:gap-4 sm:pb-10">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-6 pb-[max(1.5rem,var(--sa-bottom))] sm:gap-4 sm:pb-10">
         <p
           className="max-w-[32ch] text-center font-serif text-sm italic text-[hsl(var(--ivory))] sm:max-w-[46ch] sm:text-base"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.95)" }}

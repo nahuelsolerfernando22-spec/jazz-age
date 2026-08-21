@@ -50,7 +50,7 @@ export function SceneFrame({
         // Sólo reservamos la barra nativa + safe-area: el colchón extra de 96px
         // robaba altura útil y forzaba a comprimir el juego en pantallas chicas.
         paddingBottom:
-          "max(0.75rem, calc(var(--app-tabbar-h, 0px) + env(safe-area-inset-bottom, 0px) + 12px))",
+          "max(0.75rem, calc(var(--app-tabbar-h, 0px) + var(--sa-bottom) + 12px))",
       }}
     >
       {}

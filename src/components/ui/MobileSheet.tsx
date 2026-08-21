@@ -73,7 +73,7 @@ export function MobileSheet({
           />
           <motion.div
             className="relative flex w-full max-w-lg flex-col rounded-t-3xl border-t border-[var(--brass,var(--cd-gold-mid))]/50 bg-[var(--verde-noche)]/98 shadow-[0_-24px_70px_rgba(0,0,0,0.85)] sm:mb-6 sm:rounded-3xl sm:border"
-            style={{ maxHeight, paddingBottom: "env(safe-area-inset-bottom)" }}
+            style={{ maxHeight, paddingBottom: "var(--sa-bottom)" }}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -123,7 +123,7 @@ export function MobileSheet({
             {footer && (
               <footer
                 className="shrink-0 border-t border-white/10 bg-[var(--verde-noche)]/95 px-4 py-3"
-                style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+                style={{ paddingBottom: "max(0.75rem, var(--sa-bottom))" }}
               >
                 {footer}
               </footer>

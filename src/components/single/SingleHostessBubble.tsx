@@ -85,8 +85,8 @@ export function SingleHostessBubble({ gameId, overrideLine }: Props) {
     <div
       className="pointer-events-none fixed z-30 flex items-end justify-end gap-2"
       style={{
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
-        right: "max(8px, env(safe-area-inset-right, 0px))",
+        bottom: "calc(var(--sa-bottom) + 12px)",
+        right: "max(8px, var(--sa-right))",
         maxWidth: "min(320px, calc(100vw - 96px))",
         fontFamily: "'Barlow', system-ui, sans-serif",
         contain: "layout style",

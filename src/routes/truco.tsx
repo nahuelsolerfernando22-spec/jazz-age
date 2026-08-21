@@ -832,10 +832,10 @@ function TrucoPage() {
               : "grid-cols-1 sm:grid-cols-[168px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]"
           }`}
           style={{
-            paddingTop: "max(env(safe-area-inset-top), 0.5rem)",
-            paddingLeft: "max(env(safe-area-inset-left), 0.5rem)",
-            paddingRight: "max(env(safe-area-inset-right), 0.5rem)",
-            paddingBottom: "calc(max(env(safe-area-inset-bottom), 1rem) + 64px)",
+            paddingTop: "max(var(--sa-top), 0.5rem)",
+            paddingLeft: "max(var(--sa-left), 0.5rem)",
+            paddingRight: "max(var(--sa-right), 0.5rem)",
+            paddingBottom: "calc(max(var(--sa-bottom), 1rem) + 64px)",
           }}
         >
           <div
@@ -873,9 +873,9 @@ function TrucoPage() {
               // navegador de Android aparezca o desaparezca (con dvh el layout
               // se re-escalaba y la pantalla subía y bajaba).
               height:
-                "calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64px)",
+                "calc(100svh - var(--sa-top) - var(--sa-bottom) - 64px)",
 
-              paddingBottom: "calc(max(env(safe-area-inset-bottom), 0.5rem) + 8px)",
+              paddingBottom: "calc(max(var(--sa-bottom), 0.5rem) + 8px)",
               WebkitOverflowScrolling: "touch",
               overscrollBehaviorY: "contain",
             }}
@@ -973,7 +973,7 @@ function TrucoPage() {
           g.hand.envidoDeclaredWinner === "ai" && (
             <div
               className="fixed inset-x-0 z-40 flex justify-center px-4"
-              style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 148px)" }}
+              style={{ bottom: "calc(var(--sa-bottom) + 148px)" }}
             >
               <div className="rounded-sm border border-[var(--brass)] bg-[var(--noir)]/95 px-4 py-3 shadow-xl max-w-md w-full">
                 <div className="text-sm text-[var(--ivory)] mb-2">
@@ -1995,7 +1995,7 @@ function BigHand({
     <div
       ref={rootRef}
       className="space-y-1"
-      style={{ scrollMarginBottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
+      style={{ scrollMarginBottom: "calc(var(--sa-bottom) + 96px)" }}
     >
       <div
         className="relative flex items-end justify-center"

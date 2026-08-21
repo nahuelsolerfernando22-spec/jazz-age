@@ -1514,7 +1514,7 @@ function DadosPage() {
                     createPortal(
                       <div
                         className="gen-dock fixed inset-x-0 bottom-0 z-30 mx-auto max-w-7xl px-4 pt-2"
-                        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}
+                        style={{ paddingBottom: "calc(var(--sa-bottom) + 10px)" }}
                       >
                         <FavorHand
                           hand={hand}

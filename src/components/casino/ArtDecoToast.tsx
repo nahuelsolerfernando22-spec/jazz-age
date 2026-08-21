@@ -43,7 +43,7 @@ export function ArtDecoToast({
 }: ArtDecoToastProps) {
   const s = TONE_STYLES[tone];
   const floatingClasses = floating
-    ? "pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+6rem)] z-50 mx-auto max-w-md text-center font-display text-[11px] uppercase tracking-[0.3em] not-italic"
+    ? "pointer-events-none fixed inset-x-0 bottom-[calc(var(--sa-bottom)+6rem)] z-50 mx-auto max-w-md text-center font-display text-[11px] uppercase tracking-[0.3em] not-italic"
     : "";
   return (
     <AnimatePresence mode="wait">

@@ -15,6 +15,7 @@ import {
   cupPozo,
   matchesAt,
   participantsAt,
+  rivalAt,
   cupRoundName,
   cupSchedule,
   garraLabel,
@@ -240,7 +241,17 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
                   <button
                     type="button"
                     disabled={esta || enCurso || (hydrated && cupos.entradas === 0)}
-                    onClick={() => start(g.id)}
+                    onClick={() => {
+                      if (!start(g.id)) {
+                        void import("sonner").then(({ toast }) =>
+                          toast.error(
+                            cupos.entradas === 0
+                              ? "No te quedan anotadas por hoy."
+                              : `Te faltan fichas: la entrada sale ¢${CUP_BUYIN}.`,
+                          ),
+                        );
+                      }
+                    }}
                     className={btn}
                   >
                     {esta
@@ -301,6 +312,7 @@ function CuadroActivo({
   const active = useCup((s) => s.active)!;
   const juego = CUP_GAME_BY_ID[active.gameId];
   const rival = active.rivals[active.round];
+  const rivalInfo = active.bracket ? rivalAt(active.bracket, active.round) : null;
   const terminado = active.status !== "jugando";
 
   return (
@@ -394,6 +406,11 @@ function CuadroActivo({
           <p className="flex-1 text-sm text-[var(--crema)]/80">
             {cupRoundName(active.round)} contra <strong>{rival?.nombre}</strong> (
             {garraLabel(rival?.garra ?? 1)}). {juego?.criterio}
+            {rivalInfo ? (
+              <span className="block text-[11px] text-[var(--crema)]/50">
+                {rivalInfo.apodo} · {rivalInfo.record.g}-{rivalInfo.record.p} en el salón
+              </span>
+            ) : null}
           </p>
           <button
             type="button"

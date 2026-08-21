@@ -36,6 +36,7 @@ import {
   Briefcase,
   AlertCircle,
   Maximize2,
+  Contrast,
   Minimize2,
   X,
   Plus,
@@ -1065,6 +1066,23 @@ function SindicatoPage() {
         className="fixed right-3 top-[236px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
       >
         <Maximize2 size={18} />
+      </button>
+
+      {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
+      <button
+        onClick={() => {
+          setAltoContraste((v) => !v);
+          haptics("tap");
+        }}
+        aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
+        aria-pressed={altoContraste}
+        className={`fixed right-3 top-[288px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+          altoContraste
+            ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+            : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+        }`}
+      >
+        <Contrast size={18} />
       </button>
 
       {/* HUD de Efectos Activos y Talismanes */}

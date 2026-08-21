@@ -683,7 +683,9 @@ function SindicatoPage() {
             backgroundImage: `url(${MAP_IMAGE_URL})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "saturate(0.8) contrast(1.1) brightness(0.42) blur(3px)",
+            filter: altoContraste
+              ? "saturate(0.35) contrast(1.2) brightness(0.2) blur(5px)"
+              : "saturate(0.8) contrast(1.1) brightness(0.42) blur(3px)",
           }}
         />
 
@@ -704,7 +706,9 @@ function SindicatoPage() {
                 backgroundImage: `url(${MAP_IMAGE_URL})`,
                 backgroundSize: "100% 100%",
                 backgroundPosition: "center",
-                filter: "saturate(1.1) contrast(1.08) brightness(1.05)",
+                filter: altoContraste
+                  ? "saturate(0.4) contrast(0.9) brightness(0.45)"
+                  : "saturate(1.1) contrast(1.08) brightness(1.05)",
               }}
             />
 

@@ -73,6 +73,10 @@ interface CupState {
   /** Cuánto te está costando cada mesa: -1..1. */
   rating: Record<string, number>;
   day: number;
+  /** Lugar reservado para el próximo llamado programado. */
+  reserved: { gameId: string; at: number } | null;
+  reserve: (gameId: string, at: number) => void;
+  cancelReserve: () => void;
   entriesUsed: number;
   retriesUsed: number;
   /** Devuelve false si no te queda cupo. */
@@ -100,6 +104,9 @@ export const useCup = create<CupState>()(
       scores: {},
       rating: {},
       day: cupDayKey(),
+      reserved: null,
+      reserve: (gameId, at) => set({ reserved: { gameId, at } }),
+      cancelReserve: () => set({ reserved: null }),
       entriesUsed: 0,
       retriesUsed: 0,
 
@@ -147,6 +154,7 @@ export const useCup = create<CupState>()(
           day: hoy,
           entriesUsed: used + 1,
           retriesUsed: s.day === hoy ? s.retriesUsed : 0,
+          reserved: s.reserved?.gameId === gameId ? null : s.reserved,
         });
         return true;
       },
@@ -285,7 +293,7 @@ export const useCup = create<CupState>()(
     }),
     {
       name: "cuervo:cup",
-      version: 3,
+      version: 4,
       migrate: (state: unknown) => {
         const s = (state ?? {}) as Partial<CupState>;
         return {
@@ -295,6 +303,7 @@ export const useCup = create<CupState>()(
           scores: s.scores ?? {},
           rating: s.rating ?? {},
           day: s.day ?? cupDayKey(),
+          reserved: s.reserved ?? null,
           entriesUsed: s.entriesUsed ?? 0,
           retriesUsed: s.retriesUsed ?? 0,
         } as CupState;

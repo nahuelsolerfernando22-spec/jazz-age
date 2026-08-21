@@ -389,3 +389,25 @@ export function resolveRound(b: CupBracket, r: number, ganasteVos: boolean): Cup
 export function playerAlive(b: CupBracket, r: number): boolean {
   return participantsAt(b, r).some((i) => b.entrants[i]?.esVos);
 }
+
+/* ───────────────────────  Temporada y divisiones  ────────────────────── */
+
+export interface CupDivision {
+  nombre: string;
+  desde: number;
+}
+
+/** Escalafón del salón: los puntos de todas las mesas suman a la temporada. */
+export const CUP_DIVISIONS: CupDivision[] = [
+  { nombre: "Vereda", desde: 0 },
+  { nombre: "Trastienda", desde: 150 },
+  { nombre: "Reservado", desde: 450 },
+  { nombre: "Palco", desde: 1000 },
+  { nombre: "Círculo del Cuervo", desde: 2200 },
+];
+
+export function cupDivision(puntos: number): { actual: CupDivision; siguiente: CupDivision | null } {
+  let idx = 0;
+  for (let i = 0; i < CUP_DIVISIONS.length; i++) if (puntos >= CUP_DIVISIONS[i].desde) idx = i;
+  return { actual: CUP_DIVISIONS[idx], siguiente: CUP_DIVISIONS[idx + 1] ?? null };
+}

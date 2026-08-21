@@ -53,7 +53,7 @@ import {
 const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 1000;
 const INITIAL_SCALE = 1.0;
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.25;
 /** Margen de seguridad del encuadre: el tablero nunca roza el borde en Android. */
 const FIT_MARGIN = 0.9;
 const CONTENT_BOX_GEN = (territorios: Territorio[]) => {

@@ -2980,7 +2980,10 @@ function PinballPage() {
                         ⚙
                       </button>
                     </span>
-                    <span style={{ color: meterArmed ? meterZoneColor : undefined }}>
+                    <span
+                      className="min-w-0 truncate whitespace-nowrap text-right"
+                      style={{ color: meterArmed ? meterZoneColor : undefined }}
+                    >
                       {meterArmed
                         ? meterSettings.showLiveForce
                           ? `${meterZoneLabel} · ${liveForce}%`

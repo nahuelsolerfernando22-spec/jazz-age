@@ -114,6 +114,11 @@ export function NpcPortraitCard({
   }, [npcId]);
   const callback = useNpcCallback(npcId);
   const displayLine = callback?.text ?? line;
+
+  // Los retratos salieron de las mesas: ocupaban media pantalla y obligaban a
+  // hacer scroll para jugar. Ahora se ven en /camerinos.
+  if (!children) return null;
+
   return (
     <motion.aside
       initial={{ opacity: 0, x: -20 }}

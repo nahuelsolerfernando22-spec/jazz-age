@@ -2347,9 +2347,10 @@ img, svg, video, canvas {
 #cuervo-content {
   filter: brightness(var(--app-brightness)) contrast(var(--app-contrast));
   /* El filtro convierte este nodo en bloque contenedor de los hijos fixed:
-     sin altura propia, las barras ancladas abajo salían del viewport. */
+     sin altura propia, las barras ancladas abajo salían del viewport.
+     El body ya reserva los insets, así que el alto útil los descuenta. */
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--sa-top) - var(--sa-bottom));
 }
 
 /* Tab bar inferior: reserva altura para que ninguna pantalla del hub

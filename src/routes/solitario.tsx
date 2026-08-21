@@ -302,13 +302,13 @@ function SolitarioPage() {
     } catch {}
   }, [reduced]);
 
-  type DragOverKey = string | null;
-  const [dragSrc] = useState<SourceLocation | null>(null);
-  const [dragOverKey] = useState<DragOverKey>(null);
+  // Ayuda de lectura: con una carta elegida, marcamos en verde los destinos
+  // legales. Antes esto dependía de un drag que nunca se activaba en táctil.
   const canDropOn = useCallback(
-    (t: TargetLocation): boolean => (dragSrc ? tryMove(game, dragSrc, t) !== null : false),
-    [dragSrc, game],
+    (t: TargetLocation): boolean => (selected ? tryMove(game, selected, t) !== null : false),
+    [selected, game],
   );
+
 
   const baseLine = useMemo(
     () =>

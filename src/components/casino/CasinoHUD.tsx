@@ -71,14 +71,6 @@ const ROOM_META: RoomMeta[] = [
     icon: iconBlackjack,
   },
   {
-    to: "/blackjack",
-    label: "Veintiuno de Medianoche",
-    tag: "21 · mesa directa",
-    status: "hot",
-    accent: "oklch(0.62 0.18 200)",
-    icon: iconBlackjack,
-  },
-  {
     to: "/truco",
     label: "El Truco del Cuervo",
     tag: "Envido · flor · truco",

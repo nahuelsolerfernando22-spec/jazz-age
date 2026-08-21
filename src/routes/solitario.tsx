@@ -834,29 +834,34 @@ function SolitarioPage() {
                 <div className="my-3 h-px bg-gradient-to-r from-transparent via-[var(--brass)]/40 to-transparent" />
 
                 {}
-                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
                   {game.tableau.map((col, ci) => {
                     const isEmpty = col.length === 0;
                     const isSelTarget = selected != null && !isSameTarget(selected, ci);
                     const topIdx = col.length - 1;
-                    const dropKey = `T:${ci}`;
-                    const isDropOk = dragSrc ? canDropOn({ kind: "tableau", col: ci }) : false;
-                    const isDropHover = dragOverKey === dropKey && isDropOk;
+                    const isDropOk = canDropOn({ kind: "tableau", col: ci });
+                    // Abanico asimétrico: los dorsos se apilan compactos y las
+                    // cartas dadas vuelta respiran, para leer la columna de un vistazo.
+                    let down = 0;
+                    let up = 0;
+                    const tops = col.map((card) => {
+                      const top = `calc(${down} * var(--soli-od) + ${up} * var(--soli-o))`;
+                      if (card.faceUp) up += 1;
+                      else down += 1;
+                      return top;
+                    });
+                    const colHeight = isEmpty
+                      ? "var(--soli-h)"
+                      : `calc(var(--soli-h) + ${Math.max(0, down - (col[topIdx]?.faceUp ? 0 : 1))} * var(--soli-od) + ${Math.max(0, up - (col[topIdx]?.faceUp ? 1 : 0))} * var(--soli-o))`;
                     return (
                       <div
                         key={ci}
                         className={`relative rounded-md ${
-                          isDropHover
-                            ? "ring-2 ring-[oklch(0.82_0.18_140/0.9)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
-                            : isDropOk
-                              ? "ring-1 ring-[oklch(0.75_0.14_140/0.5)]"
-                              : ""
+                          isDropOk
+                            ? "ring-2 ring-[oklch(0.82_0.18_140/0.85)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
+                            : ""
                         }`}
-                        style={{
-                          height: isEmpty
-                            ? "var(--soli-h)"
-                            : `calc(var(--soli-h) + ${topIdx} * var(--soli-o))`,
-                        }}
+                        style={{ height: colHeight }}
                       >
                         {isEmpty ? (
                           <button
@@ -877,11 +882,7 @@ function SolitarioPage() {
                             const isHint =
                               hint?.kind === "tableau" && hint.col === ci && ri === topIdx;
                             return (
-                              <div
-                                key={card.id}
-                                className="absolute left-0"
-                                style={{ top: `calc(${ri} * var(--soli-o))` }}
-                              >
+                              <div key={card.id} className="absolute left-0" style={{ top: tops[ri] }}>
                                 {card.faceUp ? (
                                   <ClickableCard
                                     card={card}
@@ -906,6 +907,7 @@ function SolitarioPage() {
                             );
                           })
                         )}
+
                         {!isEmpty && selected && isSelTarget && (
                           <button
                             type="button"

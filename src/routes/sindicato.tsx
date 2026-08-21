@@ -476,6 +476,40 @@ function SindicatoPage() {
 
   const isMine = selectedId ? conquests[selectedId]?.ownerId === currentPlayerIndex : false;
 
+  // Centros de cada sector (coordenadas del lienzo) para rutas y cartuchos.
+  const centros = useMemo(() => {
+    const m: Record<string, Point> = {};
+    activeTerritories.forEach((t) => {
+      m[t.id] = t.points.reduce(
+        (acc: Point, p: Point) => ({
+          x: acc.x + (p.x * 10) / t.points.length,
+          y: acc.y + (p.y * 10) / t.points.length,
+        }),
+        { x: 0, y: 0 },
+      );
+    });
+    return m;
+  }, [activeTerritories]);
+
+  // Rutas punteadas entre sectores vecinos (una sola por par).
+  const conexiones = useMemo(() => {
+    const vistas = new Set<string>();
+    const out: { id: string; a: Point; b: Point }[] = [];
+    activeTerritories.forEach((t) => {
+      t.vecinos.forEach((vId) => {
+        const key = [t.id, vId].sort().join("|");
+        if (vistas.has(key)) return;
+        const a = centros[t.id];
+        const b = centros[vId];
+        if (!a || !b) return;
+        vistas.add(key);
+        out.push({ id: key, a, b });
+      });
+    });
+    return out;
+  }, [activeTerritories, centros]);
+
+
   // Sector propio que lidera el asalto: se calcula una sola vez y se usa en dados y resolución.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;

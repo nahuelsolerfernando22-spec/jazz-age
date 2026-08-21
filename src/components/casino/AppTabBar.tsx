@@ -34,6 +34,7 @@ const HUB_ROUTES = new Set([
   "/estadisticas",
   "/dificultad",
   "/reglas",
+  "/camerinos",
 ]);
 
 type Tab = {
@@ -78,7 +79,8 @@ const TABS: Tab[] = [
       p.startsWith("/logros") ||
       p.startsWith("/torneo") ||
       p.startsWith("/estadisticas") ||
-      p.startsWith("/dificultad"),
+      p.startsWith("/dificultad") ||
+      p.startsWith("/camerinos"),
   },
 ];
 

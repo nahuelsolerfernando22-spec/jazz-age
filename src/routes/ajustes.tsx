@@ -390,6 +390,7 @@ function AjustesInner() {
                   { to: "/logros", label: "Logros" },
                   { to: "/estadisticas", label: "Estadísticas" },
                   { to: "/diario", label: "Diario" },
+                  { to: "/camerinos", label: "Camerinos" },
                   { to: "/dificultad", label: "Dificultad" },
                 ] as const
               ).map((l) => (

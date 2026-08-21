@@ -17,7 +17,10 @@ interface Opts {
 }
 
 export function useSingleHostessCorner(gameId: string, opts?: Opts) {
-  const backdropOnly = opts?.backdropOnly ?? false;
+  // Los retratos ya no viven en la mesa: se ven en /camerinos. Acá sólo
+  // queda el fondo del salón para que el juego entre entero sin scroll.
+  void opts?.backdropOnly;
+  const backdropOnly = true;
   const mobileOnly = opts?.mobileOnly ?? false;
   useEffect(() => {
     if (typeof document === "undefined") return;

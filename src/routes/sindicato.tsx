@@ -1133,49 +1133,38 @@ function SindicatoPage() {
       </main>
 
       <RunOverlay />
-      <ObjetivoCard />
 
-      {/* Estado de la noche roguelike */}
-      <div className="fixed right-3 top-[172px] z-[80] flex max-w-[46vw] items-center gap-2 rounded-full border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-1.5 backdrop-blur-md">
-        <span className="text-sm text-[var(--oro)]">&#9824;</span>
-        <span className="min-w-0">
-          <span className="block font-bebas text-sm leading-none text-[var(--oro-palido)]">
-            {ola.titulo}
-          </span>
-          <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
-            {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo} · ${runTalismanes.length} talismanes`}
-          </span>
-        </span>
-      </div>
-
-      {/* Reencuadrar el mapa */}
-      <button
-        onClick={handleRefit}
-        aria-label="Reencuadrar mapa"
-        className="fixed right-3 top-[236px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
+      {/* Controles flotantes: siempre por debajo del HUD medido */}
+      <div
+        className="fixed right-3 z-[85] flex flex-col items-end gap-2"
+        style={{ top: hudH + 8 }}
       >
-        <Maximize2 size={18} />
-      </button>
+        <button
+          onClick={handleRefit}
+          aria-label="Reencuadrar mapa"
+          className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
+        >
+          <Maximize2 size={18} />
+        </button>
 
-      {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
-      <button
-        onClick={() => {
-          setAltoContraste((v) => !v);
-          haptics("tap");
-        }}
-        aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
-        aria-pressed={altoContraste}
-        className={`fixed right-3 top-[288px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
-          altoContraste
-            ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
-            : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
-        }`}
-      >
-        <Contrast size={18} />
-      </button>
+        {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
+        <button
+          onClick={() => {
+            setAltoContraste((v) => !v);
+            haptics("tap");
+          }}
+          aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
+          aria-pressed={altoContraste}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+            altoContraste
+              ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+              : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+          }`}
+        >
+          <Contrast size={18} />
+        </button>
 
-      {/* Previsualizar el tablero con la estética de cada propietario */}
-      <div className="fixed right-3 top-[340px] z-[85] flex flex-col items-end gap-2">
+        {/* Previsualizar el tablero con la estética de cada propietario */}
         <button
           onClick={() => {
             setPreviewOwner((v) => (v === null ? 0 : v + 1 >= players.length ? null : v + 1));
@@ -1191,7 +1180,7 @@ function SindicatoPage() {
           <MapIcon size={18} />
         </button>
         {previewOwner !== null && players[previewOwner] && (
-          <span className="rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
+          <span className="max-w-[40vw] truncate rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
             <span
               className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
               style={{ background: players[previewOwner].color }}
@@ -1200,6 +1189,7 @@ function SindicatoPage() {
           </span>
         )}
       </div>
+
 
       {/* HUD de Efectos Activos y Talismanes */}
       <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">

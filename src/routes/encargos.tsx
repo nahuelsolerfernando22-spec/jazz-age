@@ -113,9 +113,9 @@ function useOficina(playerLevel: number): Fila[] {
     const next =
       [...r.game.levels].sort((a, b) => a.order - b.order).find((l) => !r.cleared[l.id]) ?? null;
     const rangoOk = playerLevel >= r.game.requiredLevel;
-    const prevOk = !rangoOk || previaHabilitada == null
-      ? previaHabilitada == null || !rangoOk
-      : previaHabilitada.clearedCount >= CARPETAS_PARA_ABRIR;
+    const previa: Fila | null = previaHabilitada;
+    const prevOk = previa == null || previa.clearedCount >= CARPETAS_PARA_ABRIR;
+
     const fila: Fila = {
       ...r,
       clearedCount,

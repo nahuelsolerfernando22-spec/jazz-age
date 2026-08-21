@@ -389,8 +389,6 @@ export const useSyndicate = create<SyndicateState>()(
             fortifyMoves: 0,
             conquestsThisTurn: 0,
             lastConqueredId: null,
-            conquestsThisTurn: 0,
-            lastConqueredId: null,
             tradeCount: 0,
             activeEffects: {},
           };
@@ -463,7 +461,8 @@ export const useSyndicate = create<SyndicateState>()(
             roundNumber,
             cardDrawnThisTurn: false,
             fortifyMoves: 0,
-
+            conquestsThisTurn: 0,
+            lastConqueredId: null,
 
             // Limpiar efectos caducados del jugador que empieza
             activeEffects: Object.fromEntries(

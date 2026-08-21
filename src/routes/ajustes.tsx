@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCasino } from "@/store/casino";
 import { toast } from "sonner";
 import { useSettings } from "@/store/settings";
 import { clearBuffer } from "@/lib/analytics";

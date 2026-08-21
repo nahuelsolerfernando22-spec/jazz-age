@@ -761,6 +761,31 @@ function SindicatoPage() {
                     <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
                   </pattern>
                 ))}
+
+                {/* Variante de arte por propietario: mismo lenguaje en todos sus barrios */}
+                {players.map((p, i) => {
+                  const v = varianteDeDueno(i, p.faction, p.color);
+                  const tile = 220 * v.escala;
+                  return (
+                    <pattern
+                      key={v.id}
+                      id={v.id}
+                      width={tile}
+                      height={tile}
+                      patternUnits="userSpaceOnUse"
+                      patternTransform={`rotate(${v.rotacion})`}
+                    >
+                      <image
+                        href={v.href}
+                        width={tile}
+                        height={tile}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+                      <rect width={tile} height={tile} fill={v.color} opacity={v.tinte} />
+                    </pattern>
+                  );
+                })}
+
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}

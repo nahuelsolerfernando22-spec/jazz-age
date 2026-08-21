@@ -2864,9 +2864,13 @@ img.cuervo-lazy {
 
 
 @media (max-width: 640px) {
+  /* En vertical el retrato queda chico dentro del encuadre apaisado: lo
+     agrandamos un poco y subimos el punto focal para que la anfitriona llene
+     la pantalla en vez de dejar zócalo muerto abajo. */
   .single-backdrop .sb-img,
   .single-backdrop .sb-lqip {
-    background-position: center 38%;
+    background-position: center 34%;
+    background-size: 118% auto;
   }
   .single-backdrop::after {
     background: radial-gradient(
@@ -2881,7 +2885,8 @@ img.cuervo-lazy {
 @media (max-width: 380px) {
   .single-backdrop .sb-img,
   .single-backdrop .sb-lqip {
-    background-position: center 36%;
+    background-position: center 32%;
+    background-size: 126% auto;
   }
   .single-backdrop::after {
     background: radial-gradient(

@@ -19,7 +19,8 @@ interface Opts {
 export function useSingleHostessCorner(gameId: string, opts?: Opts) {
   // En las mesas queda sólo una burbuja compacta (no reserva alto en el
   // layout); los retratos en grande viven en /camerinos.
-  const backdropOnly = opts?.backdropOnly ?? false;
+  const backdropOnly = false;
+  void opts?.backdropOnly;
   const mobileOnly = opts?.mobileOnly ?? false;
   useEffect(() => {
     if (typeof document === "undefined") return;

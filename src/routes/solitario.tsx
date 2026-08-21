@@ -984,6 +984,35 @@ function SolitarioPage() {
                 </div>
               </div>
 
+              {/* En móvil el riel lateral no existe: los objetivos del día viven
+                  acá abajo, donde antes había un hueco muerto de mesa. */}
+              <div className="mt-3 rounded-md border border-[var(--brass)]/25 bg-[var(--noir)]/85 p-3 backdrop-blur-sm lg:hidden">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="font-display text-[11px] uppercase tracking-[0.35em] text-[var(--brass)]/90">
+                    objetivos del día
+                  </div>
+                  <div className="font-display text-[10px] uppercase tracking-[0.25em] text-[var(--smoke)]">
+                    {isDaily ? "reto del día" : "salón libre"}
+                  </div>
+                </div>
+                <SolitarioObjectivesList
+                  objectives={dailyObjectivesList}
+                  claimedIds={claimedObjectiveIds}
+                  compact
+                />
+                <div className="mt-2">
+                  <BrassButton
+                    onClick={replayDaily}
+                    variant={isDaily ? "primary" : "ghost"}
+                    size="sm"
+                  >
+                    {isDaily ? "Reto del día activo" : "Volver al reto del día"}
+                  </BrassButton>
+                </div>
+              </div>
+
+
+
               <AnimatePresence>
                 {game.won && (
                   <motion.div

@@ -19,15 +19,16 @@ function wasResolvedRecently(gameId: string) {
 }
 
 export function reportGameOutcome(gameId: string, outcome: NemesisOutcome | boolean) {
-  if (useGameMode.getState().mode !== "single") return;
   const normalized: NemesisOutcome =
     typeof outcome === "boolean" ? (outcome ? "win" : "loss") : outcome;
-  useNemesis.getState().recordResult(gameId, normalized);
-  markResolvedNow(gameId);
-  // Si hay un torneo abierto en esta mesa, esta partida cierra la ronda.
+  // El torneo cierra la ronda haya el modo que haya: el cuadro manda.
   void import("@/store/cup").then(({ recordCupOutcome }) =>
     recordCupOutcome(gameId, normalized === "win" ? "win" : normalized === "draw" ? "draw" : "loss"),
   );
+  if (useGameMode.getState().mode !== "single") return;
+  useNemesis.getState().recordResult(gameId, normalized);
+  markResolvedNow(gameId);
+
   if (normalized === "win" || normalized === "loss") {
     void import("@/lib/win-sfx").then(({ playWin, playLose }) => {
       const s = useSettings.getState();

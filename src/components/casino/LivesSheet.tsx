@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -72,7 +73,11 @@ export function LivesSheet({ open, onClose }: { open: boolean; onClose: () => vo
     toast("Cortaste la función", { description: "Sin función completa no hay corazón." });
   }, []);
 
-  return (
+  // El HUD tiene transform/backdrop-filter: sin portal, `fixed` se ancla al
+  // HUD y la hoja queda recortada fuera de vista.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       <AnimatePresence>
         {open && (
@@ -195,6 +200,7 @@ export function LivesSheet({ open, onClose }: { open: boolean; onClose: () => vo
         onComplete={finishAd}
         onCancel={cancelAd}
       />
-    </>
+    </>,
+    document.body,
   );
 }

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as BagatelleRouteImport } from './routes/bagatelle'
 import { Route as BlackjackRouteImport } from './routes/blackjack'
+import { Route as CamerinosRouteImport } from './routes/camerinos'
 import { Route as ChinchonRouteImport } from './routes/chinchon'
 import { Route as DadosRouteImport } from './routes/dados'
 import { Route as DiarioRouteImport } from './routes/diario'
@@ -53,6 +54,11 @@ const BagatelleRoute = BagatelleRouteImport.update({
 const BlackjackRoute = BlackjackRouteImport.update({
   id: '/blackjack',
   path: '/blackjack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CamerinosRoute = CamerinosRouteImport.update({
+  id: '/camerinos',
+  path: '/camerinos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChinchonRoute = ChinchonRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/ajustes': typeof AjustesRoute
   '/bagatelle': typeof BagatelleRoute
   '/blackjack': typeof BlackjackRoute
+  '/camerinos': typeof CamerinosRoute
   '/chinchon': typeof ChinchonRoute
   '/dados': typeof DadosRoute
   '/diario': typeof DiarioRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/ajustes': typeof AjustesRoute
   '/bagatelle': typeof BagatelleRoute
   '/blackjack': typeof BlackjackRoute
+  '/camerinos': typeof CamerinosRoute
   '/chinchon': typeof ChinchonRoute
   '/dados': typeof DadosRoute
   '/diario': typeof DiarioRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/ajustes': typeof AjustesRoute
   '/bagatelle': typeof BagatelleRoute
   '/blackjack': typeof BlackjackRoute
+  '/camerinos': typeof CamerinosRoute
   '/chinchon': typeof ChinchonRoute
   '/dados': typeof DadosRoute
   '/diario': typeof DiarioRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/bagatelle'
     | '/blackjack'
+    | '/camerinos'
     | '/chinchon'
     | '/dados'
     | '/diario'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/bagatelle'
     | '/blackjack'
+    | '/camerinos'
     | '/chinchon'
     | '/dados'
     | '/diario'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/bagatelle'
     | '/blackjack'
+    | '/camerinos'
     | '/chinchon'
     | '/dados'
     | '/diario'
@@ -332,6 +344,7 @@ export interface RootRouteChildren {
   AjustesRoute: typeof AjustesRoute
   BagatelleRoute: typeof BagatelleRoute
   BlackjackRoute: typeof BlackjackRoute
+  CamerinosRoute: typeof CamerinosRoute
   ChinchonRoute: typeof ChinchonRoute
   DadosRoute: typeof DadosRoute
   DiarioRoute: typeof DiarioRoute
@@ -383,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/blackjack'
       fullPath: '/blackjack'
       preLoaderRoute: typeof BlackjackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/camerinos': {
+      id: '/camerinos'
+      path: '/camerinos'
+      fullPath: '/camerinos'
+      preLoaderRoute: typeof CamerinosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chinchon': {
@@ -540,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjustesRoute: AjustesRoute,
   BagatelleRoute: BagatelleRoute,
   BlackjackRoute: BlackjackRoute,
+  CamerinosRoute: CamerinosRoute,
   ChinchonRoute: ChinchonRoute,
   DadosRoute: DadosRoute,
   DiarioRoute: DiarioRoute,

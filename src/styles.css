@@ -5620,3 +5620,24 @@ button, [role="button"], a[data-haptic] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Sensación nativa Android: sin barras de scroll visibles en ningún lado ── */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+html,
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}

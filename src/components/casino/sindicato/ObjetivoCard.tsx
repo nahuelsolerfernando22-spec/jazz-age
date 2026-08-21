@@ -35,7 +35,7 @@ export function ObjetivoCard() {
   if (!objetivo) return null;
 
   return (
-    <div className="fixed left-3 top-[172px] z-[80] max-w-[52vw]">
+    <div className="pointer-events-auto min-w-0 flex-1">
       <button
         onClick={() => setAbierto((v) => !v)}
         aria-label={abierto ? "Tapar objetivo secreto" : "Espiar objetivo secreto"}

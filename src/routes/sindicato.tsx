@@ -372,6 +372,18 @@ function SindicatoPage() {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
+  /** Alto real del HUD superior: se mide para que el mapa nunca quede tapado. */
+  const [hudH, setHudH] = useState(186);
+
+  useEffect(() => {
+    const el = hudRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setHudH(Math.round(el.getBoundingClientRect().height)));
+    ro.observe(el);
+    setHudH(Math.round(el.getBoundingClientRect().height));
+    return () => ro.disconnect();
+  }, []);
 
   const territoriesKey = useMemo(
     () => activeTerritories.map((t) => t.id).join("|"),
@@ -382,11 +394,13 @@ function SindicatoPage() {
   const lienzo = useMemo(() => CONTENT_BOX_GEN(activeTerritories), [activeTerritories]);
 
   const computeFit = useCallback(() => {
-    // Espacio real reservado arriba (banner de turno + barra de control + fichas de barrio)
-    // y abajo por el dock de acciones.
-    const HEADER = 186;
+    // Espacio real reservado arriba (HUD medido) y abajo por el dock de acciones.
+    const HEADER = Math.max(120, hudH + 8);
     const NAVBAR = 148;
-    const w = window.innerWidth;
+    // Columna de botones flotantes a la derecha: se descuenta para que ningún
+    // cartucho del mapa quede tapado por ellos.
+    const GUTTER = 64;
+    const w = Math.max(200, window.innerWidth - GUTTER);
     const h = Math.max(240, window.innerHeight - HEADER - NAVBAR);
     // Encuadre sobre el area jugable real (no sobre el lienzo de 1000x1000).
     const pad = 10;
@@ -400,14 +414,15 @@ function SindicatoPage() {
     setFitScale(s);
     const ox = (contentBox.cx - MAP_WIDTH / 2) * s;
     const oy = (contentBox.cy - MAP_HEIGHT / 2) * s;
-    setTransform({ x: -ox, y: -oy + (HEADER - NAVBAR) / 2, scale: s });
-  }, [activeTerritories]);
+    setTransform({ x: -ox - GUTTER / 2, y: -oy + (HEADER - NAVBAR) / 2, scale: s });
+  }, [activeTerritories, hudH]);
 
   useEffect(() => {
     computeFit();
     window.addEventListener("resize", computeFit);
     return () => window.removeEventListener("resize", computeFit);
   }, [territoriesKey, computeFit]);
+
 
 
   const runStatus = useSyndicateRun((s) => s.status);
@@ -1121,49 +1136,38 @@ function SindicatoPage() {
       </main>
 
       <RunOverlay />
-      <ObjetivoCard />
 
-      {/* Estado de la noche roguelike */}
-      <div className="fixed right-3 top-[172px] z-[80] flex max-w-[46vw] items-center gap-2 rounded-full border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-1.5 backdrop-blur-md">
-        <span className="text-sm text-[var(--oro)]">&#9824;</span>
-        <span className="min-w-0">
-          <span className="block font-bebas text-sm leading-none text-[var(--oro-palido)]">
-            {ola.titulo}
-          </span>
-          <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
-            {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo} · ${runTalismanes.length} talismanes`}
-          </span>
-        </span>
-      </div>
-
-      {/* Reencuadrar el mapa */}
-      <button
-        onClick={handleRefit}
-        aria-label="Reencuadrar mapa"
-        className="fixed right-3 top-[236px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
+      {/* Controles flotantes: siempre por debajo del HUD medido */}
+      <div
+        className="fixed right-3 z-[85] flex flex-col items-end gap-2"
+        style={{ top: hudH + 8 }}
       >
-        <Maximize2 size={18} />
-      </button>
+        <button
+          onClick={handleRefit}
+          aria-label="Reencuadrar mapa"
+          className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
+        >
+          <Maximize2 size={18} />
+        </button>
 
-      {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
-      <button
-        onClick={() => {
-          setAltoContraste((v) => !v);
-          haptics("tap");
-        }}
-        aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
-        aria-pressed={altoContraste}
-        className={`fixed right-3 top-[288px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
-          altoContraste
-            ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
-            : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
-        }`}
-      >
-        <Contrast size={18} />
-      </button>
+        {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
+        <button
+          onClick={() => {
+            setAltoContraste((v) => !v);
+            haptics("tap");
+          }}
+          aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
+          aria-pressed={altoContraste}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+            altoContraste
+              ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+              : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+          }`}
+        >
+          <Contrast size={18} />
+        </button>
 
-      {/* Previsualizar el tablero con la estética de cada propietario */}
-      <div className="fixed right-3 top-[340px] z-[85] flex flex-col items-end gap-2">
+        {/* Previsualizar el tablero con la estética de cada propietario */}
         <button
           onClick={() => {
             setPreviewOwner((v) => (v === null ? 0 : v + 1 >= players.length ? null : v + 1));
@@ -1179,7 +1183,7 @@ function SindicatoPage() {
           <MapIcon size={18} />
         </button>
         {previewOwner !== null && players[previewOwner] && (
-          <span className="rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
+          <span className="max-w-[40vw] truncate rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
             <span
               className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
               style={{ background: players[previewOwner].color }}
@@ -1188,6 +1192,7 @@ function SindicatoPage() {
           </span>
         )}
       </div>
+
 
       {/* HUD de Efectos Activos y Talismanes */}
       <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">
@@ -1434,34 +1439,53 @@ function SindicatoPage() {
         )}
       </AnimatePresence>
 
-      <TurnBanner
-        playerName={currentPlayer?.name ?? "Sindicato"}
-        playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
-        factionId={currentPlayer?.faction}
-        isBot={!!currentPlayer?.isBot}
-        phase={turnPhase}
-        unassignedTroops={unassignedTroops}
-        pendingTroops={pendingTroops}
-        territories={controlCounts[currentPlayerIndex] || 0}
-        totalTerritories={activeTerritories.length}
-        cards={myCards.length}
-        round={roundNumber}
-        canAssault={puedeAsaltar(roundNumber)}
-      />
+      {/* HUD superior: una sola columna medida, así nada se solapa en ninguna pantalla. */}
+      <div ref={hudRef} className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
+        <TurnBanner
+          playerName={currentPlayer?.name ?? "Sindicato"}
+          playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
+          factionId={currentPlayer?.faction}
+          isBot={!!currentPlayer?.isBot}
+          phase={turnPhase}
+          unassignedTroops={unassignedTroops}
+          pendingTroops={pendingTroops}
+          territories={controlCounts[currentPlayerIndex] || 0}
+          totalTerritories={activeTerritories.length}
+          cards={myCards.length}
+          round={roundNumber}
+          canAssault={puedeAsaltar(roundNumber)}
+        />
 
-      <ControlBar
-        players={players}
-        counts={controlCounts}
-        total={activeTerritories.length}
-        currentPlayerId={currentPlayerIndex}
-      />
+        <ControlBar
+          players={players}
+          counts={controlCounts}
+          total={activeTerritories.length}
+          currentPlayerId={currentPlayerIndex}
+        />
 
-      <BarriosPanel
-        territories={activeTerritories}
-        conquests={conquests}
-        myPlayerId={0}
-        myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
-      />
+        <BarriosPanel
+          territories={activeTerritories}
+          conquests={conquests}
+          myPlayerId={0}
+          myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
+        />
+
+        <div className="mt-1.5 flex items-start gap-2 px-2">
+          <ObjetivoCard />
+          <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
+            <span className="text-sm text-[var(--oro)]">&#9824;</span>
+            <span className="min-w-0">
+              <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
+                {ola.titulo}
+              </span>
+              <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
+                {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
 
       <ActionDock
         phase={turnPhase}

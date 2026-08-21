@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /cuenta
+Disallow: /login

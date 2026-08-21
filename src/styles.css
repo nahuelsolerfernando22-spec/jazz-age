@@ -1,0 +1,5573 @@
+@import "tailwindcss" source(none);
+@import "./assets/fonts/local-fonts.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource-variable/work-sans";
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Ocultar distintivos y controles inyectados por el host de previsualización */
+[class*="ovabl"][class*="badge"],
+[class*="ovabl"][class*="Badge"],
+[class*="ovabl"][class*="project"],
+a[href*="ovable.dev"][target="_blank"],
+a[href*="ovable.dev"][rel*="noopener"],
+a[title*="ovable" i],
+a[aria-label*="ovable" i],
+div[id*="ovabl"],
+div[class*="ovabl"],
+[data-testid*="ovabl" i],
+[data-badge*="ovabl" i],
+[id*="ovabl"][id*="badge" i],
+[data-testid*="badge" i][href*="ovabl" i],
+a[href*="ovabl" i][class*="badge" i],
+[class*="ovabl"] > [class*="badge" i],
+iframe[src*="ovable.dev"],
+iframe[src*="ovable.app"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  overflow: hidden !important;
+  z-index: -9999 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+/* El distintivo del editor se oculta en runtime desde __root.tsx (sin marca en el bundle). */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  
+  --color-brass: var(--brass);
+  --color-brass-bright: var(--brass-bright);
+  --color-brass-dark: var(--brass-dark);
+  --color-oxblood: var(--oxblood);
+  --color-oxblood-deep: var(--oxblood-deep);
+  --color-blood: var(--blood);
+  --color-noir: var(--noir);
+  --color-noir-soft: var(--noir-soft);
+  --color-ivory: var(--ivory);
+  --color-smoke: var(--smoke);
+  --color-mahogany: var(--mahogany);
+
+  --font-display: var(--font-display);
+  --font-script: var(--font-script);
+  --font-body: var(--font-body);
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --ui-scale: 1.05;
+  --hud-scale: 1.05;
+
+  /* HUD y chrome usan clamp() con vh + vw combinados para que el resize
+     entre móvil y desktop sea continuo (sin salto por media query). */
+  --hud-h: calc(clamp(58px, 6.2vh + 0.8vw, 84px) * var(--hud-scale, 1.05));
+  --bc-top: 0px;
+  --chrome-h: calc(clamp(60px, 6.4vh + 0.7vw, 92px) * var(--hud-scale, 1));
+
+  /* Botones flotantes de sala (atrás / pausa). 44px es el mínimo táctil de
+     Android; en teléfonos se quedan ahí para no comerse el arte de la mesa. */
+  --hud-btn: calc(clamp(44px, 5.2vw + 26px, 52px) * var(--hud-scale, 1));
+  --hud-btn-icon: calc(var(--hud-btn) * 0.44);
+
+  /* Franja de anfitriona bajo el HUD. Se activa sólo cuando SingleHostessCorner
+     está montado y añade `data-hostess-strip="1"` al <body>. */
+  --hostess-h: 0px;
+
+  /* Ancho máximo del "canvas" de juego. En móvil = 100vw. En tablet/desktop
+     el juego se centra dentro de esta caja y los costados quedan como
+     letterbox noir liso. Coherente con arte pensado para portrait 390x844. */
+  --cd-canvas-max: 560px;
+
+  --font-numerals: "Abril Fatface", "Bebas Neue", "Cinzel", Georgia, serif;
+
+  /* Tokens de sistema unificados (Tanda de pulido) - Aumentados para legibilidad */
+  --cd-gold: #e2c069;
+  --cd-gold-bright: #fff3c4;
+  --cd-gold-soft: rgba(226, 192, 105, 0.2);
+  --cd-gold-glow: 0 8px 32px -8px rgba(255, 243, 196, 0.65);
+
+  /* Escala dorada canónica: TODO nuevo color dorado/marfil usa uno de estos.
+     Son los valores a los que se normalizó el hex crudo del proyecto, para
+     que no vuelvan a aparecer 20 matices distintos de "dorado". */
+  --cd-gold-dark: #8a5a18;
+  --cd-gold-mid: #c9a84c;
+  --cd-gold-warm: #e8c987;
+  --cd-gold-lite: #f7d271;
+  --cd-gold-amber: #f2c64a;
+  --cd-gold-pale: #fff5d0;
+  --cd-parchment: #f7f2e2;
+  --cd-ivory: #ecebe6;
+
+  --cd-radius-chip: 9999px;
+  --cd-radius-tile: 1.25rem;
+  --cd-radius-hero: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --bc-top: 0px;
+  }
+}
+
+:root {
+  --background: oklch(0.28 0.01 25);
+  --foreground: oklch(0.98 0.005 78);
+  --card: oklch(0.34 0.01 22);
+  --card-foreground: oklch(0.98 0.005 78);
+  --popover: oklch(0.32 0.01 22);
+  --popover-foreground: oklch(0.98 0.005 78);
+  --primary: oklch(0.94 0.1 85);
+  --primary-foreground: oklch(0.12 0.01 25);
+  --secondary: oklch(0.58 0.1 20);
+  --secondary-foreground: oklch(0.98 0.005 78);
+  --muted: oklch(0.52 0.01 25);
+  --muted-foreground: oklch(0.78 0.02 78);
+  --accent: oklch(0.65 0.15 22);
+  --accent-foreground: oklch(0.98 0.005 78);
+  --destructive: oklch(0.65 0.15 22);
+  --destructive-foreground: oklch(0.98 0.005 78);
+  --border: oklch(0.7 0.06 65 / 40%);
+  --input: oklch(0.35 0.01 25);
+  --ring: oklch(0.85 0.1 78);
+
+  --brass: oklch(0.92 0.08 88);
+  --brass-bright: oklch(0.98 0.1 92);
+  --brass-dark: oklch(0.78 0.07 78);
+  --oxblood: oklch(0.38 0.1 22);
+  --oxblood-deep: oklch(0.26 0.06 22);
+  --blood: oklch(0.55 0.15 25);
+  --noir: oklch(0.06 0.005 25);
+  --noir-soft: oklch(0.18 0.01 25);
+  --ivory: oklch(0.95 0.03 85);
+  --smoke: oklch(0.8 0.02 65);
+  --mahogany: oklch(0.32 0.05 30);
+
+
+  --gradient-brass: linear-gradient(
+    180deg,
+    oklch(0.92 0.15 85) 0%,
+    oklch(0.75 0.12 75) 50%,
+    oklch(0.55 0.08 65) 100%
+  );
+  --gradient-mahogany: linear-gradient(180deg, oklch(0.3 0.08 28) 0%, oklch(0.14 0.045 28) 100%);
+  --gradient-oxblood: linear-gradient(180deg, oklch(0.34 0.16 20) 0%, oklch(0.14 0.07 20) 100%);
+  --gradient-curtain: linear-gradient(180deg, oklch(0.24 0.12 20) 0%, oklch(0.1 0.05 20) 100%);
+
+  --shadow-brass: 0 0 26px oklch(0.7 0.135 78 / 0.4), 0 0 64px oklch(0.7 0.135 78 / 0.18);
+  --shadow-blood: 0 0 20px oklch(0.46 0.22 22 / 0.65);
+  --shadow-deep: 0 30px 80px -10px oklch(0 0 0 / 0.85), 0 12px 30px -6px oklch(0 0 0 / 0.6);
+
+  --font-display: "Limelight", "Cinzel", Georgia, serif;
+  --font-script: "Pinyon Script", "Cormorant Garamond", cursive;
+  --font-body: "Work Sans", "Inter", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+
+  /* ============================================================
+   * Sistema tipográfico unificado por rol (Tanda 4)
+   * Todos los juegos usan estas familias para el mismo rol
+   * (título de mesa, HUD, badges, chips). No hardcodear en JSX.
+   * ============================================================ */
+  --font-room-title: "Limelight", "Cinzel", Georgia, serif;
+  --font-hud: "Bebas Neue", "Barlow", system-ui, sans-serif;
+  --font-badge: "Cinzel", "Limelight", Georgia, serif;
+  --font-chip: "Bebas Neue", "Barlow", system-ui, sans-serif;
+  --tracking-cinzel: 0.15em;
+  --tracking-limelight: 0.08em;
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.12 0.02 25);
+  --sidebar-foreground: oklch(0.85 0.04 75);
+  --sidebar-primary: oklch(0.62 0.1 70);
+  --sidebar-primary-foreground: oklch(0.08 0.008 30);
+  --sidebar-accent: oklch(0.16 0.015 30);
+  --sidebar-accent-foreground: oklch(0.85 0.04 75);
+  --sidebar-border: oklch(0.3 0.06 60 / 50%);
+  --sidebar-ring: oklch(0.62 0.1 70);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: #0b0d0c;
+    color: var(--foreground);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    font-weight: 450;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+
+    min-height: 100svh;
+    overflow-x: hidden;
+    
+    --veil-top: 0.08;
+    --veil-bottom: 0.45;
+    --veil-fill-top: 0.25;
+    --veil-fill-bottom: 0.35;
+    
+    background-image:
+      radial-gradient(ellipse 70% 55% at 50% 25%, oklch(0.22 0.08 45 / var(--veil-top)), transparent 75%),
+      radial-gradient(ellipse 120% 95% at 50% 108%, oklch(0.06 0.02 22 / var(--veil-bottom)), transparent 65%),
+      linear-gradient(180deg, oklch(0.08 0.02 30 / var(--veil-fill-top)) 0%, oklch(0.06 0.015 25 / var(--veil-fill-bottom)) 100%),
+      url("./assets/app-bg-speakeasy.webp");
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed, fixed;
+    background-size: cover, cover, cover, cover;
+    background-position: center top, center bottom, center center, center center;
+  }
+
+  
+  body[data-veil="none"] {
+    --veil-top: 0;
+    --veil-bottom: 0.25;
+    --veil-fill-top: 0.1;
+    --veil-fill-bottom: 0.25;
+  }
+  body[data-veil="soft"] {
+    --veil-top: 0.1;
+    --veil-bottom: 0.5;
+    --veil-fill-top: 0.25;
+    --veil-fill-bottom: 0.4;
+  }
+  body[data-veil="strong"] {
+    --veil-top: 0.28;
+    --veil-bottom: 0.82;
+    --veil-fill-top: 0.62;
+    --veil-fill-bottom: 0.78;
+  }
+  body[data-veil="opaque"] {
+    --veil-top: 0.35;
+    --veil-bottom: 0.95;
+    --veil-fill-top: 0.85;
+    --veil-fill-bottom: 0.95;
+  }
+
+  
+  @media (max-width: 768px) {
+    body {
+      background-attachment: scroll, scroll, scroll, scroll;
+      background-size: cover, cover, cover, auto 100vh;
+      background-position: center top, center bottom, center center, center top;
+      
+      --veil-top: 0.10;
+      --veil-bottom: 0.45;
+      --veil-fill-top: 0.28;
+      --veil-fill-bottom: 0.42;
+      background-image:
+        radial-gradient(ellipse 70% 55% at 50% 25%, oklch(0.22 0.08 45 / var(--veil-top)), transparent 75%),
+        radial-gradient(ellipse 120% 95% at 50% 108%, oklch(0.06 0.02 22 / var(--veil-bottom)), transparent 65%),
+        linear-gradient(180deg, oklch(0.08 0.02 30 / var(--veil-fill-top)) 0%, oklch(0.06 0.015 25 / var(--veil-fill-bottom)) 100%);
+    }
+  }
+
+  
+  @media (prefers-reduced-data: reduce) {
+    body {
+      background-image:
+        linear-gradient(180deg, oklch(0.08 0.02 30 / 0.6), oklch(0.06 0.015 25 / 0.8));
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-script {
+    font-family: var(--font-script);
+  }
+
+  /* Refuerzo global para cursivas y serifas delgadas */
+  italic,
+  .italic,
+  [style*="font-style: italic"],
+  [style*="fontStyle: 'italic'"] {
+    font-weight: 550; /* Aumentado de 500 a 550 para mayor legibilidad en cursivas */
+    letter-spacing: 0.02em;
+    font-style: italic;
+  }
+
+  .font-serif.italic,
+  .font-script.italic {
+    font-weight: 600; /* Serif y Script cursivas necesitan aún más peso */
+  }
+
+  .font-numerals {
+    font-family: var(--font-numerals);
+    font-weight: 800;
+    font-feature-settings:
+      "tnum" 1,
+      "lnum" 1;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-brass {
+    background: var(--gradient-brass);
+  }
+  .bg-gradient-mahogany {
+    background: var(--gradient-mahogany);
+  }
+  .bg-gradient-oxblood {
+    background: var(--gradient-oxblood);
+  }
+  .bg-gradient-curtain {
+    background: var(--gradient-curtain);
+  }
+
+  .shadow-brass {
+    box-shadow: var(--shadow-brass);
+  }
+  .shadow-blood {
+    box-shadow: var(--shadow-blood);
+  }
+  .shadow-deep {
+    box-shadow: var(--shadow-deep);
+  }
+
+  
+  
+  .text-glow-brass {
+    text-shadow: 0 1px 4px oklch(0 0 0 / 1), 0 0 8px oklch(0.92 0.15 85 / 0.3);
+  }
+  .text-glow-blood {
+    text-shadow: 0 1px 4px oklch(0 0 0 / 1), 0 0 8px oklch(0.55 0.15 25 / 0.4);
+  }
+  .text-engraved {
+    text-shadow:
+      0 1px 0 oklch(1 0 0 / 0.1),
+      0 -1px 0 oklch(0 0 0 / 0.8);
+  }
+  .text-contrast-outline {
+    text-shadow: 
+      -1px -1px 0 #000,
+       1px -1px 0 #000,
+      -1px  1px 0 #000,
+       1px  1px 0 #000,
+       0 2px 4px rgba(0,0,0,0.8);
+  }
+
+  
+  .led-digit {
+    font-family: "Share Tech Mono", "Courier New", monospace;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(9px, 1.35vw, 13px);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+  }
+
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 25% 30%, oklch(0.5 0.05 60 / 0.06) 1px, transparent 1px),
+      radial-gradient(circle at 75% 70%, oklch(0.5 0.05 60 / 0.05) 1px, transparent 1px),
+      radial-gradient(circle at 50% 80%, oklch(0.4 0.04 60 / 0.06) 1px, transparent 1px);
+    background-size:
+      3px 3px,
+      4px 4px,
+      5px 5px;
+    mix-blend-mode: overlay;
+    opacity: calc(var(--noir-intensity, 0.5) * 0.8);
+    display: none;
+  }
+  
+  html[data-film-grain="1"] .grain::before {
+    display: block;
+  }
+
+  .vignette::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, oklch(0 0 0 / calc(0.5 + var(--noir-intensity, 0.5) * 0.4)) 100%);
+  }
+
+  .bulb {
+    background: radial-gradient(circle, var(--brass-bright) 0%, var(--brass) 40%, transparent 75%);
+    box-shadow:
+      0 0 10px var(--brass-bright),
+      0 0 22px var(--brass);
+  }
+
+  .bulb-blood {
+    background: radial-gradient(circle, oklch(0.7 0.22 24) 0%, var(--blood) 45%, transparent 75%);
+    box-shadow:
+      0 0 10px oklch(0.7 0.22 24),
+      0 0 22px var(--blood);
+  }
+
+  @keyframes pinballPulse {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(0.92);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.14);
+    }
+  }
+
+  
+  .gilt-frame {
+    position: relative;
+    border: 1px solid oklch(0.62 0.1 70 / 0.7);
+    box-shadow:
+      inset 0 0 0 4px var(--noir),
+      inset 0 0 0 5px oklch(0.62 0.1 70 / 0.5),
+      var(--shadow-deep);
+  }
+
+  
+  .wood-grain {
+    background:
+      repeating-linear-gradient(
+        90deg,
+        oklch(0.18 0.05 30) 0px,
+        oklch(0.2 0.06 30) 2px,
+        oklch(0.16 0.04 30) 4px,
+        oklch(0.22 0.06 30) 7px,
+        oklch(0.17 0.05 30) 11px
+      ),
+      var(--gradient-mahogany);
+    background-blend-mode: overlay;
+  }
+
+  
+  .brass-plate {
+    background: linear-gradient(
+      180deg,
+      oklch(0.78 0.13 80) 0%,
+      oklch(0.62 0.1 70) 30%,
+      oklch(0.45 0.08 65) 70%,
+      oklch(0.55 0.09 68) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.25),
+      inset 0 -2px 4px oklch(0 0 0 / 0.5),
+      0 2px 8px oklch(0 0 0 / 0.6);
+  }
+
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      oklch(0 0 0 / 0.18) 3px,
+      oklch(0 0 0 / 0.18) 3px
+    );
+  }
+}
+
+@keyframes bulb-flash {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+@keyframes lulus-loader-sheen {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(500%);
+  }
+}
+@keyframes bulb-flash-alt {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.88);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes coin-rain {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes coin-rain-x {
+  0% {
+    transform: translate(0, -20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift, 0px), 100vh) rotate(var(--rot, 720deg));
+    opacity: 0;
+  }
+}
+
+@keyframes cabinet-win-flash {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes cabinet-jackpot-flash {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 0.9;
+  }
+  65% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes neon-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.75);
+  }
+}
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-200px) translateX(40px) scale(2);
+    opacity: 0;
+  }
+}
+@keyframes noir-smoke-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1);       opacity: 0.55; }
+  50%  { transform: translate3d(8%, 4%, 0) scale(1.08);  opacity: 0.85; }
+  100% { transform: translate3d(0, 0, 0) scale(1);       opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes noir-smoke-drift { 0%, 100% { transform: none; opacity: 0.6; } }
+}
+@keyframes terraza-smoke {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.8);
+  }
+  20% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(40px, -180px) scale(1.6);
+  }
+}
+@keyframes terraza-rain {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -40px 80px;
+  }
+}
+@keyframes lever-pull {
+  0% {
+    transform: rotate(0deg);
+  }
+  18% {
+    transform: rotate(58deg);
+  }
+  35% {
+    transform: rotate(60deg);
+  }
+  60% {
+    transform: rotate(-10deg);
+  }
+  78% {
+    transform: rotate(5deg);
+  }
+  92% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes lever-pull-refined {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(-10deg);
+  } 
+  42% {
+    transform: rotate(72deg);
+  } 
+  56% {
+    transform: rotate(74deg);
+  } 
+  74% {
+    transform: rotate(-12deg);
+  } 
+  87% {
+    transform: rotate(5deg);
+  } 
+  95% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes lever-pull-side {
+  0% {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+  4% {
+    transform: rotate(-9deg);
+    filter: brightness(1.04);
+  } 
+  7% {
+    transform: rotate(-10deg);
+    filter: brightness(1.05);
+  } 
+  16% {
+    transform: rotate(50deg);
+    filter: brightness(1.22);
+  } 
+  19% {
+    transform: rotate(54deg);
+    filter: brightness(1.16);
+  } 
+  24% {
+    transform: rotate(48deg);
+    filter: brightness(1.1);
+  } 
+  72% {
+    transform: rotate(46deg);
+    filter: brightness(1.06);
+  } 
+  82% {
+    transform: rotate(38deg);
+    filter: brightness(1.04);
+  } 
+  90% {
+    transform: rotate(8deg);
+    filter: brightness(1.02);
+  } 
+  96% {
+    transform: rotate(-2deg);
+    filter: brightness(1.01);
+  } 
+  100% {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+}
+
+@keyframes lever-idle-side {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-2.4deg);
+  }
+  55% {
+    transform: rotate(-1.6deg);
+  }
+  78% {
+    transform: rotate(-0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes lever-pull-side {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(36deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  @keyframes lever-idle-side {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+@keyframes corvina-breathe {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  45% {
+    transform: scale(1.012) translateY(-2px);
+  }
+  70% {
+    transform: scale(1.006) translateY(-1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes corvina-breathe {
+    0%,
+    100% {
+      transform: none;
+    }
+  }
+}
+
+@keyframes knob-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px oklch(0 0 0 / 0.5),
+      0 0 12px oklch(0.7 0.22 24 / 0.55),
+      0 0 28px oklch(0.6 0.22 24 / 0.3),
+      inset 2px 2px 4px oklch(1 0 0 / 0.4),
+      inset -2px -3px 6px oklch(0.18 0.1 22 / 0.85);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px oklch(0 0 0 / 0.5),
+      0 0 22px oklch(0.78 0.22 24 / 0.85),
+      0 0 48px oklch(0.7 0.22 24 / 0.5),
+      inset 2px 2px 5px oklch(1 0 0 / 0.55),
+      inset -2px -3px 6px oklch(0.18 0.1 22 / 0.85);
+    transform: scale(1.04);
+  }
+}
+
+@keyframes knob-press {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.86) translateY(3px);
+    filter: brightness(1.4) saturate(1.3);
+  }
+  50% {
+    transform: scale(1.12) translateY(-1px);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes knob-shine {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate(-30%, -30%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-25%, -35%) scale(1.1);
+  }
+}
+
+@keyframes symbol-drop {
+  0% {
+    transform: translateY(-22%) scale(0.92);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(4%) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes symbol-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: brightness(1.25) drop-shadow(0 0 8px oklch(0.85 0.18 80 / 0.7));
+  }
+}
+@keyframes reel-blur {
+  0%,
+  100% {
+    filter: blur(0);
+  }
+  50% {
+    filter: blur(2px);
+  }
+}
+
+@keyframes reel-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-38%);
+  }
+}
+
+@keyframes reel-decelerate {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.18, 0.55, 0.25, 1);
+  }
+  78% {
+    transform: translateY(-46%);
+  }
+  88% {
+    transform: translateY(-51.2%);
+  } 
+  95% {
+    transform: translateY(-49.4%);
+  } 
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes symbol-land {
+  0% {
+    transform: translateY(-60%) scaleY(1.18) scaleX(0.88);
+    opacity: 0;
+  }
+  35% {
+    transform: translateY(0) scaleY(0.78) scaleX(1.18);
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(-12%) scaleY(1.08) scaleX(0.94);
+  }
+  75% {
+    transform: translateY(0) scaleY(0.92) scaleX(1.06);
+  }
+  90% {
+    transform: translateY(-3%) scaleY(1.02) scaleX(0.98);
+  }
+  100% {
+    transform: translateY(0) scaleY(1) scaleX(1);
+  }
+}
+
+@keyframes reel-thud {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(2px);
+  }
+  60% {
+    transform: translateY(-1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes mote-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(8px, -10px);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-4px, -18px);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translate(-10px, -6px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes spotlight-sway {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-1deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(1deg);
+  }
+}
+
+@keyframes ornate-shimmer {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.7);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-120vh) translateX(60px) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes screen-shake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  10% {
+    transform: translate(-3px, 1px) rotate(-0.4deg);
+  }
+  20% {
+    transform: translate(4px, -2px) rotate(0.5deg);
+  }
+  30% {
+    transform: translate(-2px, 2px) rotate(-0.3deg);
+  }
+  40% {
+    transform: translate(3px, 1px) rotate(0.4deg);
+  }
+  50% {
+    transform: translate(-2px, -1px) rotate(-0.2deg);
+  }
+  60% {
+    transform: translate(2px, 1px) rotate(0.2deg);
+  }
+  70% {
+    transform: translate(-1px, -2px) rotate(-0.1deg);
+  }
+  80% {
+    transform: translate(1px, 1px) rotate(0.1deg);
+  }
+}
+
+@keyframes jackpot-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  30% {
+    opacity: 0.4;
+  }
+  60% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes spark-fly {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 0), var(--ty, -60px)) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes win-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes lever-rebound {
+  0% {
+    transform: rotate(60deg);
+  }
+  60% {
+    transform: rotate(-8deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes lever-flash {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  60% {
+    opacity: 0.6;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cabinet-lever-tilt {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  18% {
+    transform: translateY(1px) rotate(-0.18deg);
+  }
+  45% {
+    transform: translateY(2px) rotate(0.32deg);
+  }
+  72% {
+    transform: translateY(0.5px) rotate(-0.12deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes lever-local-shake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  8% {
+    transform: translate(-1.5px, 1px) rotate(-1.2deg);
+  }
+  16% {
+    transform: translate(2px, 2px) rotate(1.4deg);
+  }
+  24% {
+    transform: translate(-2px, 3px) rotate(-1deg);
+  }
+  32% {
+    transform: translate(1.5px, 4px) rotate(1.1deg);
+  }
+  44% {
+    transform: translate(-1px, 5px) rotate(-0.6deg);
+  }
+  60% {
+    transform: translate(0.5px, 3px) rotate(0.3deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes lever-ruby-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.6);
+  }
+  35% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes lever-sweep {
+  0%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes lever-sweep-band {
+  0% {
+    top: -35%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+@keyframes lever-socket-burst {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@keyframes lever-pivot {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(8deg);
+  }
+  45% {
+    transform: rotate(78deg);
+  }
+  60% {
+    transform: rotate(82deg);
+  }
+  78% {
+    transform: rotate(20deg);
+  }
+  90% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes bulb-chase {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+    filter: brightness(0.7);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: brightness(1.4);
+  }
+  25% {
+    opacity: 0.4;
+    transform: scale(0.9);
+    filter: brightness(0.85);
+  }
+}
+
+@keyframes marquee-neon-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 6px oklch(0.7 0.22 24 / 0.35),
+      inset 0 0 4px oklch(0.7 0.22 24 / 0.2);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 28px oklch(0.7 0.22 24 / 0.95),
+      0 0 60px oklch(0.7 0.22 24 / 0.5),
+      inset 0 0 14px oklch(0.85 0.22 24 / 0.6);
+    filter: brightness(1.4);
+  }
+}
+
+@keyframes candle-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+    filter: brightness(1);
+  }
+  18% {
+    opacity: 1;
+    filter: brightness(1.25);
+  }
+  22% {
+    opacity: 0.55;
+    filter: brightness(0.7);
+  }
+  35% {
+    opacity: 0.95;
+    filter: brightness(1.1);
+  }
+  62% {
+    opacity: 0.75;
+    filter: brightness(0.9);
+  }
+  78% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes smoke-drift {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(40px, -55vh) scale(1.3);
+    opacity: 0.4;
+  }
+  85% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(80px, -120vh) scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes win-flash {
+  0% {
+    box-shadow: inset 0 0 0 0 oklch(0.85 0.18 80 / 0);
+  }
+  20% {
+    box-shadow:
+      inset 0 0 30px 6px oklch(0.85 0.18 80 / 0.85),
+      0 0 40px oklch(0.85 0.18 80 / 0.7);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 oklch(0.85 0.18 80 / 0);
+  }
+}
+
+@keyframes win-ring-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+    border-width: 3px;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.4);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+@keyframes winning-symbol-zoom {
+  0%,
+  100% {
+    transform: scale(1) rotate(0);
+    filter: brightness(1);
+  }
+  20% {
+    transform: scale(1.18) rotate(-3deg);
+    filter: brightness(1.4) drop-shadow(0 0 12px oklch(0.85 0.18 80 / 0.9));
+  }
+  40% {
+    transform: scale(1.08) rotate(2deg);
+    filter: brightness(1.25);
+  }
+  60% {
+    transform: scale(1.14) rotate(-1deg);
+    filter: brightness(1.35) drop-shadow(0 0 16px oklch(0.85 0.18 80 / 0.7));
+  }
+  80% {
+    transform: scale(1.04) rotate(0);
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes lever-knob-thump {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.18);
+    filter: brightness(1.4) drop-shadow(0 0 12px oklch(0.85 0.22 24 / 0.9));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes toast-pop {
+  0% {
+    transform: translate(-50%, 30px) scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -4px) scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes chip-flash-gain {
+  0% {
+    transform: scale(1);
+    color: oklch(0.85 0.16 80);
+    text-shadow: 0 0 12px oklch(0.85 0.16 80 / 0.6);
+  }
+  25% {
+    transform: scale(1.18);
+    color: oklch(0.95 0.18 85);
+    text-shadow:
+      0 0 22px oklch(0.95 0.18 85 / 0.95),
+      0 0 40px oklch(0.85 0.16 80 / 0.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes chip-flash-loss {
+  0% {
+    transform: translateX(0);
+    color: inherit;
+  }
+  20% {
+    transform: translateX(-2px);
+    color: oklch(0.7 0.22 24);
+    text-shadow: 0 0 10px oklch(0.7 0.22 24 / 0.7);
+  }
+  40% {
+    transform: translateX(2px);
+  }
+  60% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes chip-pop-in {
+  0% {
+    transform: translateY(8px) scale(0.85) rotate(-8deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-4px) scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+@keyframes chip-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 10px oklch(0 0 0 / 0.6),
+      0 0 0 0 var(--chip-glow, oklch(0.78 0.13 80 / 0.6));
+  }
+  50% {
+    box-shadow:
+      0 6px 14px oklch(0 0 0 / 0.7),
+      0 0 18px 4px var(--chip-glow, oklch(0.78 0.13 80 / 0.55));
+  }
+}
+
+@keyframes digit-roll-in {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(8%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes lobby-fade-in {
+  0% {
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 0.55;
+  } 
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes chandelier-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  18% {
+    opacity: 0.55;
+  }
+  22% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  40% {
+    opacity: 0.78;
+  }
+  62% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  68% {
+    opacity: 0.6;
+  }
+  85% {
+    opacity: 0.88;
+  }
+}
+
+@keyframes felt-grain-drift {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(2px, 2px);
+  }
+}
+@keyframes felt-dust-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.felt-grain-drift {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: felt-grain-drift 11s linear infinite alternate;
+  will-change: transform;
+}
+.felt-dust-breathe {
+  animation: felt-dust-breathe 7s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes pocket-flash-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes pocket-flash-glow {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.scene-vignette::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 74% 64% at 50% 45%,
+    transparent 48%,
+    oklch(0 0 0 / 0.24) 82%,
+    oklch(0 0 0 / 0.46) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-screen-shake,
+  .animate-jackpot-flash,
+  .animate-spark-fly,
+  .animate-win-ring {
+    animation: none !important;
+  }
+}
+
+.cabinet-fallback {
+  --lx: 35%;
+  --hx: 1px;
+  --ldeg: 165deg;
+}
+
+@media (orientation: landscape) and (max-width: 1024px) {
+  .cabinet-fallback {
+    --lx: 65%;
+    --hx: -1px;
+    --ldeg: 195deg;
+  }
+}
+
+@keyframes cabinet-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1.5px) scale(1.004);
+  }
+}
+
+@keyframes glass-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes aura-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes hot-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+:root {
+  
+  --bronze-pit: 0.55cqmin;
+  --bronze-pit-soft: 0.4cqmin;
+  --bronze-stripe: 0.45cqmin;
+  --bronze-stripe-soft: 0.35cqmin;
+  --bronze-radial: 0.5cqmin;
+  --bronze-base: radial-gradient(
+    circle at 34% 28%,
+    oklch(0.86 0.1 80) 0%,
+    oklch(0.62 0.11 72) 28%,
+    oklch(0.36 0.08 60) 62%,
+    oklch(0.18 0.04 42) 88%,
+    oklch(0.06 0.015 30) 100%
+  );
+  --bronze-ball-base: radial-gradient(
+    circle at 34% 28%,
+    oklch(0.88 0.1 78) 0%,
+    oklch(0.68 0.12 72) 22%,
+    oklch(0.42 0.09 62) 55%,
+    oklch(0.22 0.06 48) 82%,
+    oklch(0.08 0.02 32) 100%
+  );
+  --bronze-wear-socket:
+    radial-gradient(circle at 22% 18%, oklch(0 0 0 / 0.38) 0%, transparent 3%),
+    radial-gradient(circle at 78% 30%, oklch(0 0 0 / 0.3) 0%, transparent 3%),
+    radial-gradient(circle at 60% 70%, oklch(0 0 0 / 0.32) 0%, transparent 3%),
+    radial-gradient(circle at 30% 78%, oklch(1 0 0 / 0.22) 0%, transparent 2.5%),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0 var(--bronze-radial),
+      oklch(0 0 0 / 0.13) var(--bronze-radial) calc(var(--bronze-radial) + 0.12cqmin),
+      transparent calc(var(--bronze-radial) + 0.12cqmin) calc(var(--bronze-radial) * 2.2)
+    );
+  --bronze-wear-ball:
+    radial-gradient(circle at 26% 22%, oklch(0 0 0 / 0.4) 0%, transparent 3%),
+    radial-gradient(circle at 70% 18%, oklch(0 0 0 / 0.32) 0%, transparent 2.4%),
+    radial-gradient(circle at 80% 55%, oklch(0 0 0 / 0.38) 0%, transparent 3%),
+    radial-gradient(circle at 38% 72%, oklch(0 0 0 / 0.34) 0%, transparent 2.6%),
+    radial-gradient(circle at 18% 60%, oklch(1 0 0 / 0.2) 0%, transparent 1.8%),
+    radial-gradient(circle at 65% 78%, oklch(0 0 0 / 0.45) 0%, transparent 55%),
+    repeating-linear-gradient(
+      112deg,
+      transparent 0 var(--bronze-stripe),
+      oklch(0 0 0 / 0.18) var(--bronze-stripe) calc(var(--bronze-stripe) + 0.1cqmin),
+      transparent calc(var(--bronze-stripe) + 0.1cqmin) calc(var(--bronze-stripe) * 2.2)
+    ),
+    repeating-linear-gradient(
+      68deg,
+      transparent 0 var(--bronze-stripe-soft),
+      oklch(1 0 0 / 0.1) var(--bronze-stripe-soft) calc(var(--bronze-stripe-soft) + 0.1cqmin),
+      transparent calc(var(--bronze-stripe-soft) + 0.1cqmin) calc(var(--bronze-stripe-soft) * 2.4)
+    );
+}
+
+.bronze-lever-wrapper {
+  container-type: size;
+}
+
+.bronze-surface {
+  background: var(--bronze-bg, var(--bronze-base));
+}
+.bronze-wear {
+  background: var(--bronze-wear, var(--bronze-wear-socket));
+  mix-blend-mode: overlay;
+  opacity: var(--bronze-wear-opacity, 0.65);
+  pointer-events: none;
+}
+.bronze--socket {
+  --bronze-bg: var(--bronze-base);
+  --bronze-wear: var(--bronze-wear-socket);
+  --bronze-wear-opacity: 0.6;
+}
+.bronze--ball {
+  --bronze-bg: var(--bronze-ball-base);
+  --bronze-wear: var(--bronze-wear-ball);
+  --bronze-wear-opacity: 0.7;
+}
+
+@layer utilities {
+  
+  .aged-art,
+  img[src*="/assets/lulu-"],
+  img[src*="/assets/scarlet-"],
+  img[src*="/assets/symbols/"],
+  img[src*="/assets/icons/"],
+  img[src*="/assets/dancer-"],
+  img[src*="/assets/dealer-"],
+  img[src*="/assets/delia-"],
+  img[src*="/assets/jazz-"],
+  img[src*="/assets/band-"],
+  img[src*="/assets/slot-cabinet"] {
+    filter: sepia(0.22) saturate(0.85) contrast(1.05) brightness(0.94)
+      drop-shadow(0 1px 2px oklch(0 0 0 / 0.45));
+  }
+
+  
+  .symbol-on-plaque {
+    filter: sepia(0.5) saturate(0.65) contrast(1.2) brightness(0.82)
+      drop-shadow(0 1px 0 oklch(1 0 0 / 0.22)) drop-shadow(0 -1px 0 oklch(0 0 0 / 0.7));
+    mix-blend-mode: multiply;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  
+  .bronze-plaque {
+    background: radial-gradient(
+      ellipse at 30% 20%,
+      oklch(0.62 0.11 75) 0%,
+      oklch(0.42 0.08 65) 45%,
+      oklch(0.22 0.05 55) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 oklch(0.92 0.1 80 / 0.55),
+      inset 0 -1px 0 oklch(0 0 0 / 0.7),
+      inset 0 0 0 1px oklch(0.2 0.04 50 / 0.9),
+      0 1px 2px oklch(0 0 0 / 0.65);
+    position: relative;
+    overflow: hidden;
+  }
+  .bronze-plaque::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 80% 80%, oklch(0 0 0 / 0.38) 0%, transparent 55%),
+      radial-gradient(circle at 15% 90%, oklch(0 0 0 / 0.28) 0%, transparent 50%),
+      radial-gradient(circle at 25% 22%, oklch(0 0 0 / 0.28) 0%, transparent 3%),
+      radial-gradient(circle at 72% 30%, oklch(0 0 0 / 0.22) 0%, transparent 2.6%),
+      radial-gradient(circle at 60% 65%, oklch(1 0 0 / 0.14) 0%, transparent 2.2%);
+    mix-blend-mode: multiply;
+  }
+
+  
+  .symbol-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 2px;
+    width: 2.25rem; 
+    height: 2.25rem;
+  }
+  @media (min-width: 640px) {
+    .symbol-cell {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+
+  
+  .h-display {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.4vw, 3rem);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brass-bright);
+    line-height: 1.05;
+  }
+  .h-section {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brass-bright);
+  }
+  .h-script {
+    font-family: var(--font-script);
+    font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+    color: var(--brass-bright);
+  }
+  .t-body {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--ivory);
+  }
+  .t-caption {
+    font-family: var(--font-display);
+    font-size: 9px;
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    color: var(--smoke);
+  }
+
+  
+  .deco-panel {
+    border: 1px solid oklch(0.62 0.1 70 / 0.45);
+    background: oklch(0.05 0.008 25 / 0.82);
+    backdrop-filter: blur(8px);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.05),
+      0 18px 40px -12px oklch(0 0 0 / 0.85);
+    border-radius: 2px;
+    padding: 1.25rem;
+  }
+  
+  .deco-panel--glass {
+    position: relative;
+    background: oklch(0.05 0.008 25 / 0.42);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    border-color: oklch(0.62 0.1 70 / 0.32);
+    isolation: isolate;
+  }
+  
+  .deco-panel--glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse at 50% 30%,
+      oklch(0.04 0.008 25 / 0.55) 0%,
+      oklch(0.04 0.008 25 / 0.25) 60%,
+      transparent 100%
+    );
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  
+  .deco-panel--glass[data-contrast="boost"]::before {
+    background: oklch(0.04 0.008 25 / 0.7);
+  }
+  @media (max-width: 640px) {
+    .deco-panel--glass {
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      background: oklch(0.05 0.008 25 / 0.62);
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .deco-panel--glass {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: oklch(0.05 0.008 25 / 0.92);
+    }
+  }
+  .deco-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--brass);
+    border-radius: 2px;
+    background: var(--gradient-brass);
+    color: var(--noir);
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-brass);
+    transition:
+      filter 0.2s ease,
+      transform 0.15s ease;
+  }
+  .deco-btn:hover {
+    filter: brightness(1.1);
+  }
+  .deco-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .deco-btn--ghost {
+    background: transparent;
+    color: var(--brass-bright);
+    border-color: oklch(0.62 0.1 70 / 0.6);
+    box-shadow: none;
+  }
+  .deco-btn--ghost:hover {
+    background: var(--mahogany);
+    filter: none;
+  }
+}
+
+.slots-sepia {
+  
+  --brass: oklch(0.52 0.055 55);
+  --brass-bright: oklch(0.72 0.075 65);
+  --brass-dark: oklch(0.32 0.04 45);
+  --gradient-brass: linear-gradient(
+    180deg,
+    oklch(0.62 0.075 60) 0%,
+    oklch(0.42 0.055 50) 50%,
+    oklch(0.24 0.035 40) 100%
+  );
+  --shadow-brass: 0 0 18px oklch(0.42 0.055 50 / 0.35), 0 0 48px oklch(0.32 0.045 45 / 0.18);
+}
+
+.slots-sepia .deco-panel--glass {
+  background: oklch(0.06 0.012 30 / 0.55);
+  border-color: oklch(0.42 0.055 50 / 0.45);
+}
+.slots-sepia .deco-panel--glass::before {
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    oklch(0.05 0.012 30 / 0.6) 0%,
+    oklch(0.05 0.012 30 / 0.28) 60%,
+    transparent 100%
+  );
+}
+
+.slots-sepia .deco-panel--glass[data-contrast="boost"]::before {
+  background: oklch(0.04 0.01 30 / 0.78);
+}
+
+.slots-sepia .deco-panel--glass {
+  box-shadow:
+    inset 0 1px 0 oklch(0.55 0.06 55 / 0.1),
+    inset 0 0 0 1px oklch(0.18 0.025 40 / 0.55),
+    0 18px 40px -12px oklch(0 0 0 / 0.85);
+}
+
+@media (max-width: 640px) {
+  .slots-sepia .deco-panel {
+    padding: 0.6rem 0.7rem 0.7rem;
+  }
+  .slots-sepia .deco-panel--glass {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  .slots-sepia section[class*="grid-cols-1"] {
+    gap: 1rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+@media (max-width: 420px) {
+  .slots-sepia .deco-panel {
+    padding: 0.5rem 0.55rem 0.6rem;
+  }
+}
+
+.paytable-scroll {
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.45 0.07 60 / 0.55) transparent;
+  
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent 100%);
+  padding-block: 2px 14px;
+  padding-right: 4px;
+}
+.paytable-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.paytable-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.paytable-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, oklch(0.5 0.07 60 / 0.65), oklch(0.32 0.05 55 / 0.55));
+  border-radius: 3px;
+}
+.paytable-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, oklch(0.62 0.09 65 / 0.85), oklch(0.4 0.06 55 / 0.7));
+}
+@media (max-width: 768px) {
+  .paytable-scroll {
+    max-height: 52vh;
+  }
+}
+@media (max-width: 480px) {
+  .paytable-scroll {
+    max-height: 46vh;
+  }
+}
+
+@keyframes reel-metallic-sweep {
+  0% {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  82% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
+@keyframes glass-sweep {
+  0% {
+    transform: translateX(-130%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(230%);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  @keyframes marquee-neon-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 5px oklch(0.7 0.22 24 / 0.3),
+        inset 0 0 3px oklch(0.7 0.22 24 / 0.18);
+      filter: brightness(1);
+    }
+    50% {
+      box-shadow:
+        0 0 18px oklch(0.7 0.22 24 / 0.7),
+        0 0 36px oklch(0.7 0.22 24 / 0.35),
+        inset 0 0 9px oklch(0.85 0.22 24 / 0.45);
+      filter: brightness(1.2);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-metallic-strip,
+  .reel-glass-sheen {
+    animation: none !important;
+  }
+
+  
+  *:not(.keep-motion):not(.keep-motion *) {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:where(a, button, [role="button"], summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 4px oklch(0.62 0.1 70 / 0.18);
+}
+
+.skip-to-content {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 2147483646;
+  padding: 10px 16px;
+  background: oklch(0.07 0.012 25);
+  color: oklch(0.78 0.13 80);
+  font-family: "Limelight", Georgia, serif;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-size: 11px;
+  border: 1px solid oklch(0.62 0.1 70 / 0.6);
+  border-radius: 4px;
+  text-decoration: none;
+  
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  transition: none;
+}
+.skip-to-content:focus,
+.skip-to-content:focus-visible {
+  width: auto;
+  height: auto;
+  padding: 10px 16px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  outline: none;
+}
+
+.safe-pt {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+.safe-pb {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.safe-px {
+  padding-left: max(env(safe-area-inset-left), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
+}
+
+@supports (top: env(safe-area-inset-top)) {
+  .hud-safe-top {
+    top: max(env(safe-area-inset-top), 0px);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .brass-btn,
+  button:not(.brass-btn-bare):not([data-inline-chip]):not([data-icon-only-sm]):not([data-card-target]),
+  [role="button"]:not([data-inline-chip]):not([data-card-target]),
+  a.deco-btn {
+    min-height: max(48px, var(--tap-min, 48px)) !important;
+    min-width: max(48px, var(--tap-min, 48px)) !important;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Feedback táctil global: en Android los estilos `hover:` no se disparan,
+     así que damos una pulsación visible al presionar cualquier control. */
+  button:active,
+  [role="button"]:active,
+  a:active {
+    transform: scale(0.97);
+    transition: transform 90ms ease-out;
+  }
+}
+
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  -webkit-text-size-adjust: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe-area base: aplica insets del sistema (notch, barra de gestos, curvatura)
+   a nivel body para que ninguna pantalla quede tapada por el chrome de Android. */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  background: var(--noir, #0a0806);
+  box-sizing: border-box;
+}
+
+/* Escapes controlados para elementos que deben ir a bleed (fondos, overlays fixed) */
+.safe-bleed {
+  margin-left: calc(-1 * env(safe-area-inset-left, 0px));
+  margin-right: calc(-1 * env(safe-area-inset-right, 0px));
+}
+
+/* Zona de swipe/scroll: cuando un contenedor tiene cartas o HUDs muy próximos,
+   marcarlo con .tap-safe-scroll evita taps accidentales durante gestos verticales */
+.tap-safe-scroll {
+  touch-action: pan-y;
+}
+.tap-safe-scroll > * {
+  touch-action: manipulation;
+}
+
+
+.app-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+@media (pointer: coarse) {
+  .cuervo-game-root {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+  }
+}
+
+input,
+textarea,
+[contenteditable="true"],
+[data-allow-select="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+img, svg, video, canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+
+@media (max-width: 480px) {
+  .font-numerals {
+    letter-spacing: 0.02em;
+  }
+}
+
+:root {
+  --app-brightness: 1;
+  --app-contrast: 1;
+}
+
+#cuervo-content {
+  filter: brightness(var(--app-brightness)) contrast(var(--app-contrast));
+  /* El filtro convierte este nodo en bloque contenedor de los hijos fixed:
+     sin altura propia, las barras ancladas abajo salían del viewport. */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Tab bar inferior: reserva altura para que ninguna pantalla del hub
+   quede tapada. Solo se activa cuando <body data-tabbar="1"> */
+:root {
+  --app-tabbar-h: 0px;
+}
+body[data-tabbar="1"] {
+  --app-tabbar-h: calc(56px + env(safe-area-inset-bottom, 0px));
+}
+body[data-tabbar="1"] #cuervo-content {
+  padding-bottom: var(--app-tabbar-h);
+}
+
+/* Marco tipo app móvil en pantallas anchas: evita que el juego se estire y
+   se vea desproporcionado en tablet/desktop. */
+@media (min-width: 900px) {
+  html, body {
+    background: #050403;
+  }
+  #cuervo-content {
+    max-width: 480px;
+    margin-inline: auto;
+    min-height: 100dvh;
+    box-shadow:
+      0 0 0 1px rgba(201, 168, 76, 0.14),
+      0 30px 80px -20px rgba(0, 0, 0, 0.85),
+      0 10px 40px -10px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    position: relative;
+  }
+}
+
+
+html[data-reduce-motion="1"] *,
+html[data-reduce-motion="1"] *::before,
+html[data-reduce-motion="1"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* ------------------------------------------------------------------
+   Alto contraste — pensado para jugar al sol con el brillo al máximo.
+   No es sólo un filtro: recalcula los tokens de color para que latón,
+   marfil y humo tengan luminancia suficiente sobre negro puro, y apaga
+   glows/gradientes que en exteriores sólo lavan el texto.
+   ------------------------------------------------------------------ */
+html[data-high-contrast="1"] {
+  /* Latón mucho más claro: los títulos y chips dorados eran lo primero
+     que desaparecía bajo el sol. */
+  --brass: oklch(0.88 0.14 88);
+  --brass-bright: oklch(0.96 0.1 95);
+  --brass-dark: oklch(0.68 0.13 78);
+  --ivory: oklch(0.99 0.005 90);
+  --smoke: oklch(0.86 0.012 70);
+  --noir: oklch(0.02 0 0);
+}
+html[data-high-contrast="1"] #cuervo-content {
+  filter: brightness(calc(var(--app-brightness) * 1.06)) contrast(calc(var(--app-contrast) * 1.1));
+}
+html[data-high-contrast="1"] .deco-panel,
+html[data-high-contrast="1"] [class*="border-"] {
+  border-color: #fff4d6 !important;
+}
+html[data-high-contrast="1"] .deco-panel--glass::before,
+html[data-high-contrast="1"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-high-contrast="1"] [class*="/40"],
+html[data-high-contrast="1"] [class*="/50"],
+html[data-high-contrast="1"] [class*="/60"] {
+  opacity: 1 !important;
+}
+/* Los halos dorados bajan el contraste efectivo del glifo: fuera. */
+html[data-high-contrast="1"] .text-glow-brass,
+html[data-high-contrast="1"] [class*="drop-shadow"] {
+  text-shadow: none !important;
+  filter: none !important;
+}
+/* Botones de latón: relleno plano y borde grueso en vez de degradé. */
+html[data-high-contrast="1"] [data-brass-button="primary"] {
+  background: #ffd873 !important;
+  color: #000 !important;
+  border-color: #fff8e2 !important;
+  border-width: 2px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+html[data-high-contrast="1"] [data-brass-button="ghost"] {
+  background: #000 !important;
+  color: #ffe6a3 !important;
+  border-color: #ffe6a3 !important;
+  border-width: 2px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+html[data-high-contrast="1"] [data-brass-button="blood"],
+html[data-high-contrast="1"] [data-brass-button="danger"] {
+  background: #a11616 !important;
+  color: #fff !important;
+  border-color: #ffd0d0 !important;
+  border-width: 2px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+/* Chips, badges y paneles translúcidos del truco: fondo opaco. */
+html[data-high-contrast="1"] :where([data-truco-chip], [data-chip], .cd-chip) {
+  background: #000 !important;
+  color: #ffe6a3 !important;
+  border-color: #ffe6a3 !important;
+}
+/* Texto atenuado: en exteriores el 50-70% de opacidad es ilegible. */
+html[data-high-contrast="1"] :where(p, span, div, b, h1, h2, h3, h4) {
+  --tw-text-opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Modo bajo consumo: desactiva animaciones caras, humo, partículas y filtros pesados. */
+html[data-low-power="1"] .noir-smoke,
+html[data-low-power="1"] .menu-mandala-contrast,
+html[data-low-power="1"] [data-decor="particles"],
+html[data-low-power="1"] [data-decor="smoke"] {
+  display: none !important;
+}
+html[data-low-power="1"] *,
+html[data-low-power="1"] *::before,
+html[data-low-power="1"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+}
+html[data-low-power="1"] [style*="backdrop-filter"],
+html[data-low-power="1"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+
+@keyframes coinSymPulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 -3px 6px rgba(0,0,0,0.55),
+      inset 0 2px 3px rgba(255,240,200,0.6),
+      0 0 6px rgba(242,198,74,0.55),
+      0 3px 8px rgba(0,0,0,0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 -3px 6px rgba(0,0,0,0.55),
+      inset 0 2px 3px rgba(255,240,200,0.6),
+      0 0 16px rgba(255,206,77,0.95),
+      0 0 24px rgba(200,144,48,0.6),
+      0 3px 8px rgba(0,0,0,0.55);
+  }
+}
+.coin-sym-pulse { animation: coinSymPulse 1.6s ease-in-out infinite; }
+
+@keyframes holdRedadaUrgent {
+  0%, 100% { border-color: #ff7a3a; box-shadow: 0 0 12px rgba(255,122,58,0.7); }
+  50%      { border-color: #f2c64a; box-shadow: 0 0 22px rgba(255,206,77,0.95); }
+}
+.hold-redada-urgent { animation: holdRedadaUrgent 0.7s ease-in-out infinite; }
+
+@keyframes symFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2.5%); }
+}
+@keyframes symShimmer {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  35%  { opacity: 0.55; }
+  70%  { opacity: 0.35; }
+  100% { transform: translateX(160%) skewX(-18deg); opacity: 0; }
+}
+@keyframes symSparkle {
+  0%, 100% { opacity: 0; transform: scale(0.6) rotate(0deg); }
+  40%      { opacity: 0.9; transform: scale(1) rotate(45deg); }
+  60%      { opacity: 0.9; transform: scale(1) rotate(45deg); }
+}
+.sym-float { animation: symFloat 4.2s ease-in-out infinite; }
+.sym-shimmer-wrap { position: absolute; inset: 0; overflow: hidden; border-radius: 14% / 18%; pointer-events: none; }
+.sym-shimmer-wrap::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 38%;
+  height: 140%;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,235,180,0.0) 30%, rgba(255,235,180,0.42) 50%, rgba(255,235,180,0.0) 70%, transparent 100%);
+  filter: blur(2px);
+  animation: symShimmer 5.5s ease-in-out infinite;
+  animation-delay: var(--sym-shimmer-delay, 0s);
+}
+.sym-sparkle {
+  position: absolute;
+  width: 14%;
+  height: 14%;
+  background:
+    radial-gradient(circle, rgba(255,250,220,0.95) 0%, rgba(255,220,140,0.4) 35%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(0.3px) drop-shadow(0 0 4px rgba(255,220,140,0.9));
+  animation: symSparkle 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.sym-vignette {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 12% / 16%;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255,235,180,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.35) 0%, transparent 60%);
+}
+
+@keyframes symVfxMoonGlow {
+  0%, 100% { box-shadow: inset 0 0 14px rgba(140,190,255,0.15), 0 0 6px rgba(160,210,255,0.20); }
+  50%      { box-shadow: inset 0 0 22px rgba(170,220,255,0.38), 0 0 18px rgba(180,220,255,0.55); }
+}
+@keyframes symVfxMoonSweep {
+  0%   { transform: translateY(60%) scale(0.6); opacity: 0; }
+  50%  { transform: translateY(0%)  scale(1);   opacity: 0.6; }
+  100% { transform: translateY(-60%) scale(1.1); opacity: 0; }
+}
+.sym-vfx-moon { animation: symVfxMoonGlow 2.8s ease-in-out infinite; border-radius: 12% / 16%; }
+.sym-vfx-moon::before {
+  content: ""; position: absolute; inset: 20% 30%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,230,255,0.55) 0%, transparent 65%);
+  filter: blur(4px); pointer-events: none;
+  animation: symVfxMoonSweep 3.6s ease-in-out infinite;
+}
+
+@keyframes symVfxMaskVeil {
+  0%, 100% { opacity: 0.25; transform: translateX(-4%) skewX(-3deg); }
+  50%      { opacity: 0.55; transform: translateX(4%) skewX(3deg); }
+}
+@keyframes symVfxMaskPulse {
+  0%, 100% { filter: hue-rotate(0deg) saturate(1); }
+  50%      { filter: hue-rotate(-10deg) saturate(1.2); }
+}
+.sym-vfx-mask .sym-vfx-img { animation: symVfxMaskPulse 3.2s ease-in-out infinite; }
+.sym-vfx-mask::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(180,120,220,0.30) 50%, transparent 70%);
+  mix-blend-mode: screen; pointer-events: none;
+  animation: symVfxMaskVeil 4s ease-in-out infinite;
+}
+
+@keyframes symVfxDaggerSlash {
+  0%, 88%, 100% { opacity: 0; transform: translateX(-120%) skewX(-40deg); }
+  92%           { opacity: 0.9; }
+  96%           { opacity: 0.6; transform: translateX(140%) skewX(-40deg); }
+}
+@keyframes symVfxDaggerPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255,60,60,0.25)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(255,80,60,0.65)); }
+}
+.sym-vfx-dagger .sym-vfx-img { animation: symVfxDaggerPulse 2.4s ease-in-out infinite; }
+.sym-vfx-dagger::after {
+  content: ""; position: absolute; top: 15%; left: 0; width: 22%; height: 70%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,220,220,0.9) 50%, transparent 100%);
+  filter: blur(1.5px); pointer-events: none;
+  animation: symVfxDaggerSlash 4s ease-in-out infinite;
+}
+
+@keyframes symVfxRingSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes symVfxRingPulse {
+  0%, 100% { box-shadow: inset 0 0 14px rgba(255,80,80,0.25), 0 0 6px rgba(255,120,120,0.3); }
+  50%      { box-shadow: inset 0 0 22px rgba(255,120,110,0.5), 0 0 20px rgba(255,140,120,0.6); }
+}
+.sym-vfx-ring { animation: symVfxRingPulse 2.6s ease-in-out infinite; border-radius: 12% / 16%; }
+.sym-vfx-ring::before {
+  content: ""; position: absolute; inset: 8%;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255,235,180,0.95) 0%, transparent 8%),
+    radial-gradient(circle at 20% 60%, rgba(255,235,180,0.9) 0%, transparent 6%),
+    radial-gradient(circle at 80% 65%, rgba(255,235,180,0.9) 0%, transparent 6%);
+  pointer-events: none;
+  animation: symVfxRingSpin 6s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes symVfxPhoenixEmber {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 24px rgba(255,120,40,0.35),
+      0 0 22px rgba(255,140,50,0.6),
+      0 0 44px rgba(255,80,20,0.35);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 34px rgba(255,160,60,0.55),
+      0 0 34px rgba(255,180,60,0.85),
+      0 0 66px rgba(255,100,20,0.55);
+  }
+}
+@keyframes symVfxPhoenixRise {
+  0%   { transform: translateY(30%) scale(0.4); opacity: 0; }
+  50%  { transform: translateY(0%)  scale(1);   opacity: 0.9; }
+  100% { transform: translateY(-40%) scale(1.3); opacity: 0; }
+}
+@keyframes symVfxPhoenixShake {
+  0%, 100% { transform: scale(1.30) translateY(0); }
+  25%      { transform: scale(1.32) translateY(-0.8%); }
+  75%      { transform: scale(1.28) translateY(0.8%); }
+}
+.sym-vfx-phoenix {
+  animation: symVfxPhoenixEmber 1.8s ease-in-out infinite;
+  border-radius: 12% / 16%;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(255,90,20,0.35) 0%, transparent 55%);
+}
+.sym-vfx-phoenix .sym-vfx-img { animation: symVfxPhoenixShake 1.4s ease-in-out infinite; }
+.sym-vfx-phoenix::before {
+  content: ""; position: absolute; inset: 10% 20% 0 20%;
+  background:
+    radial-gradient(ellipse at 30% 80%, rgba(255,180,60,0.65) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 90%, rgba(255,120,40,0.55) 0%, transparent 55%);
+  filter: blur(3px); pointer-events: none;
+  animation: symVfxPhoenixRise 2s ease-out infinite;
+}
+.sym-vfx-phoenix::after {
+  content: ""; position: absolute; inset: -4%;
+  border: 2px solid rgba(255,180,80,0.55);
+  border-radius: 14% / 18%;
+  box-shadow: 0 0 18px rgba(255,140,50,0.75);
+  pointer-events: none;
+  animation: symVfxPhoenixEmber 1.2s ease-in-out infinite reverse;
+}
+
+@keyframes phoenixArmedPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,140,50,0.6), inset 0 0 8px rgba(255,180,60,0.4); }
+  50%      { box-shadow: 0 0 24px rgba(255,180,60,0.95), inset 0 0 14px rgba(255,200,80,0.7); }
+}
+.phoenix-armed-badge { animation: phoenixArmedPulse 1.4s ease-in-out infinite; }
+
+@keyframes cabaretPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(160,210,255,0.5), inset 0 0 8px rgba(180,220,255,0.3); }
+  50%      { box-shadow: 0 0 22px rgba(200,230,255,0.85), inset 0 0 14px rgba(210,235,255,0.55); }
+}
+.cabaret-badge { animation: cabaretPulse 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-vfx-moon,
+  .sym-vfx-mask .sym-vfx-img,
+  .sym-vfx-dagger .sym-vfx-img,
+  .sym-vfx-ring,
+  .sym-vfx-phoenix,
+  .sym-vfx-phoenix .sym-vfx-img,
+  .sym-vfx-phoenix::before,
+  .sym-vfx-phoenix::after,
+  .sym-vfx-moon::before,
+  .sym-vfx-mask::after,
+  .sym-vfx-dagger::after,
+  .sym-vfx-ring::before,
+  .phoenix-armed-badge,
+  .cabaret-badge {
+    animation: none !important;
+  }
+}
+
+@keyframes truco-draw {
+  from { stroke-dashoffset: 32; opacity: 0.4; }
+  to   { stroke-dashoffset: 0;  opacity: 1; }
+}
+
+@keyframes rosa-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes cuervo-hotspot-pulse {
+  0%, 100% { opacity: 0.85; filter: brightness(1); }
+  50%      { opacity: 1;    filter: brightness(1.25); }
+}
+.cuervo-hotspot-here {
+  animation: cuervo-hotspot-pulse 2.4s ease-in-out infinite;
+  animation-delay: 0s;
+}
+.cuervo-hotspot-badge {
+  animation: cuervo-hotspot-pulse 2.4s ease-in-out infinite;
+}
+.cuervo-hotspot-idle { opacity: 0.35; transition: opacity 0.25s ease; }
+.cuervo-hotspot-idle:hover,
+.cuervo-hotspot-idle:focus-visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cuervo-hotspot-here,
+  .cuervo-hotspot-badge {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .cuervo-hotspot-idle {
+    transition: none !important;
+  }
+}
+
+button,
+a,
+[role="button"],
+.cuervo-tap {
+  touch-action: manipulation;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--brass, oklch(0.78 0.14 82));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.cuervo-noselect,
+.cuervo-board,
+.cuervo-card {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.cuervo-scroll-perf > * {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 120px;
+}
+.cuervo-gpu {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+img.cuervo-lazy {
+  content-visibility: auto;
+}
+
+.single-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: rgb(9 14 12);
+}
+.single-backdrop .sb-base {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 65% at 50% 35%, rgba(46, 30, 18, 0.55), transparent 72%),
+    linear-gradient(180deg, rgb(16 12 10) 0%, rgb(9 12 11) 60%, rgb(6 8 8) 100%);
+}
+.single-backdrop .sb-fill {
+  position: absolute;
+  inset: -12%;
+  display: none;
+  background-image: var(--sb-img);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(40px) saturate(0.9) brightness(0.72);
+  transform: scale(1.06);
+}
+.single-backdrop .sb-lqip {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sb-lqip);
+  background-size: cover;
+  background-position: center 40%;
+  background-repeat: no-repeat;
+  filter: saturate(0.96);
+  transition: opacity 220ms linear;
+}
+.single-backdrop .sb-img {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sb-img);
+  background-size: cover;
+  background-position: center 40%;
+  background-repeat: no-repeat;
+  transition: opacity 320ms ease-out;
+}
+
+
+.single-backdrop .sb-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sb-overlay);
+}
+.single-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background: radial-gradient(
+    ellipse 78% 70% at 50% 48%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0.28) 72%,
+    rgba(0, 0, 0, 0.58) 100%
+  );
+}
+
+/* Vertical: el arte de sala es apaisado. Recortamos con `cover` en vez de
+   mostrarlo entero, que dejaba una franja de arte flotando en mitad de la
+   pantalla con bandas negras arriba y abajo. */
+@media (max-aspect-ratio: 5 / 6) {
+  .single-backdrop .sb-fill {
+    display: none;
+  }
+  .single-backdrop .sb-img,
+  .single-backdrop .sb-lqip {
+    background-size: cover;
+    background-position: center 42%;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .single-backdrop .sb-img,
+  .single-backdrop .sb-lqip {
+    background-position: center 38%;
+  }
+  .single-backdrop::after {
+    background: radial-gradient(
+      ellipse 92% 62% at 50% 44%,
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0.38) 65%,
+      rgba(0, 0, 0, 0.72) 100%
+    );
+  }
+}
+
+@media (max-width: 380px) {
+  .single-backdrop .sb-img,
+  .single-backdrop .sb-lqip {
+    background-position: center 36%;
+  }
+  .single-backdrop::after {
+    background: radial-gradient(
+      ellipse 100% 58% at 50% 42%,
+      rgba(0, 0, 0, 0) 26%,
+      rgba(0, 0, 0, 0.44) 62%,
+      rgba(0, 0, 0, 0.80) 100%
+    );
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .single-backdrop .sb-img,
+  .single-backdrop .sb-lqip {
+    background-position: center 50%;
+  }
+  .single-backdrop::after {
+    background: radial-gradient(
+      ellipse 82% 90% at 50% 50%,
+      rgba(0, 0, 0, 0) 34%,
+      rgba(0, 0, 0, 0.34) 70%,
+      rgba(0, 0, 0, 0.66) 100%
+    );
+  }
+}
+
+
+html[data-colorblind="protan"] body {
+  filter: url(#cb-protan);
+}
+html[data-colorblind="deutan"] body {
+  filter: hue-rotate(-15deg) saturate(1.1);
+}
+html[data-colorblind="tritan"] body {
+  filter: hue-rotate(35deg) saturate(1.15);
+}
+html[data-colorblind="protan"] body {
+  filter: hue-rotate(20deg) saturate(1.2);
+}
+
+:root {
+  --subtitle-scale: 1;
+}
+[data-subtitle], .npc-subtitle {
+  font-size: calc(1em * var(--subtitle-scale));
+}
+
+html[data-perf="low"] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-perf="low"] .menu-mandala-rays,
+html[data-perf="low"] .menu-mandala-svg {
+  animation: none !important;
+  will-change: auto !important;
+}
+html[data-perf="low"] .menu-mandala-contrast {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-perf="mid"] .menu-mandala-contrast {
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+}
+
+/* Bloque 3: en gama baja apaga capas puramente decorativas para bajar GPU/CPU. */
+html[data-perf="low"] [data-decorative],
+html[data-perf="low"] .room-grime,
+html[data-perf="low"] .wanderers-layer,
+html[data-perf="low"] .time-of-day-layer {
+  animation: none !important;
+  opacity: 0.35;
+  will-change: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-decorative],
+  .room-grime,
+  .wanderers-layer,
+  .time-of-day-layer {
+    animation: none !important;
+  }
+}
+
+html[data-interacting] .menu-mandala-rays,
+html[data-interacting] .menu-mandala-svg {
+  animation-play-state: paused !important;
+}
+html[data-interacting] .cuervo-drag-surface *,
+html[data-interacting] [data-decorative] {
+  animation-play-state: paused !important;
+}
+
+.cuervo-game-root {
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Reserva la franja inferior donde viven los flotantes (hostess corner,
+     climate badge, spectator pill) para que no invadan el scroll. */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 96px * var(--hud-scale, 1));
+}
+
+.cuervo-scroll-y {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* Bloque 2: garantiza un hitbox táctil mínimo de 44x44 sin alterar el layout visual.
+   Uso: agregá `tap-target` a cualquier <button> chico. */
+.tap-target {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+}
+.tap-target::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  pointer-events: auto;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .cuervo-mobile-compact {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .cuervo-mobile-compact .desktop-rail,
+  .cuervo-mobile-compact aside:not([data-mobile-keep]) {
+    display: none !important;
+  }
+
+  .cuervo-mobile-compact .desktop-rail[data-mobile-keep],
+  .cuervo-mobile-compact aside[data-mobile-keep] {
+    display: flex !important;
+  }
+
+  .cuervo-mobile-compact .game-focus {
+    order: 1 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .cuervo-mobile-compact .mobile-stack-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .cuervo-mobile-compact .mobile-panel {
+    border-radius: 0.375rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .cuervo-mobile-compact [data-touch-scroll] {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y !important;
+  }
+}
+
+@media (max-width: 1023.98px), (max-device-width: 1023.98px), (hover: none) and (pointer: coarse) {
+  .slots-mobile-shell {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .slots-mobile-shell .desktop-rail,
+  .slots-mobile-shell > aside {
+    display: none !important;
+  }
+
+  .slots-mobile-shell .game-focus {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .slots-mobile-shell .desktop-rail {
+    display: block;
+  }
+}
+
+/* Bagatelle mobile: liberar viewport ocultando el backglass decorativo y
+   tarjetas informativas del rail lateral. La info sigue disponible en /reglas. */
+@media (hover: none) and (pointer: coarse) {
+  main[data-game="bagatelle"] [data-bagatelle-backglass] { display: none !important; }
+  main[data-game="bagatelle"] .desktop-rail [data-mobile-hide] { display: none !important; }
+  main[data-game="bagatelle"] aside[data-mobile-keep] { gap: 0.5rem !important; }
+}
+.cuervo-drag-surface {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: contain;
+}
+
+/* Chinchón mobile-first: cartas reales, sin transform que deforme el hitbox ni apile la mano. */
+main[data-game="chinchon"] {
+  --chinchon-hand-card-w: 86px;
+  --chinchon-hand-card-h: 128px;
+}
+.chinchon-hand > * {
+  scroll-snap-align: center;
+}
+@media (min-width: 390px) {
+  main[data-game="chinchon"] {
+    --chinchon-hand-card-w: 94px;
+    --chinchon-hand-card-h: 140px;
+  }
+}
+@media (min-width: 768px) {
+  main[data-game="chinchon"] {
+    --chinchon-hand-card-w: 106px;
+    --chinchon-hand-card-h: 158px;
+  }
+}
+.cuervo-tap-target {
+  min-height: max(48px, var(--tap-min, 48px));
+  min-width: max(48px, var(--tap-min, 48px));
+}
+
+@media (pointer: coarse) {
+  .cuervo-game-root button:not([data-inline-chip]):not([data-icon-only-sm]):not([data-card-target]),
+  .cuervo-game-root [role="button"]:not([data-inline-chip]):not([data-card-target]) {
+    min-height: max(48px, var(--tap-min, 48px)) !important;
+    min-width: max(48px, var(--tap-min, 48px)) !important;
+  }
+}
+
+/* ============================================================
+ * Tipografía unificada por rol (Tanda 4)
+ * Aplicá estas utilidades en JSX en lugar de font-family arbitrarios.
+ * Cada rol tiene familia + tamaño base + tracking + peso fijos.
+ * ============================================================ */
+
+@utility type-room-title {
+  font-family: var(--font-room-title);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  font-size: clamp(1.35rem, 4.6vw, 2rem);
+  color: var(--cd-gold-bright, #f7d271);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+@utility type-hud-label {
+  font-family: var(--font-hud);
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  line-height: 1;
+  color: oklch(0.82 0.05 78 / 0.72);
+}
+
+@utility type-hud-value {
+  font-family: var(--font-hud);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.1rem, 3.8vw, 1.5rem);
+  line-height: 1;
+  color: var(--cd-gold-bright, #f7d271);
+}
+
+@utility type-numeral {
+  font-family: var(--font-numerals);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--cd-gold-bright, #f7d271);
+}
+
+@utility type-badge {
+  font-family: var(--font-badge);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+@utility type-chip {
+  font-family: var(--font-chip);
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+ * Iconografía numérica (Tanda 5)
+ * Fuerza tabular-nums + lining-nums en toda métrica del juego.
+ * Cualquier elemento con .font-numerals, .type-numeral, .type-hud-value,
+ * .type-chip o [data-numeral] alinea dígitos verticalmente y evita
+ * saltos al contar fichas/puntos/apuestas.
+ * ============================================================ */
+.font-numerals,
+.type-numeral,
+.type-hud-value,
+.type-chip,
+[data-numeral],
+.num {
+  font-variant-numeric: tabular-nums lining-nums !important;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.num {
+  font-family: var(--font-numerals);
+  letter-spacing: 0.01em;
+}
+
+@utility speakeasy-veil {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 0%, oklch(0.14 0.03 45 / 0.55), transparent 70%),
+      linear-gradient(180deg, oklch(0.08 0.02 30 / 0.55) 0%, oklch(0.06 0.015 25 / 0.75) 100%);
+  }
+}
+
+@utility paper-card {
+  position: relative;
+  border-radius: 3px;
+  border: 1px solid oklch(0.72 0.13 78 / 0.28);
+  background:
+    linear-gradient(180deg, oklch(0.16 0.02 55 / 0.92), oklch(0.09 0.015 45 / 0.92));
+  box-shadow:
+    0 1px 0 rgb(0 0 0 / 0.55),
+    0 8px 20px -12px rgb(0 0 0 / 0.65),
+    inset 0 1px 0 oklch(0.72 0.13 78 / 0.1),
+    inset 0 -1px 0 rgb(0 0 0 / 0.45);
+  transition:
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 160ms ease,
+    background-color 180ms ease;
+}
+
+@utility paper-card--interactive {
+  cursor: pointer;
+  &:hover {
+    border-color: oklch(0.72 0.13 78 / 0.55);
+    box-shadow:
+      0 1px 0 rgb(0 0 0 / 0.55),
+      0 12px 28px -12px rgb(0 0 0 / 0.75),
+      inset 0 1px 0 oklch(0.72 0.13 78 / 0.18),
+      0 0 0 1px oklch(0.72 0.13 78 / 0.12);
+  }
+  &:active {
+    transform: translateY(1px);
+    box-shadow:
+      0 4px 10px -6px rgb(0 0 0 / 0.7),
+      inset 0 1px 0 oklch(0.72 0.13 78 / 0.14);
+  }
+  &:focus-visible {
+    outline: none;
+    border-color: oklch(0.78 0.14 82 / 0.85);
+    box-shadow:
+      0 0 0 2px oklch(0.78 0.14 82 / 0.5),
+      0 0 0 4px oklch(0.72 0.13 78 / 0.2),
+      inset 0 1px 0 oklch(0.72 0.13 78 / 0.18);
+  }
+  &[aria-pressed="true"],
+  &[data-selected="true"],
+  &[aria-current="page"] {
+    border-color: oklch(0.78 0.14 82 / 0.9);
+    background:
+      linear-gradient(180deg, oklch(0.22 0.05 78 / 0.55), oklch(0.11 0.02 55 / 0.9));
+    box-shadow:
+      0 1px 0 rgb(0 0 0 / 0.6),
+      inset 0 0 0 1px oklch(0.72 0.13 78 / 0.35);
+  }
+}
+
+@utility paper-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 2px;
+  border: 1px solid oklch(0.72 0.13 78 / 0.3);
+  background: oklch(0.13 0.017 50 / 0.7);
+  color: oklch(0.92 0.03 80 / 0.85);
+  padding: 0.35rem 0.85rem;
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 200ms ease;
+  &:hover {
+    border-color: oklch(0.72 0.13 78 / 0.65);
+    color: oklch(0.96 0.05 82);
+    background: oklch(0.16 0.025 55 / 0.85);
+  }
+  &:active {
+    background: oklch(0.11 0.017 50 / 0.9);
+    box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.5);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px oklch(0.78 0.14 82 / 0.55),
+      0 0 0 4px oklch(0.72 0.13 78 / 0.2);
+    border-color: oklch(0.78 0.14 82 / 0.85);
+  }
+  &[aria-pressed="true"],
+  &[data-selected="true"],
+  &[aria-current="page"] {
+    background: oklch(0.78 0.14 82);
+    color: oklch(0.15 0.02 55);
+    border-color: oklch(0.78 0.14 82);
+    box-shadow:
+      0 2px 0 rgb(0 0 0 / 0.45),
+      inset 0 1px 0 oklch(0.92 0.06 85 / 0.4);
+  }
+  &[disabled],
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility icon-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  border-radius: 3px;
+  border: 1px solid oklch(0.72 0.13 78 / 0.35);
+  background: oklch(0.11 0.015 45 / 0.7);
+  color: oklch(0.85 0.09 82);
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 140ms ease,
+    box-shadow 200ms ease;
+  &:hover {
+    color: oklch(0.94 0.11 84);
+    border-color: oklch(0.72 0.13 78 / 0.7);
+    background: oklch(0.16 0.03 60 / 0.8);
+  }
+  &:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.5);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px oklch(0.78 0.14 82 / 0.55),
+      0 0 0 4px oklch(0.72 0.13 78 / 0.2);
+  }
+  &[aria-pressed="true"],
+  &[data-selected="true"] {
+    color: oklch(0.15 0.02 55);
+    background: oklch(0.78 0.14 82);
+    border-color: oklch(0.78 0.14 82);
+  }
+}
+
+@utility paper-divider {
+  height: 1px;
+  border: 0;
+  background:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      oklch(0.72 0.13 78 / 0.35) 15%,
+      oklch(0.72 0.13 78 / 0.55) 50%,
+      oklch(0.72 0.13 78 / 0.35) 85%,
+      transparent 100%
+    );
+}
+
+@media (max-width: 380px) {
+  html {
+    font-size: 16px;
+  }
+  body {
+    line-height: 1.5;
+  }
+  
+  .text-xs {
+    font-size: 0.8125rem; 
+    line-height: 1.15rem;
+  }
+  .text-\[10px\],
+  .text-\[11px\],
+  .text-\[12px\] {
+    font-size: 0.8125rem !important;
+    line-height: 1.15rem !important;
+  }
+  
+  main,
+  .cuervo-game-root {
+    padding-left: max(env(safe-area-inset-left), 0.5rem);
+    padding-right: max(env(safe-area-inset-right), 0.5rem);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button + button,
+  [role="button"] + [role="button"],
+  a.deco-btn + a.deco-btn,
+  .brass-btn + .brass-btn {
+    margin-inline-start: 0.25rem;
+  }
+  
+  :where(.flex, .grid, [class*="gap-"]) > button + button,
+  :where(.flex, .grid, [class*="gap-"]) > [role="button"] + [role="button"],
+  :where(.flex, .grid, [class*="gap-"]) > a.deco-btn + a.deco-btn,
+  :where(.flex, .grid, [class*="gap-"]) > .brass-btn + .brass-btn {
+    margin-inline-start: 0;
+  }
+}
+
+:where(button, [role="button"], a.deco-btn, .brass-btn, .paper-chip):not(:disabled):active {
+  transform: scale(0.97);
+  filter: brightness(0.92);
+  transition: transform 90ms ease-out, filter 90ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], a.deco-btn, .brass-btn, .paper-chip):not(:disabled):active {
+    transform: none;
+  }
+}
+
+.paper-chip:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px oklch(0.62 0.1 70 / 0.28);
+}
+
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+main {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
+}
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+.safe-x {
+  padding-left: max(env(safe-area-inset-left), 0.75rem);
+  padding-right: max(env(safe-area-inset-right), 0.75rem);
+}
+
+:where(header, nav)[data-fixed="true"],
+.fixed-top-bar {
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
+  padding-left: max(env(safe-area-inset-left), 0.5rem);
+  padding-right: max(env(safe-area-inset-right), 0.5rem);
+}
+.fixed-bottom-bar {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  padding-left: max(env(safe-area-inset-left), 0.5rem);
+  padding-right: max(env(safe-area-inset-right), 0.5rem);
+}
+
+
+/* ============================================================
+   Sistema móvil unificado — Fase 1 restructuración
+   ============================================================ */
+
+/* --ui-scale y --hud-scale se declaran arriba junto con --hud-h / --chrome-h
+   para que el chrome superior también respete el escalado del usuario. */
+
+@layer utilities {
+  /* Touch targets — respetan escalado del usuario */
+  .tap-target {
+    min-width: calc(48px * var(--ui-scale, 1));
+    min-height: calc(48px * var(--ui-scale, 1));
+  }
+  .tap-comfort {
+    min-width: calc(56px * var(--ui-scale, 1));
+    min-height: calc(56px * var(--ui-scale, 1));
+  }
+  .tap-hud {
+    min-width: calc(52px * var(--hud-scale, 1));
+    min-height: calc(52px * var(--hud-scale, 1));
+  }
+
+  /* Safe areas */
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .safe-t { padding-top: env(safe-area-inset-top); }
+  .safe-b { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-all {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Thumb-zone genérica */
+  .thumb-zone {
+    position: fixed;
+    left: env(safe-area-inset-left);
+    right: env(safe-area-inset-right);
+    bottom: env(safe-area-inset-bottom);
+    z-index: 40;
+  }
+
+  /* HUD inferior anclado al pulgar, deja libre la zona crítica de scroll superior */
+  .game-hud-bottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    padding: calc(8px * var(--hud-scale, 1)) max(env(safe-area-inset-right), 12px)
+      calc(env(safe-area-inset-bottom) + 8px * var(--hud-scale, 1))
+      max(env(safe-area-inset-left), 12px);
+    background: linear-gradient(
+      to top,
+      rgba(6, 12, 10, 0.92) 0%,
+      rgba(6, 12, 10, 0.78) 62%,
+      rgba(6, 12, 10, 0) 100%
+    );
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+  }
+  .game-hud-bottom > * { pointer-events: auto; }
+
+  /* Reservar espacio inferior para que el HUD no tape el contenido */
+  .game-hud-spacer {
+    height: calc(76px * var(--hud-scale, 1) + env(safe-area-inset-bottom));
+  }
+
+  /* Reordenar botones grandes para diestros/zurdos */
+  html[data-handed="left"] .handed-row { flex-direction: row-reverse; }
+
+  /* Tipografía fluida móvil (respeta ui-scale) */
+  .t-fluid-xs { font-size: calc(clamp(11px, 2.8vw, 13px) * var(--ui-scale, 1)); }
+  .t-fluid-sm { font-size: calc(clamp(13px, 3.4vw, 15px) * var(--ui-scale, 1)); }
+  .t-fluid-base { font-size: calc(clamp(15px, 4vw, 17px) * var(--ui-scale, 1)); }
+  .t-fluid-lg { font-size: calc(clamp(18px, 5vw, 22px) * var(--ui-scale, 1)); }
+  .t-fluid-xl { font-size: calc(clamp(22px, 6.5vw, 30px) * var(--ui-scale, 1)); }
+  .t-fluid-2xl { font-size: calc(clamp(28px, 8vw, 42px) * var(--ui-scale, 1)); }
+}
+
+/* Orientación */
+@custom-variant landscape (&:where(:is(html:has(body[data-orient="landscape"])) *));
+@custom-variant portrait (&:where(:is(html:has(body[data-orient="portrait"])) *));
+
+/* Pantallas chicas: comprimir HUD (respetando --hud-scale) */
+@media (max-width: 379px) {
+  :root {
+    --hud-h: calc(46px * var(--hud-scale, 1));
+    --chrome-h: calc(54px * var(--hud-scale, 1));
+  }
+  .tap-comfort {
+    min-height: calc(48px * var(--ui-scale, 1));
+    min-width: calc(48px * var(--ui-scale, 1));
+  }
+}
+
+/* Indicador visual de swipe-back (desliz desde borde izquierdo) */
+.swipe-back-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 6px;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--primary, #d4a24a) 85%, transparent),
+    transparent
+  );
+  transform-origin: left center;
+  transform: scaleX(0);
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+  will-change: transform, opacity;
+}
+.swipe-back-indicator[data-active="true"] {
+  opacity: 1;
+  transition: opacity 80ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-back-indicator { display: none; }
+}
+
+/* Transición sutil entre rutas en móvil */
+@media (hover: none) and (pointer: coarse) {
+  #cuervo-content {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+
+/* Android polish: superficies de juego no seleccionables ni con callouts */
+.cuervo-game-root,
+[data-game-surface],
+.tap-comfort,
+button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Permitir seleccionar texto solo donde tenga sentido */
+input, textarea, [contenteditable="true"], .selectable-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Sin overscroll bounce dentro del marco (siente nativo) */
+html, body { overscroll-behavior-y: none; }
+
+/* Densidad móvil: pantallas ≤430px reducen paddings y anchos de contenedor */
+@media (max-width: 430px) {
+  .mx-auto.max-w-7xl,
+  .mx-auto.max-w-6xl,
+  .mx-auto.max-w-5xl,
+  .mx-auto.max-w-\[1500px\] {
+    max-width: 100% !important;
+  }
+  .cuervo-game-root .px-6 { padding-left: 0.75rem; padding-right: 0.75rem; }
+}
+
+/* =========================================================================
+   Tanda A · Canon visual reutilizable
+   ========================================================================= */
+
+/* Terciopelo sangre-de-buey — para pantallas de victoria / mesas */
+.cd-velvet-bg {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(140, 30, 34, 0.35) 0%, rgba(58, 10, 14, 0) 65%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%),
+    repeating-linear-gradient(135deg, #3a0a0e 0px, #3a0a0e 2px, #2c0709 2px, #2c0709 4px),
+    #2c0709;
+}
+
+/* Humo cálido — para pantallas de derrota / transiciones */
+.cd-smoke-bg {
+  background:
+    radial-gradient(ellipse at 50% 25%, rgba(255, 196, 110, 0.10) 0%, rgba(0,0,0,0) 55%),
+    radial-gradient(ellipse at 30% 80%, rgba(80, 40, 20, 0.35) 0%, rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, #120607 0%, #1a0a0c 50%, #0a0505 100%);
+}
+
+/* Textura sutil de grano — apilable sobre cualquier fondo */
+.cd-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.79 0 0 0 0 0.66 0 0 0 0 0.30 0 0 0 0.14 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+}
+
+/* HUD decorativo: numerales tipo marquesina */
+.cd-hud-numeral {
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: #f5d497;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.9), 0 0 12px rgba(201,168,76,0.35);
+}
+
+.cd-hud-label {
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.72);
+}
+
+/* Scrim de pantalla completa para pickers/tutorial (Truco, etc.) —
+   evita que la mesa detrás distraiga antes de que empiece la partida. */
+.cd-picker-scrim {
+  isolation: isolate;
+  z-index: 55;
+}
+.cd-picker-scrim::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: oklch(0 0 0 / 0.62);
+  backdrop-filter: blur(8px) saturate(120%);
+  pointer-events: none;
+}
+
+.cd-title-deco {
+  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.12em;
+  color: #fbe8bf;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+}
+
+/* =========================================================================
+   Tanda B · Ergonomía Android — zona de pulgar y safe areas
+   ========================================================================= */
+
+/* Ancla acciones críticas al tercio inferior con safe-area */
+.cd-thumb-zone {
+  position: sticky;
+  bottom: 0;
+  padding-left: max(env(safe-area-inset-left), 12px);
+  padding-right: max(env(safe-area-inset-right), 12px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  padding-top: 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.95) 100%);
+}
+
+/* Target táctil mínimo garantizado (Google recomienda 48dp) */
+.cd-tap-target {
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+/* Anti-tap-highlight en botones para look premium */
+.cd-tap-target,
+.cd-thumb-zone button,
+.cd-thumb-zone a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================================================================
+   Modo una-mano (Android) — comprime contenido al tercio inferior
+   Activado por data-one-hand="1" en <html> desde el store de settings.
+   ========================================================================= */
+:root {
+  --cd-safe-top: env(safe-area-inset-top, 0px);
+  --cd-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --cd-safe-left: env(safe-area-inset-left, 0px);
+  --cd-safe-right: env(safe-area-inset-right, 0px);
+  --cd-onehand-shift: 0px;
+  /* Calibración del usuario (0..100). Se persiste desde ajustes. */
+  --cd-thumb-reach: 50;
+  --cd-thumb-reach-land: 50;
+}
+
+html[data-one-hand="1"] {
+  /* Empuja el contenido de juego según la calibración del pulgar (0..100).
+     0 = sin shift, 100 ≈ 26vh. HUD y overlays fijos ignoran esto. */
+  --cd-onehand-shift: clamp(0px, calc(var(--cd-thumb-reach, 50) * 0.36vh), 240px);
+}
+
+html[data-one-hand="1"] .cuervo-game-root,
+html[data-one-hand="1"] main.cd-game-root {
+  padding-top: calc(var(--cd-onehand-shift) + var(--hud-h, 56px));
+  transition: padding-top 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              padding-right 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              padding-left 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduce max-height decorativo de contenedores centrados */
+html[data-one-hand="1"] .cd-content-frame {
+  margin-top: var(--cd-onehand-shift);
+  transition: margin-top 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              margin-left 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              margin-right 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Durante la rotación desactivamos transiciones para no ver un "arrastre"
+   feo mientras el viewport cambia de tamaño. Se retira ~260ms después. */
+html[data-rotating="1"] .cuervo-game-root,
+html[data-rotating="1"] main.cd-game-root,
+html[data-rotating="1"] .cd-content-frame,
+html[data-rotating="1"] .cd-thumb-zone {
+  transition: none !important;
+}
+
+/* Respeto absoluto por reduced-motion del sistema */
+@media (prefers-reduced-motion: reduce) {
+  html[data-one-hand="1"] .cuervo-game-root,
+  html[data-one-hand="1"] main.cd-game-root,
+  html[data-one-hand="1"] .cd-content-frame,
+  .cd-thumb-zone {
+    transition: none !important;
+  }
+}
+
+/* =========================================================================
+   Landscape corto (teléfonos horizontales, plegables abiertos)
+   ========================================================================= */
+@media (orientation: landscape) and (max-height: 480px) {
+  :root {
+    --hud-h: 44px;
+    --hud-scale: 0.85;
+  }
+  .cd-thumb-zone {
+    /* En landscape la zona de pulgar cambia a los laterales */
+    position: fixed;
+    right: max(var(--cd-safe-right), 12px);
+    bottom: max(var(--cd-safe-bottom), 8px);
+    left: auto;
+    padding: 6px 10px;
+    background: linear-gradient(270deg, rgba(0,0,0,0.9), rgba(0,0,0,0));
+    transition: right 240ms cubic-bezier(0.4, 0, 0.2, 1),
+                left 240ms cubic-bezier(0.4, 0, 0.2, 1),
+                bottom 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* En una-mano landscape usamos shift lateral en vez de vertical */
+  html[data-one-hand="1"] {
+    --cd-onehand-shift: 0px;
+  }
+  html[data-one-hand="1"] .cuervo-game-root,
+  html[data-one-hand="1"] main.cd-game-root {
+    padding-top: var(--hud-h, 44px);
+    padding-right: clamp(0px, calc(var(--cd-thumb-reach-land, 50) * 0.24vw), 160px);
+  }
+  html[data-handed="left"][data-one-hand="1"] .cuervo-game-root {
+    padding-right: 0;
+    padding-left: clamp(0px, calc(var(--cd-thumb-reach-land, 50) * 0.24vw), 160px);
+  }
+}
+
+/* =========================================================================
+   Pantallas muy angostas (~360px) — compact HUD sin romper juegos
+   ========================================================================= */
+@media (max-width: 380px) {
+  :root {
+    --hud-h: 48px;
+  }
+  .cd-thumb-zone {
+    gap: 8px;
+    padding-left: max(var(--cd-safe-left), 8px);
+    padding-right: max(var(--cd-safe-right), 8px);
+  }
+  .cd-tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* =========================================================================
+   Zurdos — espeja las columnas de acciones en juegos con HUD lateral
+   ========================================================================= */
+html[data-handed="left"] .cd-thumb-zone {
+  flex-direction: row-reverse;
+}
+
+/* =========================================================================
+   Franja de anfitriona (mobile) — reserva espacio bajo el HUD para que la
+   TopHostessStrip no tape tablero, cartas, ni paneles superiores.
+   ========================================================================= */
+@media (max-width: 639px) {
+  body[data-hostess-strip="1"] {
+    --hostess-h: clamp(60px, 7.5vh + 0.4vw, 78px);
+    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 8px);
+  }
+  body[data-hostess-strip="1"]:not([data-clean-game="1"]) .cuervo-game-root,
+  body[data-hostess-strip="1"][data-clean-game="1"] #cuervo-content {
+    padding-top: var(--cd-content-offset) !important;
+  }
+  body[data-hostess-strip="1"][data-clean-game="1"] .cuervo-game-root {
+    padding-top: 0 !important;
+  }
+}
+
+/* Franja de anfitriona también en tablet/desktop bajo el mismo patrón unificado. */
+@media (min-width: 640px) {
+  body[data-hostess-strip="1"] {
+    --hostess-h: clamp(56px, 5.8vh + 0.4vw, 68px);
+    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 12px);
+  }
+  body[data-hostess-strip="1"]:not([data-clean-game="1"]) .cuervo-game-root,
+  body[data-hostess-strip="1"][data-clean-game="1"] #cuervo-content {
+    padding-top: var(--cd-content-offset) !important;
+  }
+  body[data-hostess-strip="1"][data-clean-game="1"] .cuervo-game-root {
+    padding-top: 0 !important;
+  }
+}
+
+/* El desplazamiento superior (HUD + franja) no debe sumarse al alto del
+   contenedor de juego: si no, el contenido se sale por abajo y se recorta. */
+.cuervo-scene-fit {
+  min-height: 0 !important;
+  height: calc(100svh - var(--cd-content-offset, 0px));
+  max-height: calc(100svh - var(--cd-content-offset, 0px));
+  overflow: hidden;
+}
+
+
+/* =========================================================================
+   Letterbox: en pantallas anchas centramos el "canvas" del juego a
+   --cd-canvas-max, dejando los costados como fondo noir liso. Mantiene la
+   consistencia visual del portrait Android en tablet y PC.
+   ========================================================================= */
+@media (min-width: 900px) {
+  html, body {
+    background: #0a0806;
+  }
+  .cuervo-game-root {
+    max-width: var(--cd-canvas-max);
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.12),
+                0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Efectos hover sólo en dispositivos con puntero real (evita sticky hover táctil). */
+@media (hover: none) {
+  .cuervo-game-root *:hover {
+    /* deliberadamente vacío: shadcn ya respeta hover: hover, refuerza defaults */
+  }
+}
+
+/* =========================================================================
+   Layout consistente para mesas (usar en cada minijuego)
+   .cd-game-shell  → contenedor raíz de una partida
+   .cd-game-main   → panel principal (tablero, cartas, dados, ruleta)
+   .cd-game-aside  → detalles (marcador, anfitriona, hints)
+   .cd-game-actions → barra de acciones críticas (botones principales)
+   ========================================================================= */
+.cd-game-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-top: max(env(safe-area-inset-top, 0px), 8px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
+  padding-left: max(env(safe-area-inset-left, 0px), 12px);
+  padding-right: max(env(safe-area-inset-right, 0px), 12px);
+  gap: 14px;
+}
+.cd-game-main {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 0;
+}
+.cd-game-aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(20,16,10,0.6), rgba(20,16,10,0.35));
+  border: 1px solid rgba(201,168,76,0.18);
+}
+.cd-game-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+/* Todo botón directo dentro de la zona de acciones garantiza target y separación */
+.cd-game-actions > button,
+.cd-game-actions > a {
+  min-height: 52px;
+  min-width: 52px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* En pantallas Android muy compactas (Galaxy S8-, Xperia compact) reduce el spacing
+   sin bajar el target táctil por debajo de 44px. */
+@media (max-width: 360px) {
+  .cd-game-shell { gap: 10px; padding-left: 10px; padding-right: 10px; }
+  .cd-game-actions { gap: 12px; }
+  .cd-game-actions > button,
+  .cd-game-actions > a { min-height: var(--tap-min); min-width: var(--tap-min); }
+}
+
+/* Scroll horizontal fluido con snap para carruseles de tarjetas */
+.cd-card-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-inline: 4px;
+}
+.cd-card-strip::-webkit-scrollbar { display: none; }
+.cd-card-strip > * { scroll-snap-align: start; flex: 0 0 auto; }
+
+/* Grilla de mesas del hub: 2 columnas en móvil, spacing generoso, sin cortes.
+   Se aplica opcionalmente con la clase — ya se usa `grid grid-cols-2 gap-4` en
+   `single.tsx`, esta utilidad es para asegurar que las tarjetas nunca sean
+   más chicas que un target táctil confortable. */
+.cd-hub-grid > * {
+  min-height: 168px;
+}
+@media (max-width: 360px) {
+  .cd-hub-grid > * { min-height: 152px; }
+}
+
+/* ─── Cirugía global de overflow (Tanda 1) ───
+   `overflow-x: clip` corta el contenido sin crear un contenedor de scroll,
+   lo que evita jitter de fondos (mandala, noir) y desbordes horizontales
+   cuando algún hijo se sale por 1-2 px. Aplicado a la raíz para blindar
+   toda la app en móviles Android sin afectar el scroll vertical. */
+html,
+body,
+#root,
+#cuervo-content {
+  overflow-x: clip;
+}
+
+/* Fade horizontal para filas de chips/pestañas con scroll horizontal.
+   Comunica visualmente que hay más contenido a los lados en Android. */
+.cd-scroll-x-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 16px,
+    #000 calc(100% - 20px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 16px,
+    #000 calc(100% - 20px),
+    transparent 100%
+  );
+}
+
+/* Utilidad de target táctil ergonómico (Tanda 4). 44px es el mínimo iOS/Android. */
+.cd-tap-safe {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* FABs flotantes: se ocultan cuando hay un MobileSheet activo (dialog=true) para
+   liberar los botones "Cerrar", "Anterior", etc. sin que MESA/Progreso los tape. */
+body.cd-modal-open .cd-fab-floating {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 160ms ease, transform 200ms ease, visibility 0s linear 200ms;
+  pointer-events: none;
+}
+.cd-fab-floating {
+  transition: opacity 200ms ease, transform 220ms ease;
+}
+
+/* =========================================================================
+   Modo accesibilidad — `html[data-a11y="1"]` (activado desde Ajustes)
+   • Bloquea tap-targets a 56px (WCAG AAA para dedo pulgar en Android bajo)
+   • Sube la tipografía global vía `--font-scale`
+   • Refuerza foco visible en cualquier control
+   ========================================================================= */
+:root {
+  --font-scale: 1;
+}
+html {
+  font-size: calc(16px * var(--font-scale, 1));
+}
+html[data-a11y="1"] .cd-tap-safe,
+html[data-a11y="1"] .cd-tap-target,
+html[data-a11y="1"] .tap-target,
+html[data-a11y="1"] .cd-game-actions > button,
+html[data-a11y="1"] .cd-game-actions > a,
+html[data-a11y="1"] button[aria-label]:not(.cd-fab-floating),
+html[data-a11y="1"] a[role="button"] {
+  min-height: 56px;
+  min-width: 56px;
+}
+html[data-a11y="1"] :where(button, a, [role="button"], [role="link"]):focus-visible {
+  outline: 3px solid #f5d497;
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+html[data-a11y="1"] .t-fluid-xs { font-size: calc(clamp(12px, 3.1vw, 15px) * var(--ui-scale, 1)); }
+html[data-a11y="1"] .t-fluid-sm { font-size: calc(clamp(14px, 3.8vw, 17px) * var(--ui-scale, 1)); }
+html[data-a11y="1"] .t-fluid-base { font-size: calc(clamp(16px, 4.4vw, 19px) * var(--ui-scale, 1)); }
+html[data-a11y="1"] .t-fluid-lg { font-size: calc(clamp(20px, 5.4vw, 24px) * var(--ui-scale, 1)); }
+
+/* Gama baja: bajar coste de layers decorativas y evitar composición pesada. */
+html[data-perf="low"] .cd-fab-floating { transition: none; }
+html[data-perf="low"] .game-hud-bottom { backdrop-filter: none; }
+
+/* Android/APK stable renderer: evita capas GPU frágiles en Slots/Mahjong. */
+html[data-perf="low"] [data-slot-symbol-art="true"],
+html[data-perf="low"] [data-mahjong-sheet="true"],
+html[data-perf="low"] [data-slot-cabinet-art="true"],
+html[data-perf="low"] [data-slot-lever-art="true"] {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+html[data-perf="low"] main[data-game="slots"] *,
+html[data-perf="low"] main[data-game="slots"] *::before,
+html[data-perf="low"] main[data-game="slots"] *::after,
+html[data-perf="low"] main[data-game="mahjong"] *,
+html[data-perf="low"] main[data-game="mahjong"] *::before,
+html[data-perf="low"] main[data-game="mahjong"] *::after {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+}
+html[data-perf="low"] .sym-float,
+html[data-perf="low"] .sym-vfx-img,
+html[data-perf="low"] .mj-pulse-matchable,
+html[data-perf="low"] main[data-game="mahjong"] [class*="animate-pulse"] {
+  animation: none !important;
+}
+html[data-perf="low"] .sym-shimmer-wrap,
+html[data-perf="low"] .sym-sparkle,
+html[data-perf="low"] .sym-vignette,
+html[data-perf="low"] .sym-vfx-moon::before,
+html[data-perf="low"] .sym-vfx-mask::after,
+html[data-perf="low"] .sym-vfx-dagger::after,
+html[data-perf="low"] .sym-vfx-ring::before,
+html[data-perf="low"] .sym-vfx-phoenix::before,
+html[data-perf="low"] .sym-vfx-phoenix::after {
+  display: none !important;
+}
+
+/* =========================================================================
+   Reglas de layout por juego — mínimos y breakpoints estables en Android
+   `main[data-game="..."]` viene desde SceneFrame. Estos mínimos protegen
+   el tablero/cartas/dados de colapsar en 360px y bloquean growth excesivo
+   en 412px+ para que el HUD del pulgar quede siempre en la mano.
+   ========================================================================= */
+main[data-game="mahjong"] .cd-game-main,
+main[data-game="solitario"] .cd-game-main,
+main[data-game="sudoku"] .cd-game-main {
+  min-height: 62dvh;
+}
+main[data-game="ruleta"] .cd-game-main,
+main[data-game="slots"] .cd-game-main,
+main[data-game="bagatelle"] .cd-game-main {
+  min-height: 58dvh;
+}
+main[data-game="blackjack"] .cd-game-main,
+main[data-game="poker"] .cd-game-main,
+main[data-game="truco"] .cd-game-main,
+main[data-game="chinchon"] .cd-game-main,
+main[data-game="escoba"] .cd-game-main {
+  min-height: 54dvh;
+}
+/* En 360px pinta cartas/fichas 8% más chicas para que 5 cartas + acciones entren en portrait */
+@media (max-width: 360px) {
+  main[data-game="truco"],
+  main[data-game="chinchon"],
+  main[data-game="escoba"],
+  main[data-game="blackjack"],
+  main[data-game="poker"] {
+    --card-scale: 0.92;
+  }
+  main[data-game="mahjong"] { --tile-scale: 0.9; }
+  main[data-game="dados"]    { --die-scale: 0.9; }
+}
+/* En 412px+ (Pixel 6/7, Galaxy A/S) permitir cartas un 6% más grandes */
+@media (min-width: 412px) {
+  main[data-game="truco"],
+  main[data-game="chinchon"],
+  main[data-game="escoba"],
+  main[data-game="blackjack"],
+  main[data-game="poker"] {
+    --card-scale: 1.06;
+  }
+}
+
+/* ─── Modo "Juego limpio" ─────────────────────────────────────────────────
+ * Cuando estamos dentro de una mesa, `body[data-clean-game="1"]` oculta
+ * cualquier chrome secundario (banners, FABs, paneles opcionales) que se
+ * haya marcado explícitamente con `data-secondary-chrome`. Los elementos
+ * imprescindibles del HUD deben marcarse con `data-hud-essential` para
+ * quedar exentos.
+ */
+body[data-clean-game="1"] [data-secondary-chrome]:not([data-hud-essential]) {
+  display: none !important;
+}
+/* Como red de seguridad: ningún FAB nuevo sin gate por ruta debería
+ * aparecer dentro del juego. Marcá los FABs permitidos con
+ * `data-in-game="allow"`. */
+body[data-clean-game="1"] [data-cd-fab]:not([data-in-game="allow"]) {
+  display: none !important;
+}
+
+/* Al abrir el Libro del Cuervo (SlotsDrawer), ocultamos el HUD superior y
+ * la franja de anfitriona para que no queden montados sobre el drawer. */
+body[data-slots-drawer="open"] [data-single-hostess-corner],
+body[data-slots-drawer="open"] [data-cd-fab],
+body[data-slots-drawer="open"] .hud-safe-top,
+body[data-slots-drawer="open"] [data-hud="pause"] {
+  display: none !important;
+}
+
+body[data-slots-modal="open"] [data-single-hostess-corner],
+body[data-slots-modal="open"] [data-cd-fab] {
+  display: none !important;
+}
+
+@media (max-width: 380px) and (max-height: 720px) {
+  main[data-game="slots"] .cd-game-main {
+    min-height: 52dvh;
+  }
+}
+
+@keyframes mahjong-matchable-pulse {
+  0%, 100% { opacity: 0.62; }
+  50% { opacity: 0.86; }
+}
+.mj-pulse-matchable {
+  position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
+  box-shadow: inset 0 0 0 2px oklch(0.74 0.13 145 / 0.85), 0 0 10px oklch(0.74 0.13 145 / 0.35);
+  animation: mahjong-matchable-pulse 2.8s ease-in-out infinite;
+  will-change: opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mj-pulse-matchable { animation: none; opacity: 0.7; }
+}
+/* Modo "titileo reducido/off": contorno fijo, sin pulso. */
+.mj-pulse-matchable.mj-static { animation: none; opacity: 0.78; will-change: auto; }
+.mj-special-dot {
+  position: absolute; top: -4px; right: -4px; width: 12px; height: 12px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.95 0.18 85) 0%, oklch(0.6 0.18 75) 80%);
+  box-shadow: 0 0 6px oklch(0.85 0.18 75);
+  pointer-events: none;
+}
+
+/* =========================================================================
+   Feedback táctil instantáneo (modo lowFx / APK Android)
+   Sin framer-motion: :active se pinta en el mismo frame del toque.
+   ========================================================================= */
+.cd-press {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 70ms ease-out, filter 70ms ease-out;
+  will-change: transform;
+}
+.cd-press:active:not(:disabled) {
+  transform: scale(0.92);
+  filter: brightness(1.35) saturate(1.1);
+}
+.cd-press-soft:active:not(:disabled) {
+  transform: scale(0.96);
+  filter: brightness(1.22);
+}
+/* Halo dorado del toque: se dibuja con un pseudo-elemento para no tocar
+   la sombra interior de las celdas de la mesa. */
+.cd-press::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 0 2px oklch(0.85 0.18 75 / 0.95), 0 0 12px oklch(0.85 0.18 75 / 0.55);
+  transition: opacity 90ms ease-out;
+}
+.cd-press:active:not(:disabled)::after { opacity: 1; transition-duration: 0ms; }
+
+/* Ficha que aparece al apostar: pop corto, sin layout */
+@keyframes cd-chip-pop {
+  0%   { transform: scale(0.55); opacity: 0; }
+  60%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.cd-chip-pop { animation: cd-chip-pop 150ms ease-out; }
+
+/* Número ganador en lowFx (reemplaza la animación de framer-motion) */
+@keyframes cd-win-flash {
+  0%, 100% { transform: scale(1); }
+  35%      { transform: scale(1.22); }
+  70%      { transform: scale(1.08); }
+}
+.cd-win-flash { animation: cd-win-flash 620ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-press { transition-duration: 40ms; }
+  .cd-chip-pop, .cd-win-flash { animation: none; }
+}
+
+/* =========================================================================
+   Habilidades de Mahjong — feedback táctil/visual y alto contraste
+   ========================================================================= */
+.cd-skill-pulse {
+  animation: cd-skill-pulse 420ms ease-out forwards;
+  box-shadow: inset 0 0 0 2px var(--brass-bright, #f5d497);
+  background: radial-gradient(circle at 50% 55%, rgba(245, 212, 151, 0.28), transparent 70%);
+}
+@keyframes cd-skill-pulse {
+  0% { opacity: 0.95; transform: scale(0.94); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cd-skill-pulse { animation-duration: 1ms; }
+}
+/* Alto contraste / forced-colors: los botones deshabilitados deben seguir
+   siendo legibles y el foco visible con los colores del sistema. */
+@media (forced-colors: active) {
+  .cd-skill-btn {
+    border: 1px solid ButtonBorder;
+    color: ButtonText;
+    background: ButtonFace;
+    forced-color-adjust: none;
+  }
+  .cd-skill-btn:disabled { color: GrayText; border-color: GrayText; }
+  .cd-skill-btn:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+}
+html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
+
+/* ── Salas que entran completas en pantalla (Android / móvil vertical) ──
+   El shell de juego se limita al alto visible y <FitToScreen> escala el
+   contenido para que no haya que subir ni bajar dentro de la partida. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .cuervo-scene-fit {
+    /* svh (no dvh): alto constante aunque la barra del navegador de Android
+       aparezca/desaparezca, así el juego no sube ni baja. El desplazamiento
+       superior (HUD + franja de anfitriona) se descuenta para que el
+       contenido no se salga por abajo. */
+    height: calc(100svh - var(--cd-content-offset, 0px)) !important;
+    max-height: calc(100svh - var(--cd-content-offset, 0px)) !important;
+    overflow-y: hidden;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+
+  .cuervo-scene-fit [data-fit-box="1"] {
+    width: 100%;
+  }
+}
+
+/* =========================================================================
+   Ergonomía táctil Android (Tanda C)
+   • Compensa el `zoom` de FitToScreen para que ningún control quede por
+     debajo del área táctil cómoda (44 px físicos) en pantallas pequeñas.
+   • Safe-area consistente para HUD, FABs y barras de acción.
+   ========================================================================= */
+
+:root {
+  --tap-min: 44px;
+}
+[data-fit-box] {
+  --tap-min: calc(44px / max(var(--fit-scale, 1), 0.5));
+}
+
+.cd-tap-safe,
+.cd-tap-target,
+.cd-game-actions button,
+.cd-game-actions a,
+.cd-thumb-zone button,
+.cd-thumb-zone a {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  touch-action: manipulation;
+}
+
+/* Los botones anchos (repartir, girar, apostar) no deben volverse cuadrados. */
+.cd-game-actions > button,
+.cd-thumb-zone > button {
+  min-width: 0;
+}
+
+/* Separación mínima entre controles para evitar pulsaciones cruzadas. */
+.cd-game-actions,
+.cd-thumb-zone {
+  gap: max(0.625rem, calc(10px / max(var(--fit-scale, 1), 0.5)));
+}
+
+/* Safe-area consistente en cualquier elemento anclado a los bordes. */
+.cd-thumb-zone,
+.cd-game-actions {
+  padding-left: max(env(safe-area-inset-left, 0px), 12px);
+  padding-right: max(env(safe-area-inset-right, 0px), 12px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+}
+
+.cd-fab-floating,
+[data-hud="pause"],
+[data-hud="back"] {
+  touch-action: manipulation;
+}
+
+/* FAB pegado al borde derecho (Libro del Cuervo y similares): respeta el
+   inset lateral en móviles con pantalla curva / gestos. */
+.cd-fab-floating[class*="right-0"],
+.cd-edge-fab {
+  margin-right: env(safe-area-inset-right, 0px);
+}
+
+/* Controles sueltos con etiqueta accesible (iconos del HUD, fichas, cerrar):
+   mínimo cómodo en pantallas táctiles. Las rejillas de juego pueden excluirse
+   con `data-no-tap-min`. */
+@media (pointer: coarse) and (max-width: 900px) {
+  :where(button, a[role="button"])[aria-label][class*="rounded-full"]:not(.cd-fab-floating):not(
+      [data-no-tap-min]
+    ) {
+    min-height: var(--tap-min);
+    min-width: var(--tap-min);
+    touch-action: manipulation;
+  }
+}
+
+/* =========================================================================
+   Rotación y reflujo (Android — Tanda D)
+   • El HUD, la franja de anfitriona y las mesas se recomponen al pasar de
+     vertical a horizontal sin recortes ni solapes.
+   ========================================================================= */
+
+/* Horizontal de teléfono: alto escaso → cabecera y franja compactas. */
+@media (orientation: landscape) and (max-height: 620px) {
+  body[data-hostess-strip="1"] {
+    /* El retrato de la anfitriona cuelga ~12px por debajo de la franja
+       (self-end + -mb-3): reservamos ese sobresaliente o pisa la cabecera
+       de la mesa en horizontal. */
+    --hostess-h: clamp(46px, 11vh, 54px);
+    --cd-content-offset: calc(
+      var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 18px
+    );
+  }
+  body[data-short="1"] [data-hostess-strip-portrait] {
+    display: none;
+  }
+
+  .cuervo-scene-fit {
+    height: calc(100svh - var(--cd-content-offset, 0px)) !important;
+    max-height: calc(100svh - var(--cd-content-offset, 0px)) !important;
+    overflow-y: hidden;
+    /* En horizontal los gestos y notch van a los laterales. */
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+
+  .cuervo-scene-fit [data-fit-box="1"] {
+    width: 100%;
+  }
+
+  /* Barras de acción: en horizontal se pegan al borde inferior en una fila
+     única y respetan la zona de gestos lateral. */
+  .cd-game-actions,
+  .cd-thumb-zone {
+    flex-wrap: nowrap;
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
+}
+
+/* Durante y después de rotar, nada debe quedar anclado a un alto viejo. */
+body[data-orient="landscape"] .cuervo-game-root,
+body[data-orient="portrait"] .cuervo-game-root {
+  min-height: 0;
+}
+
+/* =========================================================================
+   Legibilidad del HUD en Android (brillo bajo / pantallas pequeñas)
+   • Piso de tamaño de fuente, tracking menor y contraste reforzado en textos
+     micro del HUD y etiquetas.
+   ========================================================================= */
+@media (pointer: coarse) and (max-width: 900px) {
+  .cd-hud,
+  .cuervo-hud,
+  [data-hud],
+  .cd-hud-label,
+  .cd-game-actions,
+  .cd-thumb-zone {
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ningún texto informativo del HUD por debajo de 11px reales. */
+  .cd-hud :where(span, p, em, strong, small, button, a),
+  .cuervo-hud :where(span, p, em, strong, small, button, a),
+  [data-hud] :where(span, p, em, strong, small, button, a),
+  .cd-game-actions :where(span, button, a),
+  .cd-thumb-zone :where(span, button, a) {
+    font-size: max(11px, 1em);
+    letter-spacing: clamp(0.02em, 0.12em, 0.18em);
+  }
+
+  /* Contraste: sombra oscura bajo el texto claro para que se lea con brillo
+     bajo sobre fondos de mesa/arte. */
+  .cd-hud,
+  .cuervo-hud,
+  [data-hud],
+  .cd-hud-label,
+  .cd-game-actions,
+  .cd-thumb-zone {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  }
+
+  /* Evitamos textos casi invisibles: subimos el piso de opacidad. */
+  .cd-hud [class*="/60"],
+  .cd-hud [class*="/65"],
+  .cd-hud [class*="/70"],
+  .cuervo-hud [class*="/60"],
+  .cuervo-hud [class*="/65"],
+  .cuervo-hud [class*="/70"],
+  [data-hud] [class*="/60"],
+  [data-hud] [class*="/70"] {
+    opacity: 1;
+  }
+}
+
+/* Modo alto contraste del usuario: refuerza aún más el HUD. */
+html[data-a11y="1"] :where(.cd-hud, .cuervo-hud, [data-hud]) {
+  text-shadow: 0 1px 3px #000, 0 0 1px #000;
+}
+
+/* =========================================================================
+   Ciclo de vida: app en segundo plano
+   Congelamos animaciones y transiciones para no gastar batería ni desincronizar
+   la partida mientras Android tiene la app fuera de foco.
+   ========================================================================= */
+body[data-app-paused="1"] *,
+body[data-app-paused="1"] *::before,
+body[data-app-paused="1"] *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* =========================================================================
+   Accesibilidad: foco visible consistente (teclado físico, mando y TalkBack)
+   ========================================================================= */
+:where(button, a, [role="button"], input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--brass-bright, #f7d271);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* =========================================================================
+   Bagatelle móvil (Android): el tirador nunca puede quedar fuera de pantalla.
+   Se compacta el panel de apuesta y se libera alto para los controles.
+   ========================================================================= */
+@media (hover: none) and (pointer: coarse) {
+  main[data-game="bagatelle"] [data-bagatelle-stakes] {
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.625rem;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-stakes] > div:first-child {
+    display: none;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-stakes] > div + div {
+    margin-top: 0;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-stakes] button {
+    flex: 0 0 auto;
+    min-height: 36px;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-zone] {
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    margin-top: 0.375rem;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-zone] > div:first-child {
+    display: none;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-zone] > div + div {
+    margin-top: 0;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-zone] button {
+    flex: 0 0 auto;
+    min-height: 32px;
+  }
+  main[data-game="bagatelle"] .cuervo-mobile-compact {
+    padding-bottom: 0 !important;
+  }
+  /* Los tres marcos anidados del mueble se comen alto útil en teléfono. */
+  main[data-game="bagatelle"] .game-focus > div {
+    padding: 0.375rem;
+  }
+  main[data-game="bagatelle"] .game-focus > div > div {
+    padding: 0.375rem;
+  }
+  main[data-game="bagatelle"] [data-bagatelle-backglass] {
+    padding: 0.5rem 0.625rem;
+  }
+}
+
+/* Teléfonos muy angostos: el tablero manda su propio alto (relación fija), así
+   que lo estrechamos para que el tirador y los flippers entren en pantalla. */
+@media (hover: none) and (pointer: coarse) and (max-width: 340px) {
+  main[data-game="bagatelle"] .game-focus {
+    max-width: 84vw;
+  }
+}
+
+
+/* =========================================================================
+   Toasts (sonner) en Android: nunca deben tapar el HUD superior ni recortar
+   el botón de cierre contra el borde de la pantalla.
+   ========================================================================= */
+[data-sonner-toaster] {
+  width: auto !important;
+  max-width: min(560px, calc(100vw - 24px)) !important;
+}
+[data-sonner-toast] {
+  padding-right: 2.25rem !important;
+}
+[data-sonner-toast] [data-close-button] {
+  inset-inline-start: auto !important;
+  inset-inline-end: 0.375rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  min-width: 26px;
+  min-height: 26px;
+}
+
+/* Chinchón: las cartas de la mano no son botones ergonómicos sueltos — su
+   ancho lo fija la mano completa para que las 8 entren sin recortarse. */
+.chinchon-hand button,
+.chinchon-hand [role="button"] {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: var(--chinchon-hand-card-w, 44px) !important;
+}
+
+/* Abanico: las cartas se solapan levemente para poder ser más grandes en
+   pantallas angostas de Android sin desbordar la mano. */
+.chinchon-hand > * + * {
+  margin-left: calc(var(--chinchon-hand-overlap, 13px) * -1);
+}
+.chinchon-hand > * {
+  transition: margin 0.15s ease;
+}
+@media (min-width: 480px) {
+  .chinchon-hand {
+    --chinchon-hand-overlap: 4px;
+  }
+}
+
+
+/* Mueble de la ruleta: alto adaptado a orientación */
+.ruleta-cabinet { height: clamp(120px, 30svh, 420px); }
+@media (orientation: landscape) {
+  .ruleta-cabinet { height: clamp(140px, 46svh, 520px); }
+}
+
+/* Botones dorados con biselado art déco (reemplazan los rellenos planos mostaza) */
+.gold-cta {
+  background: linear-gradient(
+    180deg,
+    oklch(0.78 0.13 80) 0%,
+    oklch(0.55 0.13 65) 55%,
+    oklch(0.38 0.11 55) 100%
+  );
+  border: 1px solid var(--brass);
+  color: oklch(0.14 0.02 40);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 200, 0.45),
+    0 6px 16px rgba(0, 0, 0, 0.45);
+}
+.gold-chip-on {
+  background: linear-gradient(180deg, oklch(0.6 0.11 72) 0%, oklch(0.38 0.1 60) 100%);
+  border: 1px solid var(--brass);
+  color: oklch(0.96 0.02 85);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.35);
+}
+
+/* En vertical (teléfono) el arte de sala es apaisado: al cubrir la pantalla se
+   amplía tanto que un vaso o una carta ocupan medio alto. Lo tratamos como
+   ambiente con profundidad de campo en vez de recorte gigante.
+   El desenfoque es suave y el brillo alto: con brillo bajo de pantalla el
+   fondo antes quedaba en negro y se perdía todo el arte del casino. */
+/* La copia difuminada queda desactivada: en WebView de Android un blur a
+   pantalla completa cuesta varios ms por frame y en gama baja se descarta,
+   dejando el fondo en negro. El arte se recorta con `cover`, que siempre
+   llena la pantalla sin franjas vacías. */
+.room-bg-fill {
+  display: none;
+}
+
+@media (max-aspect-ratio: 3 / 4) {
+  .room-bg-img {
+    object-fit: cover;
+    object-position: center 45%;
+    filter: saturate(0.98) brightness(0.86);
+    transform: none;
+  }
+}
+
+/* Con el fondo más luminoso, reforzamos el velo radial para que los paneles
+   de juego sigan destacando sobre el arte en pantallas chicas. */
+@media (max-aspect-ratio: 3 / 4) {
+  .cuervo-game-root {
+    --room-scrim-alpha: 0.56;
+    --room-scrim-alpha-bottom: 0.52;
+    --room-scrim-radial-stop: 44%;
+  }
+}
+
+/* ── Microinteracciones táctiles ─────────────────────────────────────────
+   Respuesta inmediata al dedo en Android: sin retardo de 300 ms, sin
+   destello azul del WebView y con un hundido breve al presionar. Las
+   transiciones son cortas (<=120 ms) para que nada se sienta pesado. */
+button,
+[role="button"],
+a[href],
+summary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  transition:
+    transform 110ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 110ms ease-out,
+    opacity 110ms ease-out;
+}
+
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.965);
+  filter: brightness(1.06);
+}
+
+/* Cartas y fichas: hundido más sutil y sin arrastrar la imagen nativa. */
+.cd-tap {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-drag: none;
+  touch-action: manipulation;
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cd-tap:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* Canto/corte: destello breve que no reflowea el layout. */
+@keyframes cd-canto-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.cd-canto-pop {
+  animation: cd-canto-pop 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  .cd-tap {
+    transition: none;
+  }
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  .cd-tap:active {
+    transform: none;
+  }
+  .cd-canto-pop {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Tipografía de modales — escalado del sistema (Android) sin recortes.
+   Los diálogos usaban tamaños px fijos muy chicos (10-12px) que no
+   respetan el "tamaño de fuente" del sistema y, al agrandarlo, el texto
+   se cortaba dentro de cajas de alto fijo. Acá fijamos mínimos en rem
+   (rem ya incluye --font-scale) y garantizamos ajuste de línea.
+   ------------------------------------------------------------------ */
+:where([role="dialog"]) {
+  --cd-modal-scale: var(--font-scale, 1);
+}
+:where([role="dialog"]) :where(p, span, div, li, b, strong, label, button, a) {
+  line-height: 1.4;
+}
+:where([role="dialog"]) :where(h1, h2, h3, h4) {
+  line-height: 1.2;
+}
+/* Mínimos legibles: nunca por debajo de ~11px reales, y suben con el
+   escalado del sistema. */
+:where([role="dialog"]) :where([class*="text-[9px]"], [class*="text-[10px]"]) {
+  font-size: max(0.69rem, 11px);
+}
+:where([role="dialog"]) :where([class*="text-[11px]"], .text-xs) {
+  font-size: max(0.75rem, 12px);
+}
+:where([role="dialog"]) :where(.text-sm) {
+  font-size: max(0.875rem, 14px);
+}
+/* Las versalitas muy espaciadas son las que primero se recortan. */
+:where([role="dialog"]) :where([class*="tracking-[0.3"], [class*="tracking-[0.35"], [class*="tracking-[0.4"]) {
+  letter-spacing: 0.22em;
+}
+/* Sin recortes: el contenido envuelve y el panel scrollea si hace falta. */
+:where([role="dialog"]) :where(p, span, div, h1, h2, h3, h4, button) {
+  overflow-wrap: anywhere;
+}
+:where([role="dialog"]) > :not([data-backdrop]) {
+  max-height: min(92svh, 100%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Botones de modal: alto mínimo táctil pero que crezca con el texto. */
+:where([role="dialog"]) :where(button, [role="button"]) {
+  min-height: max(44px, calc(2.6em * var(--cd-modal-scale)));
+  height: auto;
+  white-space: normal;
+}
+
+/* ===== Generala (Los Cinco del Diablo) — rediseño Android =====
+   Tipografía propia de la mesa: Instrument Serif para títulos y números,
+   Work Sans para etiquetas y textos de interfaz. Ambas locales (APK offline). */
+.generala-room {
+  --gen-display: "Instrument Serif", Georgia, serif;
+  --gen-body: "Work Sans Variable", "Work Sans", system-ui, sans-serif;
+}
+.generala-room .gen-display {
+  font-family: var(--gen-display);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+.generala-room .gen-body {
+  font-family: var(--gen-body);
+  letter-spacing: 0.02em;
+}
+.generala-room .gen-label {
+  font-family: var(--gen-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+.generala-room .gen-num {
+  font-family: var(--gen-display);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+/* Zócalo de acción fijo al pulgar: respeta la barra de gestos de Android. */
+.gen-dock {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    180deg,
+    oklch(0.08 0.012 45 / 0.55) 0%,
+    oklch(0.07 0.012 45 / 0.96) 18%,
+    oklch(0.06 0.01 45 / 0.98) 100%
+  );
+  border-top: 1px solid oklch(0.62 0.09 70 / 0.28);
+}
+
+/* Con un modal abierto el zócalo de acción se esconde: nunca debe quedar
+   por encima de la cortina de confirmación / pausa. */
+body[data-modal-open="1"] .gen-dock {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* ── Atmósfera speakeasy 1928 (humo + polilla) ───────────────────── */
+@keyframes cuervo-smoke-rise {
+  0% {
+    transform: translate3d(0, 12%, 0) scale(0.72) rotate(-3deg);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(var(--smoke-drift, 30px), -118%, 0) scale(1.25) rotate(4deg);
+    opacity: 0;
+  }
+}
+
+@keyframes cuervo-moth-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-6deg);
+  }
+  25% {
+    transform: translate3d(58vw, 7vh, 0) rotate(8deg);
+  }
+  50% {
+    transform: translate3d(24vw, -4vh, 0) rotate(-10deg);
+  }
+  75% {
+    transform: translate3d(66vw, 12vh, 0) rotate(5deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-6deg);
+  }
+}
+
+html[data-reduce-motion="1"] [style*="cuervo-smoke-rise"],
+html[data-reduce-motion="1"] [style*="cuervo-moth-drift"] {
+  animation: none !important;
+}
+
+/* ── UI 1928: pluma, latón gastado y papel de contrabando ────────── */
+
+/* Marco déco de doble filete con esquinas cortadas, para superficies. */
+@utility deco-frame {
+  position: relative;
+  border: 1px solid oklch(0.62 0.09 70 / 0.42);
+  box-shadow:
+    inset 0 0 0 1px oklch(0.04 0.01 30 / 0.85),
+    inset 0 0 0 2px oklch(0.62 0.09 70 / 0.22),
+    0 18px 40px -22px oklch(0.02 0 0 / 0.9);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    pointer-events: none;
+    border: 1px solid oklch(0.62 0.09 70 / 0.2);
+    clip-path: polygon(
+      10px 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      10px 100%,
+      0 calc(100% - 10px),
+      0 10px
+    );
+  }
+}
+
+/* Papel sucio + rayado a pluma sobre cualquier panel. */
+@utility ink-paper {
+  background-image:
+    repeating-linear-gradient(
+      42deg,
+      oklch(0.02 0 0 / 0.1) 0px,
+      oklch(0.02 0 0 / 0.1) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    radial-gradient(120% 90% at 20% 0%, oklch(0.7 0.09 70 / 0.07) 0%, transparent 60%);
+}
+
+/* Filete déco: rombo central entre dos líneas de latón. */
+@utility deco-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: oklch(0.7 0.1 72 / 0.55);
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      oklch(0.7 0.1 72 / 0.55),
+      transparent
+    );
+  }
+}
+
+/* Titulares de local clandestino: grabado en latón con sombra de tinta. */
+@utility deco-title {
+  font-family: var(--font-numerals);
+  letter-spacing: 0.06em;
+  background: linear-gradient(
+    175deg,
+    oklch(0.92 0.09 84) 0%,
+    oklch(0.74 0.12 74) 46%,
+    oklch(0.5 0.09 62) 100%
+  );
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 0 oklch(0.05 0.01 30 / 0.55);
+}
+
+/* Superficies de diálogo: papel de contrabando con marco de latón. */
+[role="dialog"] {
+  background-image:
+    repeating-linear-gradient(
+      42deg,
+      oklch(0.02 0 0 / 0.09) 0px,
+      oklch(0.02 0 0 / 0.09) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    radial-gradient(120% 90% at 20% 0%, oklch(0.7 0.09 70 / 0.06) 0%, transparent 62%);
+  border-color: oklch(0.62 0.09 70 / 0.42);
+  box-shadow:
+    inset 0 0 0 1px oklch(0.04 0.01 30 / 0.8),
+    inset 0 1px 0 oklch(0.72 0.1 74 / 0.16),
+    0 24px 60px -28px oklch(0.02 0 0 / 0.95);
+}
+
+/* ── HUD 1928: placas de latón sobre papel clandestino ───────────── */
+
+/* Placa base de contador. Papel sucio, rayado a pluma, filete de latón
+   y esquinas biseladas como una chapa remachada del salón. */
+@utility hud-plate {
+  --plate-accent: oklch(0.78 0.13 80);
+  position: relative;
+  background-image:
+    repeating-linear-gradient(
+      42deg,
+      oklch(0.02 0 0 / 0.12) 0px,
+      oklch(0.02 0 0 / 0.12) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, oklch(0.12 0.022 34 / 0.96) 0%, oklch(0.05 0.008 30 / 0.97) 100%);
+  border: 1px solid color-mix(in oklab, var(--plate-accent) 55%, transparent);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    inset 0 -2px 4px oklch(0 0 0 / 0.6),
+    0 0 10px color-mix(in oklab, var(--plate-accent) 14%, transparent),
+    0 3px 10px oklch(0 0 0 / 0.5);
+  clip-path: polygon(
+    0 5px,
+    5px 0,
+    calc(100% - 5px) 0,
+    100% 5px,
+    100% calc(100% - 5px),
+    calc(100% - 5px) 100%,
+    5px 100%,
+    0 calc(100% - 5px)
+  );
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    pointer-events: none;
+    border: 1px solid color-mix(in oklab, var(--plate-accent) 20%, transparent);
+    clip-path: polygon(
+      0 4px,
+      4px 0,
+      calc(100% - 4px) 0,
+      100% 4px,
+      100% calc(100% - 4px),
+      calc(100% - 4px) 100%,
+      4px 100%,
+      0 calc(100% - 4px)
+    );
+  }
+}
+
+@utility hud-plate-blood {
+  --plate-accent: oklch(0.7 0.22 24);
+}
+
+/* Jerarquía: el rótulo es tipografía de cartel, el número manda. */
+@utility hud-label {
+  font-family: var(--font-display, inherit);
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  line-height: 1;
+  font-size: var(--hud-label-size, 0.5625rem);
+  color: oklch(0.72 0.05 72 / 0.72);
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.75);
+}
+
+@utility hud-value {
+  font-family: var(--font-numerals);
+  line-height: 1;
+  font-size: var(--hud-value-size, 1.0625rem);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(
+    178deg,
+    oklch(0.94 0.09 86) 0%,
+    oklch(0.8 0.13 78) 52%,
+    oklch(0.58 0.1 66) 100%
+  );
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.5);
+}
+
+/* Escalas unificadas del HUD: mismo salto tipográfico en todos los juegos. */
+@utility hud-sm {
+  --hud-label-size: 0.5rem;
+  --hud-value-size: 0.875rem;
+}
+
+@utility hud-lg {
+  --hud-label-size: 0.625rem;
+  --hud-value-size: 1.375rem;
+}
+
+/* Celda estándar: mismo padding y separación rótulo/valor en todo el casino. */
+@utility hud-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1875rem;
+  padding: 0.3125rem 0.5rem;
+  min-width: 3.25rem;
+}
+
+/* Panel de marcador dentro de cada juego (blackjack, ruleta, duelos). */
+@utility hud-panel {
+  background-image:
+    repeating-linear-gradient(
+      42deg,
+      oklch(0.02 0 0 / 0.1) 0px,
+      oklch(0.02 0 0 / 0.1) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, oklch(0.11 0.02 32 / 0.96) 0%, oklch(0.05 0.008 28 / 0.97) 100%);
+  border: 1px solid oklch(0.7 0.11 74 / 0.45);
+  box-shadow:
+    inset 0 1px 0 oklch(0.8 0.1 76 / 0.14),
+    inset 0 0 0 1px oklch(0.03 0.01 30 / 0.8),
+    0 14px 34px -18px oklch(0 0 0 / 0.9);
+}
+
+/* ── Etiquetas y jerarquía compartida del HUD (blackjack, ruleta, duelos) ── */
+
+/* Fichita de modificador: mismo alto, tipografía y espaciado en todos los juegos. */
+@utility hud-tag {
+  --tag-accent: oklch(0.78 0.13 80);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid color-mix(in oklab, var(--tag-accent) 42%, transparent);
+  background: color-mix(in oklab, var(--tag-accent) 12%, transparent);
+  color: color-mix(in oklab, var(--tag-accent) 85%, white 15%);
+  border-radius: 999px;
+  padding: 0.1875rem 0.5rem;
+  font-family: var(--font-display, inherit);
+  font-size: 0.5625rem;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.7);
+}
+
+@utility hud-tag-blood {
+  --tag-accent: oklch(0.7 0.22 24);
+}
+
+@utility hud-tag-cold {
+  --tag-accent: oklch(0.72 0.12 240);
+}
+
+/* Rótulo superior del panel (nivel · encargo). */
+@utility hud-eyebrow {
+  font-family: var(--font-display, inherit);
+  font-size: 0.5rem;
+  line-height: 1;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.05 72 / 0.6);
+}
+
+/* Título del encargo, grabado en latón. */
+@utility hud-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.5rem;
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+  color: oklch(0.55 0.16 26);
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.6);
+}
+
+@utility hud-sub {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: oklch(0.93 0.01 80 / 0.7);
+}
+
+/* Barra de progreso común. */
+@utility hud-bar {
+  height: 0.375rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(0.02 0 0 / 0.55);
+  box-shadow: inset 0 0 0 1px oklch(0.7 0.11 74 / 0.28);
+}
+
+@utility hud-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, oklch(0.6 0.1 68), oklch(0.88 0.13 84));
+  transition: width 300ms ease-out;
+}
+
+@utility hud-quote {
+  margin-top: 0.75rem;
+  border-top: 1px solid oklch(0.7 0.11 74 / 0.2);
+  padding-top: 0.5rem;
+  font-family: var(--font-script, Georgia, serif);
+  font-style: italic;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: oklch(0.6 0.15 26 / 0.9);
+}
+
+/* ── Jerarquía 1928 unificada en modales, diálogos y confirmaciones ─────── */
+:where([role="dialog"], [role="alertdialog"]) :where(h1, h2, h3) {
+  font-family: var(--font-display, inherit);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: oklch(0.86 0.1 82);
+  text-shadow: 0 2px 0 oklch(0 0 0 / 0.6);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(h1) {
+  font-size: max(1.5rem, 22px);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(h2) {
+  font-size: max(1.25rem, 19px);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(h3) {
+  font-size: max(1.0625rem, 17px);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(label, legend) {
+  font-family: var(--font-display, inherit);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: max(0.6875rem, 11px);
+  color: oklch(0.72 0.05 72 / 0.78);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(p) {
+  font-size: max(0.8125rem, 13px);
+  color: oklch(0.93 0.01 80 / 0.82);
+}
+:where([role="dialog"], [role="alertdialog"]) :where(button, [role="button"]) {
+  font-family: var(--font-display, inherit);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+/* Espaciado coherente: el contenido del modal respira igual en toda la app. */
+:where([role="dialog"], [role="alertdialog"]) > :not([data-backdrop]) {
+  padding: clamp(0.875rem, 3.5vw, 1.25rem);
+}
+
+/* Valor en alerta: mismo tamaño, tinta sangre en vez de latón. */
+@utility hud-value-warn {
+  background: none;
+  color: oklch(0.63 0.2 26);
+  -webkit-text-fill-color: oklch(0.63 0.2 26);
+}
+
+/* Espacio reservado para la banda de encargo activo (fija al pie de la mesa) */
+:root {
+  --encargo-banner-h: 0px;
+}
+body {
+  padding-bottom: var(--encargo-banner-h, 0px);
+}
+
+/* ── Oficina de Corvina: carpetas de manila, sellos y cinta ──────── */
+
+/* Carpeta de expediente: cartón manila manchado, con fibra y humedad. */
+@utility manila {
+  background-color: oklch(0.28 0.035 72);
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      oklch(0.02 0 0 / 0.07) 0px,
+      oklch(0.02 0 0 / 0.07) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    radial-gradient(70% 50% at 12% 8%, oklch(0.42 0.06 66 / 0.5) 0%, transparent 70%),
+    radial-gradient(50% 40% at 88% 92%, oklch(0.18 0.03 40 / 0.7) 0%, transparent 70%),
+    radial-gradient(28% 22% at 78% 18%, oklch(0.24 0.05 46 / 0.85) 0%, transparent 72%);
+  box-shadow:
+    inset 0 1px 0 oklch(0.86 0.06 82 / 0.14),
+    inset 0 -22px 34px -22px oklch(0.02 0 0 / 0.9),
+    0 22px 46px -26px oklch(0.02 0 0 / 0.95);
+}
+
+/* Sello de goma: tinta gastada, ligeramente torcido. */
+@utility sello {
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  padding: 0.18rem 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.82;
+  mix-blend-mode: screen;
+  transform: rotate(-7deg);
+  box-shadow: inset 0 0 0 1px oklch(0.02 0 0 / 0.35);
+}
+
+/* Cinta de embalar sobre la esquina de un papel. */
+@utility cinta {
+  position: absolute;
+  width: 74px;
+  height: 22px;
+  background: oklch(0.76 0.045 88 / 0.16);
+  border-left: 1px solid oklch(0.9 0.05 88 / 0.12);
+  border-right: 1px solid oklch(0.9 0.05 88 / 0.12);
+  box-shadow: 0 2px 8px -3px oklch(0.02 0 0 / 0.8);
+  backdrop-filter: saturate(0.6);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PARIA 1928 — superficies de papel sucio, cartel pintado a mano y
+   fotos pegadas con cinta. Usado en la sala completa, el hub de
+   juego, las reglas y los ajustes.
+   ───────────────────────────────────────────────────────────────── */
+
+/* Papel de estraza manchado: base de cualquier hoja/panel del salón. */
+@utility paria-paper {
+  position: relative;
+  background-color: oklch(0.3 0.022 52);
+  background-image:
+    repeating-linear-gradient(
+      38deg,
+      oklch(0.02 0 0 / 0.14) 0px,
+      oklch(0.02 0 0 / 0.14) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    repeating-linear-gradient(
+      -52deg,
+      oklch(0.02 0 0 / 0.08) 0px,
+      oklch(0.02 0 0 / 0.08) 1px,
+      transparent 1px,
+      transparent 9px
+    ),
+    radial-gradient(80% 60% at 12% 0%, oklch(0.58 0.07 72 / 0.14) 0%, transparent 68%),
+    radial-gradient(60% 50% at 92% 100%, oklch(0.06 0.01 30 / 0.85) 0%, transparent 70%),
+    linear-gradient(180deg, oklch(0.32 0.026 54) 0%, oklch(0.22 0.014 40) 100%);
+  border: 1px solid oklch(0.65 0.09 70 / 0.45);
+  box-shadow:
+    inset 0 1px 0 oklch(0.86 0.06 82 / 0.1),
+    inset 0 -30px 40px -30px oklch(0.02 0 0 / 0.9),
+    0 22px 48px -28px oklch(0.02 0 0 / 0.95);
+}
+
+/* Manchas de humedad y ceniza, sin coste de imagen. */
+@utility paria-grime {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    background-image:
+      radial-gradient(22px 8px at 18% 12%, oklch(0.05 0.01 40 / 0.5) 0%, transparent 70%),
+      radial-gradient(40px 14px at 82% 34%, oklch(0.05 0.01 40 / 0.35) 0%, transparent 72%),
+      radial-gradient(circle at 68% 78%, oklch(0.45 0.06 66 / 0.12) 0 12px, transparent 13px),
+      radial-gradient(circle at 30% 88%, oklch(0.05 0.01 40 / 0.4) 0 9px, transparent 10px);
+  }
+}
+
+/* Rótulo a máquina de escribir, gastado. */
+@utility paria-eyebrow {
+  font-family: var(--font-display, "Special Elite", monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.1 76 / 0.72);
+  text-shadow: 0 1px 0 oklch(0.02 0 0 / 0.8);
+}
+
+/* Cartel pintado: latón claro con contorno duro para leerse sobre foto. */
+@utility paria-sign {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    172deg,
+    oklch(0.98 0.04 92) 0%,
+    oklch(0.9 0.11 86) 46%,
+    oklch(0.74 0.13 74) 100%
+  );
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0.5px oklch(0.06 0.01 30 / 0.85);
+  paint-order: stroke fill;
+  filter:
+    drop-shadow(0 1px 0 oklch(0.04 0.01 30 / 0.95))
+    drop-shadow(0 2px 5px oklch(0.02 0 0 / 0.9))
+    drop-shadow(0 0 12px oklch(0.02 0 0 / 0.7));
+}
+
+
+/* Ficha/etiqueta prensada: chip de filtro o de opción. */
+@utility paria-tab {
+  position: relative;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 1px solid oklch(0.62 0.09 70 / 0.3);
+  border-radius: 2px;
+  color: oklch(0.88 0.02 84 / 0.62);
+  background-image:
+    repeating-linear-gradient(
+      38deg,
+      oklch(0.02 0 0 / 0.16) 0px,
+      oklch(0.02 0 0 / 0.16) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    linear-gradient(180deg, oklch(0.16 0.02 48) 0%, oklch(0.09 0.012 38) 100%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.05);
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  &[data-on="true"] {
+    color: oklch(0.9 0.11 84);
+    border-color: oklch(0.72 0.11 76 / 0.75);
+    background-image:
+      repeating-linear-gradient(
+        38deg,
+        oklch(0.02 0 0 / 0.14) 0px,
+        oklch(0.02 0 0 / 0.14) 1px,
+        transparent 1px,
+        transparent 5px
+      ),
+      linear-gradient(180deg, oklch(0.36 0.07 72) 0%, oklch(0.2 0.04 58) 100%);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.12),
+      0 6px 16px -10px oklch(0.7 0.12 76 / 0.6);
+  }
+}
+
+/* Foto pegada al muro: bordes rasgados, viraje sepia y sombra dura. */
+@utility paria-photo {
+  position: relative;
+  border: 1px solid oklch(0.62 0.09 70 / 0.28);
+  border-radius: 2px;
+  box-shadow:
+    0 10px 22px -14px oklch(0.02 0 0 / 0.95),
+    inset 0 0 0 1px oklch(0.02 0 0 / 0.6);
+
+  & img,
+  & picture img {
+    filter: sepia(0.34) saturate(0.82) contrast(1.08) brightness(0.92);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      42deg,
+      oklch(0.02 0 0 / 0.14) 0px,
+      oklch(0.02 0 0 / 0.14) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+    mix-blend-mode: multiply;
+  }
+
+  /* Baño de tinta sepia: apaga los colores neón del arte de las mesas. */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    backdrop-filter: sepia(0.42) saturate(0.65) contrast(1.05);
+  }
+}
+
+/* Separador a pluma: línea temblorosa de tinta. */
+@utility paria-rule {
+  height: 3px;
+  background-image:
+    linear-gradient(
+      to right,
+      transparent,
+      oklch(0.68 0.1 74 / 0.5) 12%,
+      oklch(0.68 0.1 74 / 0.5) 88%,
+      transparent
+    ),
+    radial-gradient(circle at 30% 100%, oklch(0.68 0.1 74 / 0.28) 0 1px, transparent 2px);
+  background-repeat: no-repeat, repeat-x;
+  background-size:
+    100% 1px,
+    9px 3px;
+  background-position:
+    0 0,
+    0 2px;
+}
+
+@utility safe-paddings {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+@utility safe-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility safe-pt {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Paleta base del salón: tokens fijos usados en clases utilitarias.
+   No cambian con los temas; reemplazan hexadecimales repetidos en el código. */
+:root {
+  --oro: #dcb862;
+  --marfil: #ecebe6;
+  --oro-claro: #f7d271;
+  --verde-noche: #0b1512;
+  --crema: #f7ecc9;
+  --crema-clara: #f7f2e2;
+  --oro-palido: #f4d97a;
+  --tinta-parda: #1a120b;
+  --oro-viejo: #e2c069;
+  --carmin: #7a1f24;
+  --crema-brillo: #fff3c4;
+  --tinta: #0b0a08;
+}
+
+/* ==========================================================================
+   Ergonomía táctil y legibilidad final (Android)
+   ========================================================================== */
+
+/* 1. Objetivo mínimo de 44px: cualquier control dentro de una sala de juego
+      debe poder tocarse con el pulgar sin apuntar. Sólo se agranda el área
+      táctil, no el dibujo del botón. */
+.cuervo-game-root button:not(.no-min-target),
+.cuervo-game-root [role="button"]:not(.no-min-target),
+.cuervo-game-root a[href]:not(.no-min-target) {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+/* Las cartas y fichas ya tienen su propio tamaño de dibujo. */
+.cuervo-game-root .card-target,
+.cuervo-game-root [data-card],
+.cuervo-game-root [data-chip] {
+  min-height: 0;
+  min-width: 0;
+}
+
+/* 2. Zona segura inferior: la barra de gestos de Android se come los últimos
+      píxeles. Ninguna acción vive ahí. */
+.cuervo-safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+/* 3. Nada crítico en los 80px superiores: reservamos la franja del reloj y la
+      barra de estado para información, no para botones de acción. */
+.cuervo-top-reserve {
+  margin-top: calc(max(env(safe-area-inset-top, 0px), 12px) + 80px);
+}
+
+/* 4. Legibilidad al sol y con brillo bajo: sombra dura detrás del texto en vez
+      de dorado sobre dorado. */
+.cuervo-game-root .text-\[var\(--brass\)\],
+.cuervo-game-root .text-\[var\(--oro\)\],
+.cuervo-game-root .font-display {
+  text-shadow:
+    0 1px 0 rgb(0 0 0 / 0.9),
+    0 2px 6px rgb(0 0 0 / 0.75);
+}

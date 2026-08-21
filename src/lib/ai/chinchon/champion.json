@@ -1,0 +1,10 @@
+{
+  "feedPenalty": 10,
+  "chinchonHold": 0,
+  "meldBonus": 0.10686177704948924,
+  "meldCountBonus": 0.3940069260634483,
+  "tiebreak": 0.043175156071782114,
+  "mcBlend": 0.7625573275331409,
+  "pickPilePref": 0.9022260034736247,
+  "closeMargin": 1.657500157412142
+}

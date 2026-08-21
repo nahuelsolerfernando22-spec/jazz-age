@@ -1,0 +1,8 @@
+{
+  "completeBonus": 100,
+  "buildBonus": 32,
+  "specialPref": 28,
+  "overflowPenalty": 220,
+  "orphanPenalty": 45,
+  "unlockBonus": 8
+}

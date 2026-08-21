@@ -1,0 +1,8 @@
+# Copy to android/key.properties and fill in. Do NOT commit key.properties.
+# Generate the keystore with:
+#   keytool -genkey -v -keystore ~/keys/cuervo-dorado.jks \
+#     -alias cuervo -keyalg RSA -keysize 2048 -validity 10000
+storeFile=/absolute/path/to/cuervo-dorado.jks
+storePassword=CHANGE_ME
+keyAlias=cuervo
+keyPassword=CHANGE_ME

@@ -1,0 +1,714 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import {
+  BARRIOS,
+  TERRITORIOS_POR_BARRIO,
+  TERRITORIOS_POR_ID,
+  TERRITORIOS,
+  sonVecinos,
+  type Territorio,
+} from "@/lib/sindicato-data";
+import { FACCIONES, faccionDe, type FactionId } from "@/lib/sindicato-facciones";
+import { generateSubMap } from "@/lib/sindicato-map-gen";
+import { useCasino } from "@/store/casino";
+
+export type SpecialCardType = "bribe" | "informant" | "surprise" | "lockdown";
+
+export interface SyndicateCard {
+  id: string;
+  territoryId: string;
+  symbol: "infantry" | "cavalry" | "artillery" | "wildcard";
+  type?: SpecialCardType;
+  artUrl: string;
+}
+
+export interface TerritoryConquest {
+  id: string;
+  conqueredAt: number;
+  revenueCollectedAt: number;
+  troops: number;
+  ownerId: number;
+}
+
+interface Player {
+  id: number;
+  name: string;
+  color: string;
+  isBot: boolean;
+  cards: SyndicateCard[];
+  eliminated: boolean;
+  avatar: string;
+  chips: number;
+  faction: FactionId;
+}
+
+interface SyndicateState {
+  players: Player[];
+  currentPlayerIndex: number;
+  conquests: Record<string, TerritoryConquest>;
+  activeTerritories: Territorio[];
+  lastRevenueCheck: number;
+  unassignedTroops: number;
+  secretObjective: {
+    type: "conquer" | "destroy";
+    target: string;
+    completed: boolean;
+    desc?: string;
+  } | null;
+  turnPhase: "setup" | "deployment" | "attack" | "fortification";
+  gameStarted: boolean;
+  winner: Player | null;
+  pendingDeployment: Record<string, number>;
+  activeEffects: Record<string, { type: SpecialCardType; expiresAt: number; ownerId: number }>;
+
+  deck: SyndicateCard[];
+  hasMovedFortification: boolean;
+  assaultsThisTurn: number;
+  tradeCount: number;
+
+
+  startGame: (
+    playerCount: number,
+    userColor?: string,
+    botBonusTroops?: number,
+    mapSeed?: string,
+  ) => void;
+  conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
+  updateTroops: (id: string, delta: number) => void;
+  assignTroops: (id: string, amount: number) => void;
+  confirmDeployment: () => void;
+  cancelDeployment: () => void;
+  spendChips: (playerId: number, amount: number) => boolean;
+  moveTroops: (fromId: string, toId: string, amount: number) => void;
+  collectRevenue: () => { chips: number; troops: number };
+  drawCard: (playerId: number) => void;
+  tradeCards: (playerId: number, cardIds: string[]) => void;
+  setSecretObjective: (objective: SyndicateState["secretObjective"]) => void;
+  setPhase: (phase: SyndicateState["turnPhase"]) => void;
+  checkVictory: () => Player | null;
+  resetGame: () => void;
+  nextTurn: () => void;
+  playSpecialCard: (cardId: string, territoryId?: string) => void;
+  botPlay: () => Promise<void>;
+  canAttack: (fromId: string, toId: string) => boolean;
+  registerAssault: () => void;
+}
+
+
+const INITIAL_DECK: SyndicateCard[] = [
+  ...TERRITORIOS.map((t, i) => ({
+    id: `card-${t.id}`,
+    territoryId: t.id,
+    symbol: (["infantry", "cavalry", "artillery"] as const)[i % 3],
+    artUrl: "",
+  })),
+  // Cartas Especiales (Mazo táctico)
+  ...Array(3)
+    .fill(null)
+    .map((_, i) => ({
+      id: `special-bribe-${i}`,
+      territoryId: "special",
+      symbol: "wildcard" as const,
+      type: "bribe" as SpecialCardType,
+      artUrl: "",
+    })),
+  ...Array(3)
+    .fill(null)
+    .map((_, i) => ({
+      id: `special-informant-${i}`,
+      territoryId: "special",
+      symbol: "wildcard" as const,
+      type: "informant" as SpecialCardType,
+      artUrl: "",
+    })),
+  ...Array(3)
+    .fill(null)
+    .map((_, i) => ({
+      id: `special-surprise-${i}`,
+      territoryId: "special",
+      symbol: "wildcard" as const,
+      type: "surprise" as SpecialCardType,
+      artUrl: "",
+    })),
+  ...Array(2)
+    .fill(null)
+    .map((_, i) => ({
+      id: `special-sabotaje-${i}`,
+      territoryId: "special",
+      symbol: "wildcard" as const,
+      type: "surprise" as SpecialCardType, // Mapeamos sabotaje a una acción de sorpresa
+      artUrl: "",
+    })),
+];
+
+export const useSyndicate = create<SyndicateState>()(
+  persist(
+    (set, get) => ({
+      players: [],
+      currentPlayerIndex: 0,
+      conquests: {},
+      activeTerritories: TERRITORIOS,
+      lastRevenueCheck: Date.now(),
+      unassignedTroops: 0,
+      secretObjective: null,
+      turnPhase: "setup",
+      gameStarted: false,
+      winner: null,
+      deck: [...INITIAL_DECK],
+      hasMovedFortification: false,
+      assaultsThisTurn: 0,
+      tradeCount: 0,
+      pendingDeployment: {},
+      activeEffects: {},
+
+      registerAssault: () => set((state) => ({ assaultsThisTurn: state.assaultsThisTurn + 1 })),
+
+
+      playSpecialCard: (cardId, territoryId) =>
+        set((state) => {
+          const player = state.players[state.currentPlayerIndex];
+          const card = player.cards.find((c) => c.id === cardId);
+          if (!card || !card.type) return state;
+
+          const newPlayers = state.players.map((p) =>
+            p.id === player.id ? { ...p, cards: p.cards.filter((c) => c.id !== cardId) } : p,
+          );
+
+          const newEffects = { ...state.activeEffects };
+          const key = territoryId || `global-${card.type}-${player.id}`;
+          newEffects[key] = {
+            type: card.type,
+            ownerId: player.id,
+            expiresAt: Date.now() + 1000 * 60 * 60,
+          };
+
+          const newConquests = { ...state.conquests };
+          if (card.type === "surprise" && territoryId) {
+            if (newConquests[territoryId]) {
+              if (card.id.includes("sabotaje")) {
+                newConquests[territoryId] = {
+                  ...newConquests[territoryId],
+                  troops: Math.max(1, Math.floor(newConquests[territoryId].troops / 2)),
+                };
+              } else {
+                newConquests[territoryId] = {
+                  ...newConquests[territoryId],
+                  troops:
+                    newConquests[territoryId].troops + faccionDe(player.faction).surpriseTroops,
+                };
+              }
+            }
+          }
+
+          return { players: newPlayers, activeEffects: newEffects, conquests: newConquests };
+        }),
+
+      canAttack: (fromId: string, toId: string) => {
+        const state = get();
+        const from = state.conquests[fromId];
+        const to = state.conquests[toId];
+        if (!from || !to || from.ownerId === to.ownerId || from.troops <= 1) return false;
+
+        // Efecto del naipe: Toque de Queda (lockdown global)
+        const activeLockdowns = Object.values(state.activeEffects).filter(
+          (e) => e.type === "lockdown" && e.ownerId !== from.ownerId,
+        );
+        if (activeLockdowns.length > 0) return false;
+
+        return sonVecinos(fromId, toId);
+      },
+
+      confirmDeployment: () =>
+        set((state) => {
+          const newConquests = { ...state.conquests };
+          Object.entries(state.pendingDeployment).forEach(([id, amount]) => {
+            if (newConquests[id]) {
+              newConquests[id] = { ...newConquests[id], troops: newConquests[id].troops + amount };
+            }
+          });
+          return { conquests: newConquests, pendingDeployment: {} };
+        }),
+      cancelDeployment: () =>
+        set((state) => {
+          let returned = 0;
+          Object.values(state.pendingDeployment).forEach((v) => (returned += v));
+          return { unassignedTroops: state.unassignedTroops + returned, pendingDeployment: {} };
+        }),
+      spendChips: (playerId, amount) => {
+        const state = get();
+        const player = state.players.find((p) => p.id === playerId);
+        if (!player || player.chips < amount) return false;
+
+        set({
+          players: state.players.map((p) =>
+            p.id === playerId ? { ...p, chips: p.chips - amount } : p,
+          ),
+        });
+        return true;
+      },
+
+      setPhase: (phase) => set({ turnPhase: phase }),
+
+      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed) =>
+        set(() => {
+          // Determinar territorios activos
+          let activeTerrs = TERRITORIOS;
+          if (mapSeed) {
+            // Ajustar tamaño según dificultad/piso si quisiéramos, por ahora fijo en 20 para nodos cortos
+            activeTerrs = generateSubMap(mapSeed, 20).territorios;
+          }
+
+          const colors = ["#c9a84c", "#A83A3A", "#3E7C8C", "#6B7A3A", "#5B4B8A"];
+          const finalColors = userColor
+            ? [userColor, ...colors.filter((c) => c !== userColor)]
+            : colors;
+
+          const avatars = [
+            "https://loveable-uploads.s3.us-west-2.amazonaws.com/b39a7b7c-3f4a-4c1c-9b1b-7a3a3a3a3a3a.png",
+            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop",
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop",
+            "https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?w=200&h=200&fit=crop",
+          ];
+
+          const players: Player[] = Array.from({ length: playerCount }).map((_, i) => {
+            const faction = FACCIONES[i % FACCIONES.length];
+            return {
+              id: i,
+              name: i === 0 ? "El Cuervo" : faction.nombre,
+              color: finalColors[i % finalColors.length],
+              isBot: i > 0,
+              cards: [],
+              eliminated: false,
+              avatar: avatars[i % avatars.length],
+              chips: 500,
+              faction: faction.id,
+            };
+          });
+
+          const shuffledTerritories = [...activeTerrs].sort(() => Math.random() - 0.5);
+          const conquests: Record<string, TerritoryConquest> = {};
+
+          shuffledTerritories.forEach((t, index) => {
+            const playerId = index % playerCount;
+            conquests[t.id] = {
+              id: t.id,
+              conqueredAt: Date.now(),
+              revenueCollectedAt: Date.now(),
+              troops: playerId === 0 ? 1 : 1 + Math.max(0, botBonusTroops),
+              ownerId: playerId,
+            };
+          });
+
+          return {
+            players,
+            conquests,
+            gameStarted: true,
+            activeTerritories: activeTerrs,
+            turnPhase: "deployment",
+            currentPlayerIndex: 0,
+            unassignedTroops: 5,
+            winner: null,
+            deck: [...INITIAL_DECK].sort(() => Math.random() - 0.5),
+            hasMovedFortification: false,
+            assaultsThisTurn: 0,
+
+            tradeCount: 0,
+            activeEffects: {},
+          };
+        }),
+
+      nextTurn: () =>
+        set((state) => {
+          if (state.turnPhase === "deployment") return { turnPhase: "attack" };
+          if (state.turnPhase === "attack") return { turnPhase: "fortification" };
+
+          let nextIndex = (state.currentPlayerIndex + 1) % state.players.length;
+          while (state.players[nextIndex].eliminated) {
+            nextIndex = (nextIndex + 1) % state.players.length;
+            if (nextIndex === state.currentPlayerIndex) break;
+          }
+
+          const playerTerritories = Object.values(state.conquests).filter(
+            (c) => c.ownerId === nextIndex,
+          );
+          const terrCountBonus = Math.max(3, Math.floor(playerTerritories.length / 3));
+          const faccion = faccionDe(state.players[nextIndex]?.faction);
+
+          // --- TALISMANES y RUMORES ---
+          // Para el jugador humano (index 0)
+          let reinforcements = terrCountBonus + faccion.reinforceBonus;
+          let chipRevenue = playerTerritories.length * 5;
+
+          // Rumor: Inspección de la Liga (paga extra por territorio)
+          const { currentRumor } = useCasino.getState();
+          if (nextIndex === 0 && currentRumor?.id === "inspeccion-liga") {
+            chipRevenue += playerTerritories.length * 10;
+          }
+
+          BARRIOS.forEach((barrio) => {
+            const terrsInBarrio = state.activeTerritories.filter((t) => t.barrio === barrio.id);
+            const ownsAll =
+              terrsInBarrio.length > 0 &&
+              terrsInBarrio.every((t) => state.conquests[t.id]?.ownerId === nextIndex);
+            if (ownsAll) {
+              // Reloj Parado: Bonos de barrio dobles
+              const multiplier =
+                nextIndex === 0 && state.activeEffects["talisman-reloj-parado"] ? 2 : 1;
+              reinforcements += (barrio.bonus || 2) * multiplier;
+              chipRevenue += (barrio.bonus || 2) * 20 * multiplier;
+            }
+          });
+
+          // Puro Apagado: +2 refuerzos al abrir cada turno
+          if (nextIndex === 0 && state.activeEffects["talisman-puro-apagado"]) {
+            reinforcements += 2;
+          }
+
+          return {
+            players: state.players.map((p) =>
+              p.id === nextIndex ? { ...p, chips: p.chips + chipRevenue } : p,
+            ),
+            currentPlayerIndex: nextIndex,
+            turnPhase: "deployment",
+            unassignedTroops: reinforcements,
+            hasMovedFortification: false,
+            assaultsThisTurn: 0,
+
+            // Limpiar efectos caducados del jugador que empieza
+            activeEffects: Object.fromEntries(
+              Object.entries(state.activeEffects).filter(([_, e]) => e.ownerId !== nextIndex),
+            ),
+          };
+        }),
+
+      moveTroops: (fromId, toId, amount) =>
+        set((state) => {
+          const from = state.conquests[fromId];
+          const to = state.conquests[toId];
+          if (!from || !to || from.ownerId !== to.ownerId || from.troops <= amount) return state;
+          if (state.turnPhase === "fortification" && state.hasMovedFortification) return state;
+
+          return {
+            conquests: {
+              ...state.conquests,
+              [fromId]: { ...from, troops: from.troops - amount },
+              [toId]: { ...to, troops: to.troops + amount },
+            },
+            hasMovedFortification:
+              state.turnPhase === "fortification" ? true : state.hasMovedFortification,
+          };
+        }),
+
+      drawCard: (playerId) =>
+        set((state) => {
+          if (state.deck.length === 0) return state;
+          const newDeck = [...state.deck];
+          const card = newDeck.pop()!;
+          const newPlayers = state.players.map((p) =>
+            p.id === playerId ? { ...p, cards: [...p.cards, card] } : p,
+          );
+          return { deck: newDeck, players: newPlayers };
+        }),
+
+      tradeCards: (playerId, cardIds) =>
+        set((state) => {
+          const player = state.players.find((p) => p.id === playerId);
+          if (!player) return state;
+
+          const tradedCards = player.cards.filter((c) => cardIds.includes(c.id));
+          const remainingCards = player.cards.filter((c) => !cardIds.includes(c.id));
+
+          const newPlayers = state.players.map((p) =>
+            p.id === playerId ? { ...p, cards: remainingCards } : p,
+          );
+
+          const newDeck = [...state.deck, ...tradedCards].sort(() => Math.random() - 0.5);
+          const reinforcementsList = [4, 7, 10, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+          const bonus =
+            reinforcementsList[Math.min(state.tradeCount, reinforcementsList.length - 1)] +
+            faccionDe(player.faction).tradeBonus;
+
+          // Contrabando (efecto pasivo de naipe extra si estuviera activo)
+          // Por ahora lo simplificamos a la lógica base de trade.
+
+          const updatedConquests = { ...state.conquests };
+          tradedCards.forEach((card) => {
+            if (updatedConquests[card.territoryId]?.ownerId === playerId) {
+              updatedConquests[card.territoryId] = {
+                ...updatedConquests[card.territoryId],
+                troops: updatedConquests[card.territoryId].troops + 2,
+              };
+            }
+          });
+
+          return {
+            players: newPlayers,
+            deck: newDeck,
+            unassignedTroops: state.unassignedTroops + bonus,
+            tradeCount: state.tradeCount + 1,
+            conquests: updatedConquests,
+          };
+        }),
+
+      conquerTerritory: (id, troopsRemaining, playerId) =>
+        set((state) => {
+          const now = Date.now();
+          const oldOwnerId = state.conquests[id]?.ownerId;
+          const newConquests = {
+            ...state.conquests,
+            [id]: {
+              id,
+              conqueredAt: now,
+              revenueCollectedAt: now,
+              troops: troopsRemaining,
+              ownerId: playerId,
+            },
+          };
+
+          let newPlayers = [...state.players];
+          if (oldOwnerId !== undefined && oldOwnerId !== playerId) {
+            const hasTerritories = Object.values(newConquests).some(
+              (c) => c.ownerId === oldOwnerId,
+            );
+            if (!hasTerritories) {
+              newPlayers = newPlayers.map((p) =>
+                p.id === oldOwnerId ? { ...p, eliminated: true } : p,
+              );
+              const eliminatedPlayer = state.players.find((p) => p.id === oldOwnerId);
+              if (eliminatedPlayer && eliminatedPlayer.cards.length > 0) {
+                newPlayers = newPlayers.map((p) =>
+                  p.id === playerId ? { ...p, cards: [...p.cards, ...eliminatedPlayer.cards] } : p,
+                );
+              }
+            }
+          }
+          return { conquests: newConquests, players: newPlayers };
+        }),
+
+      updateTroops: (id, delta) =>
+        set((state) => {
+          const conquest = state.conquests[id];
+          if (!conquest) return state;
+          return {
+            conquests: {
+              ...state.conquests,
+              [id]: { ...conquest, troops: Math.max(1, conquest.troops + delta) },
+            },
+          };
+        }),
+
+      assignTroops: (id, amount) =>
+        set((state) => {
+          const conquest = state.conquests[id];
+          if (!conquest || state.unassignedTroops < amount) return state;
+
+          const player = state.players[state.currentPlayerIndex];
+          if (player?.isBot) {
+            return {
+              unassignedTroops: state.unassignedTroops - amount,
+              conquests: {
+                ...state.conquests,
+                [id]: { ...conquest, troops: conquest.troops + amount },
+              },
+            };
+          }
+          return {
+            unassignedTroops: state.unassignedTroops - amount,
+            pendingDeployment: {
+              ...state.pendingDeployment,
+              [id]: (state.pendingDeployment[id] || 0) + amount,
+            },
+          };
+        }),
+
+      collectRevenue: () => {
+        const state = get();
+        const now = Date.now();
+        let totalChips = 0;
+        let totalTroops = 0;
+        const updatedConquests = { ...state.conquests };
+        const hoursPassed = Math.floor((now - state.lastRevenueCheck) / (1000 * 60 * 60));
+
+        if (hoursPassed >= 1) {
+          Object.values(updatedConquests).forEach((c) => {
+            const terr = TERRITORIOS_POR_ID[c.id];
+            if (!terr) return;
+            let chipRate = 5;
+            let troopRate = 1;
+            const barrioTerrs = state.activeTerritories.filter((t) => t.barrio === terr.barrio);
+            const allConquered = barrioTerrs.every(
+              (t) => state.conquests[t.id]?.ownerId === c.ownerId,
+            );
+
+            if (allConquered) {
+              const barrio = BARRIOS.find((b) => b.id === terr.barrio);
+              chipRate += barrio?.bonus ?? 0;
+              troopRate += 1;
+            }
+            totalChips += hoursPassed * chipRate;
+            totalTroops += hoursPassed * troopRate;
+            updatedConquests[c.id] = { ...c, revenueCollectedAt: now };
+          });
+          set({
+            conquests: updatedConquests,
+            lastRevenueCheck: now,
+            unassignedTroops: state.unassignedTroops + totalTroops,
+          });
+        }
+        return { chips: totalChips, troops: totalTroops };
+      },
+
+      setSecretObjective: (objective) => set({ secretObjective: objective }),
+      checkVictory: () => {
+        const state = get();
+        const playerTerritories = Object.values(state.conquests).filter(
+          (c) => c.ownerId === state.currentPlayerIndex,
+        );
+        const meta =
+          state.secretObjective?.type === "conquer"
+            ? parseInt(state.secretObjective.target, 10) || 22
+            : 22;
+        if (playerTerritories.length >= meta) return state.players[state.currentPlayerIndex];
+        const activePlayers = state.players.filter((p) => !p.eliminated);
+        if (activePlayers.length === 1) return activePlayers[0];
+        return null;
+      },
+      resetGame: () => set({ gameStarted: false, winner: null }),
+
+      botPlay: async () => {
+        const state = get();
+        const bot = state.players[state.currentPlayerIndex];
+        if (!bot || !bot.isBot || bot.eliminated) return;
+
+        const vecinosDe = (id: string) =>
+          get().activeTerritories.find((t) => t.id === id)?.vecinos ?? [];
+
+        if (state.turnPhase === "deployment") {
+          // Refuerza la frontera: reparte en los sectores propios que tocan enemigos.
+          const propios = Object.values(state.conquests).filter((c) => c.ownerId === bot.id);
+          const frontera = propios.filter((c) =>
+            vecinosDe(c.id).some((n) => state.conquests[n] && state.conquests[n].ownerId !== bot.id),
+          );
+          const destinos = (frontera.length ? frontera : propios).sort(
+            (a, b) => a.troops - b.troops,
+          );
+          let restantes = state.unassignedTroops;
+          let i = 0;
+          while (restantes > 0 && destinos.length > 0) {
+            get().assignTroops(destinos[i % destinos.length].id, 1);
+            restantes--;
+            i++;
+          }
+          get().confirmDeployment();
+          await new Promise((r) => setTimeout(r, 700));
+          get().nextTurn();
+          return;
+        }
+
+        if (state.turnPhase === "attack") {
+          // Resuelve hasta 3 asaltos reales contra vecinos más débiles.
+          for (let asalto = 0; asalto < 3; asalto++) {
+            const s = get();
+            const candidatos = Object.values(s.conquests)
+              .filter((c) => c.ownerId === bot.id && c.troops > 1)
+              .sort((a, b) => b.troops - a.troops);
+            let origen: string | null = null;
+            let destino: string | null = null;
+            for (const t of candidatos) {
+              const objetivo = vecinosDe(t.id)
+                .filter((nId) => {
+                  const conq = s.conquests[nId];
+                  return conq && conq.ownerId !== bot.id && s.canAttack(t.id, nId);
+                })
+                .sort((a, b) => s.conquests[a].troops - s.conquests[b].troops)[0];
+              if (objetivo && s.conquests[objetivo].troops < t.troops) {
+                origen = t.id;
+                destino = objetivo;
+                break;
+              }
+            }
+            if (!origen || !destino) break;
+
+            const atkDados = Math.min(3, s.conquests[origen].troops - 1);
+            const defDados = Math.min(3, s.conquests[destino].troops);
+            const { bajasAtacante, bajasDefensor } = tirarAsalto(atkDados, defDados);
+
+            get().updateTroops(origen, -bajasAtacante);
+            const defRestantes = get().conquests[destino].troops - bajasDefensor;
+            if (defRestantes <= 0) {
+              const disponibles = get().conquests[origen].troops - 1;
+              const mueve = Math.max(1, Math.min(disponibles, atkDados));
+              get().updateTroops(origen, -mueve);
+              get().conquerTerritory(destino, mueve, bot.id);
+              get().drawCard(bot.id);
+            } else {
+              get().updateTroops(destino, -bajasDefensor);
+            }
+            await new Promise((r) => setTimeout(r, 500));
+          }
+          get().nextTurn();
+          return;
+        }
+
+        if (state.turnPhase === "fortification") {
+          // Mueve tropas del interior seguro hacia la frontera.
+          const s = get();
+          const propios = Object.values(s.conquests).filter((c) => c.ownerId === bot.id);
+          const interior = propios.find(
+            (c) =>
+              c.troops > 2 &&
+              vecinosDe(c.id).every(
+                (n) => !s.conquests[n] || s.conquests[n].ownerId === bot.id,
+              ),
+          );
+          if (interior) {
+            const destino = vecinosDe(interior.id).find(
+              (n) => s.conquests[n]?.ownerId === bot.id,
+            );
+            if (destino) get().moveTroops(interior.id, destino, interior.troops - 1);
+          }
+          await new Promise((r) => setTimeout(r, 400));
+          get().nextTurn();
+        }
+
+      },
+    }),
+    { name: "syndicate-storage" },
+  ),
+);
+
+/** Resuelve un asalto al estilo T.E.G.: se comparan dados ordenados de mayor a menor. */
+export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
+  const tirar = (n: number) =>
+    Array.from({ length: Math.max(0, n) }, () => Math.floor(Math.random() * 6) + 1).sort(
+      (a, b) => b - a,
+    );
+  const a = tirar(dadosAtacante);
+  const d = tirar(dadosDefensor);
+  let bajasAtacante = 0;
+  let bajasDefensor = 0;
+  for (let i = 0; i < Math.min(a.length, d.length); i++) {
+    if (a[i] > d[i]) bajasDefensor++;
+    else bajasAtacante++;
+  }
+  return { bajasAtacante, bajasDefensor, dadosA: a, dadosD: d };
+}
+
+function findValidSet(cards: SyndicateCard[]) {
+
+  if (cards.length < 3) return null;
+  for (let i = 0; i < cards.length; i++) {
+    for (let j = i + 1; j < cards.length; j++) {
+      for (let k = j + 1; k < cards.length; k++) {
+        const trio = [cards[i], cards[j], cards[k]];
+        const symbols = trio.map((c) => c.symbol);
+        const allSame = new Set(symbols).size === 1;
+        const allDifferent = new Set(symbols).size === 3;
+        const hasWildcard = symbols.includes("wildcard");
+        if (allSame || allDifferent || hasWildcard) return trio;
+      }
+    }
+  }
+  return null;
+}

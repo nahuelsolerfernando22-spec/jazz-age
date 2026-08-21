@@ -412,7 +412,10 @@ export function PickerPortal({ children }: { children: React.ReactNode }) {
       style={{
         // Sin backdrop-filter: en WebView de Android el blur a pantalla
         // completa cuesta caro y hace tironear las animaciones.
-        background: "rgba(0,0,0,0.78)",
+        // Velo en degradé en vez de negro parejo: el 78% plano borraba el
+        // retrato de la anfitriona que vive detrás del panel.
+        background:
+          "linear-gradient(180deg, rgba(20,13,10,0.34) 0%, rgba(16,11,9,0.52) 38%, rgba(10,8,8,0.78) 100%)",
       }}
     >
       {children}

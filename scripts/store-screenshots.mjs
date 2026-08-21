@@ -11,10 +11,13 @@ const BASE = process.env.SHOT_URL ?? "http://localhost:8080";
 
 const SHOTS = [
   { name: "01-hub", path: "/single" },
-  { name: "02-blackjack", path: "/blackjack" },
-  { name: "03-ruleta", path: "/ruleta" },
-  { name: "04-poker", path: "/poker" },
-  { name: "05-logros", path: "/logros" },
+  { name: "02-truco", path: "/truco" },
+  { name: "03-torneo", path: "/torneo" },
+  { name: "04-sindicato", path: "/sindicato" },
+  { name: "05-mahjong", path: "/mahjong" },
+  { name: "06-blackjack", path: "/blackjack" },
+  { name: "07-solitario", path: "/solitario" },
+  { name: "08-logros", path: "/logros" },
 ];
 
 async function main() {

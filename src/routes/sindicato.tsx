@@ -614,7 +614,10 @@ function SindicatoPage() {
         const mueve = Math.max(1, Math.min(disponibles, dadosAtaque));
         updateTroops(attackerId, -mueve);
         conquerTerritory(selectedId, mueve, currentPlayerIndex);
+        const naipesAntes = useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0;
         drawCard(currentPlayerIndex);
+        const naipeNuevo =
+          (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
 
         // Moneda Doblada: +25 fichas por sector conquistado
         if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
@@ -622,7 +625,11 @@ function SindicatoPage() {
         }
 
         haptics("heavy");
-        toast.success("¡Sector bajo control! Carta táctica recibida.");
+        toast.success(
+          naipeNuevo
+            ? "¡Sector bajo control! Carta táctica recibida."
+            : "¡Sector bajo control! Con tres canjes hechos, hacen falta dos sectores para el naipe.",
+        );
         setIsCombatOpen(false);
         setLastConflictId(selectedId);
       } else {

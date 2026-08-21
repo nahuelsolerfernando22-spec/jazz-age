@@ -1032,10 +1032,10 @@ function CardFace({ card, hidden = false }: { card: CardUI; hidden?: boolean }) 
       draggable={false}
       loading="lazy"
       decoding="async"
-      width={64}
-      height={96}
-      sizes="(max-width: 640px) 56px, 64px"
-      className="h-20 w-14 select-none rounded-lg border border-[var(--marfil)]/25 bg-[var(--crema-clara)] object-cover shadow-md sm:h-24 sm:w-16"
+      width={80}
+      height={120}
+      sizes="(max-width: 640px) 72px, 80px"
+      className="h-24 w-[4.5rem] select-none rounded-lg border border-[var(--marfil)]/25 bg-[var(--crema-clara)] object-cover shadow-md sm:h-28 sm:w-20"
     />
   );
 }

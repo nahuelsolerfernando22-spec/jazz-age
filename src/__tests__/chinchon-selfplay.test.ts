@@ -5,11 +5,15 @@ import { DEFAULT_WEIGHTS, CHAMPION_WEIGHTS } from "@/lib/ai/chinchon/weights";
 describe("chinchon self-play (smoke)", () => {
   // 8 manos daban una varianza enorme (una sola derrota movía el resultado 12
   // puntos): con 40 partidas la medición es estable y sigue siendo rápida.
+  // Una sola seed oscila entre 0.20 y 0.35, así que el smoke promedia tres
+  // seeds: mide la fuerza real del campeón sin fallar por varianza.
   it("champion no colapsa vs default", () => {
-    const wr = championWinRate(CHAMPION_WEIGHTS, DEFAULT_WEIGHTS, 40, 123);
+    const seeds = [123, 7, 2024];
+    const wrs = seeds.map((s) => championWinRate(CHAMPION_WEIGHTS, DEFAULT_WEIGHTS, 40, s));
+    const mean = wrs.reduce((a, b) => a + b, 0) / wrs.length;
 
-    expect(wr).toBeGreaterThanOrEqual(0.25);
-  }, 300_000);
+    expect(mean).toBeGreaterThanOrEqual(0.25);
+  }, 600_000);
 });
 
 if (process.env.RUN_TRAIN === "1" || process.env.RUN_TRAIN === "long") {

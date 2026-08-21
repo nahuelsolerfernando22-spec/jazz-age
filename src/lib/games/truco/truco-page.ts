@@ -35,9 +35,26 @@ for (const path in CARD_ART) {
   }
 }
 
+
+// Las figuras del mazo español llegan como 10/11/12 pero el arte está guardado
+// como sota/caballo/rey (y bastos 8/9 sólo existe en su versión "-clean").
+// Sin este puente algunas cartas salían con el dorso puesto.
+const FIGURE_STEM: Record<string, string> = { "10": "sota", "11": "caballo", "12": "rey" };
+function stemFor(suit: string, rank: number | string): string[] {
+  const r = String(rank);
+  const out = [`${suit}-${r}`];
+  const fig = FIGURE_STEM[r];
+  if (fig) out.push(`${suit}-${fig}`);
+  out.push(`${suit}-${r}-clean`);
+  return out;
+}
+function resolveArt(suit: string, rank: number | string): string {
+  for (const s of stemFor(suit, rank)) if (BY_STEM[s]) return BY_STEM[s];
+  return BY_STEM["card-back"] || "";
+}
+
 export function cardArt(card: Card | { suit: string; rank: number | string }): string {
-  const stem = `${card.suit}-${card.rank}`;
-  return BY_STEM[stem] || BY_STEM["card-back"] || "";
+  return resolveArt(card.suit, card.rank);
 }
 
 let _ac: AudioContext | null = null;

@@ -129,3 +129,115 @@ export function sortearCuadro(seed: string): CupRival[] {
 export function cupRoundName(round: number): string {
   return CUP_ROUNDS[Math.min(round, CUP_TOTAL_ROUNDS - 1)].nombre;
 }
+
+/* ─────────────────────────  Recompensas por ronda  ───────────────────── */
+
+export interface CupRoundReward {
+  /** Fichas que paga la ronda. */
+  fichas: number;
+  /** Extra acumulable que se guarda en la vitrina del cuadro. */
+  extra: string;
+  /** Puntos de tabla que suma la ronda. */
+  puntos: number;
+}
+
+/** Cada ronda ganada paga y además deja algo en la mesa: se acumula todo. */
+export const CUP_ROUND_REWARDS: CupRoundReward[] = [
+  { fichas: CUP_PURSE[0], extra: "Ficha de bronce", puntos: 10 },
+  { fichas: CUP_PURSE[1], extra: "Naipe marcado", puntos: 25 },
+  { fichas: CUP_PURSE[2], extra: "Anillo de la casa", puntos: 45 },
+  { fichas: CUP_PURSE[3], extra: "Corona del Cuervo", puntos: 80 },
+];
+
+/** Bono por barrer el cuadro sin caer, encima de las cuatro bolsas. */
+export const CUP_SWEEP_BONUS = 1000;
+
+/* ─────────────────────────  Torneos programados  ─────────────────────── */
+
+export interface CupSchedule {
+  /** Timestamp de apertura. */
+  at: number;
+  gameId: string;
+}
+
+const SLOT_MS = 6 * 60 * 60 * 1000; // cuatro llamados por día
+
+/** Próximos torneos programados: la casa abre mesa cada seis horas. */
+export function cupSchedule(now = Date.now(), count = 4): CupSchedule[] {
+  const first = Math.ceil(now / SLOT_MS) * SLOT_MS;
+  const out: CupSchedule[] = [];
+  for (let i = 0; i < count; i++) {
+    const at = first + i * SLOT_MS;
+    const idx = Math.floor(at / SLOT_MS) % CUP_GAMES.length;
+    out.push({ at, gameId: CUP_GAMES[idx].id });
+  }
+  return out;
+}
+
+/** Cuenta regresiva legible ("2 h 14 m"). */
+export function cupCountdown(target: number, now = Date.now()): string {
+  const ms = Math.max(0, target - now);
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  if (h > 0) return `${h} h ${m} m`;
+  const s = Math.floor((ms % 60_000) / 1000);
+  return `${m} m ${s} s`;
+}
+
+/* ─────────────────────────  Cupos y reintentos  ──────────────────────── */
+
+/** Anotadas por día y reintentos por cuadro. */
+export const CUP_ENTRIES_PER_DAY = 3;
+export const CUP_RETRIES_PER_DAY = 2;
+
+export function cupDayKey(date = new Date()): number {
+  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+}
+
+/* ────────────────────  Rivales que leen tu desempeño  ────────────────── */
+
+/**
+ * Ajusta la garra del rival según cómo venís: `rating` va de -1 (te están
+ * comiendo) a +1 (los pasás por arriba). Nunca deja la mesa floja ni imposible.
+ */
+export function ajustarGarra(base: number, rating: number, round: number): number {
+  const empuje = Math.round(rating * 2); // -2..+2
+  return Math.max(1, Math.min(5, base + empuje + Math.floor(round / 2)));
+}
+
+export function garraLabel(garra: number): string {
+  if (garra <= 1) return "Tibio";
+  if (garra === 2) return "Firme";
+  if (garra === 3) return "Pesado";
+  if (garra === 4) return "Hueso duro";
+  return "De la casa";
+}
+
+/* ────────────────────────  Tabla de posiciones  ──────────────────────── */
+
+export interface CupStanding {
+  nombre: string;
+  puntos: number;
+  titulos: number;
+  esVos: boolean;
+}
+
+const CASA_NOMBRES = RIVALES.map((r) => r.nombre);
+
+/** Tabla por mesa: tus puntos contra los capos de la casa (determinista). */
+export function buildStandings(
+  gameId: string,
+  misPuntos: number,
+  misTitulos: number,
+  jugador = "Vos",
+): CupStanding[] {
+  const base = hash(`standings:${gameId}`);
+  const filas: CupStanding[] = CASA_NOMBRES.map((nombre) => {
+    const h = hash(`${gameId}:${nombre}:${base}`);
+    const puntos = 40 + (h % 320);
+    return { nombre, puntos, titulos: (h >>> 9) % 4, esVos: false };
+  });
+  filas.push({ nombre: jugador, puntos: misPuntos, titulos: misTitulos, esVos: true });
+  filas.sort((a, b) => b.puntos - a.puntos || b.titulos - a.titulos);
+  return filas;
+}

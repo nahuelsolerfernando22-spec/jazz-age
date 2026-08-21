@@ -11,7 +11,7 @@ interface Props {
   dim?: number;
 }
 
-export function SingleBackdrop({ gameId, dim = 0.62 }: Props) {
+export function SingleBackdrop({ gameId, dim = 0.44 }: Props) {
   const bg = useMemo(() => backgroundForGame(gameId), [gameId]);
   const lqip = useMemo(() => backgroundPlaceholderForGame(gameId), [gameId]);
   const tone = useMemo(() => toneForGame(gameId), [gameId]);
@@ -30,7 +30,16 @@ export function SingleBackdrop({ gameId, dim = 0.62 }: Props) {
       ? `linear-gradient(180deg, rgba(${tr},${tg},${tb},${tintA}) 0%, rgba(${tr},${tg},${tb},${tintA * 0.85}) 100%), `
       : "";
 
-  const overlay = `linear-gradient(180deg, rgba(11,21,18,${a * 0.75}) 0%, rgba(11,21,18,${a}) 55%, rgba(11,21,18,${Math.min(1, a + 0.15)}) 100%), ${tintLayer}transparent`;
+  // El velo ya no es parejo: arriba casi no pesa (ahí vive el arte de la
+  // anfitriona) y se densifica sólo en el tercio inferior, que es donde se
+  // apoyan los paneles y hace falta contraste para leer.
+  const overlay =
+    `linear-gradient(180deg,` +
+    ` rgba(24,16,12,${(a * 0.3).toFixed(3)}) 0%,` +
+    ` rgba(20,14,11,${(a * 0.55).toFixed(3)}) 42%,` +
+    ` rgba(14,11,10,${(a * 0.92).toFixed(3)}) 74%,` +
+    ` rgba(11,9,9,${Math.min(1, a + 0.14).toFixed(3)}) 100%),` +
+    ` ${tintLayer}transparent`;
 
   return (
     <div

@@ -100,8 +100,8 @@ export interface BackgroundTone {
 }
 
 const TONE_BY_GAME: Record<string, BackgroundTone> = {
-  escoba: { dim: 0.52, tint: [40, 12, 12], tintAlpha: 0.22 },
-  blackjack: { dim: 0.78, tint: [8, 18, 15], tintAlpha: 0.18 },
+  escoba: { dim: 0.4, tint: [46, 18, 14], tintAlpha: 0.16 },
+  blackjack: { dim: 0.54, tint: [14, 22, 18], tintAlpha: 0.12 },
 };
 
 export function toneForGame(gameId: string): BackgroundTone {

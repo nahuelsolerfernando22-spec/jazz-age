@@ -2,17 +2,35 @@
  * Naipe de objetivo secreto del jugador. Tapado por defecto: se destapa al tocar,
  * como cuando espiás tu carta debajo de la mesa.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Target } from "lucide-react";
 import { useSyndicate } from "@/store/syndicate";
+import { evaluarObjetivo } from "@/lib/sindicato-objetivos";
 
 export function ObjetivoCard() {
   const [abierto, setAbierto] = useState(false);
   const objetivo = useSyndicate((s) => s.objectives[0] ?? null);
-  const progreso = useSyndicate((s) => s.objectiveProgress(0));
+  const conquests = useSyndicate((s) => s.conquests);
+  const territories = useSyndicate((s) => s.activeTerritories);
+  const players = useSyndicate((s) => s.players);
   const roundNumber = useSyndicate((s) => s.roundNumber);
   const comun = useSyndicate((s) => s.comunObjetivo);
+
+  const progreso = useMemo(
+    () =>
+      evaluarObjetivo(
+        objetivo,
+        {
+          conquests,
+          territories,
+          eliminados: Object.fromEntries(players.map((p) => [p.id, p.eliminated])),
+          comun,
+        },
+        0,
+      ),
+    [objetivo, conquests, territories, players, comun],
+  );
 
   if (!objetivo) return null;
 

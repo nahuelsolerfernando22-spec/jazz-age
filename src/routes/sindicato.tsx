@@ -691,10 +691,14 @@ function SindicatoPage() {
 
       <main
         ref={containerRef}
+        data-pannable
         className="fixed inset-0 z-0 w-screen h-dvh touch-none bg-[var(--cd-noir-2)] overflow-hidden"
         onPointerDown={(e) => {
           if ((e.target as Element).closest("g.pointer-events-auto")) return;
           if (e.button !== 0) return;
+          // No capturar el corredor de gestos del sistema (back swipe lateral).
+          const edge = 16;
+          if (e.clientX <= edge || e.clientX >= window.innerWidth - edge) return;
           let startX = e.clientX;
           let startY = e.clientY;
           const onPointerMove = (moveEvent: PointerEvent) => {

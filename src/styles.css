@@ -5679,3 +5679,90 @@ button,
 a[href] {
   -webkit-touch-callout: none;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Nativo Android: hover/pressed, gestos del sistema y safe-areas
+   ════════════════════════════════════════════════════════════════ */
+
+/* 1) Hover solo en punteros reales (evita estados "pegados" en táctil). */
+@media (hover: hover) and (pointer: fine) {
+  :where(button, [role="button"], [role="tab"], a[href], .brass-btn, .deco-btn, .paper-chip):not(:disabled):not([aria-disabled="true"]):hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* 2) Pressed consistente en todo control interactivo, sin retardo. */
+:where(button, [role="button"], [role="tab"], a[href], .brass-btn, .deco-btn, .paper-chip, [data-pressable]):not(:disabled):not([aria-disabled="true"]) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 90ms ease-out,
+    filter 90ms ease-out;
+}
+:where(button, [role="button"], [role="tab"], a[href], .brass-btn, .deco-btn, .paper-chip, [data-pressable]):not(:disabled):not([aria-disabled="true"]):active {
+  transform: scale(0.965);
+  filter: brightness(0.92);
+  transition-duration: 0ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], [role="tab"], a[href], [data-pressable]):active {
+    transform: none;
+  }
+}
+
+/* 3) Carruseles y paneles paneables: no pelear con back/home swipe.
+      pan-x deja el gesto vertical al sistema; los bordes laterales
+      reservan el corredor del back swipe del sistema (~16dp). */
+.overflow-x-auto,
+.overflow-x-scroll,
+[data-hscroll] {
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+}
+[data-pannable] {
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+/* Corredor de gesto: los paneles paneables no capturan los 16dp del borde. */
+[data-pannable]::before,
+[data-pannable]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 40;
+  pointer-events: none;
+}
+[data-pannable]::before { left: 0; }
+[data-pannable]::after { right: 0; width: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* 4) Safe-area universal: notch, barra de gestos y modo horizontal. */
+:root {
+  --sa-top: env(safe-area-inset-top, 0px);
+  --sa-bottom: env(safe-area-inset-bottom, 0px);
+  --sa-left: env(safe-area-inset-left, 0px);
+  --sa-right: env(safe-area-inset-right, 0px);
+  /* Colchón de la barra de gestos de Android en horizontal. */
+  --gesture-bar: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+.safe-x { padding-left: var(--sa-left); padding-right: var(--sa-right); }
+.safe-y { padding-top: var(--sa-top); padding-bottom: var(--sa-bottom); }
+
+@media (orientation: landscape) {
+  /* En horizontal el notch pasa a un lateral: todo el lienzo se corre. */
+  #app-root,
+  [data-app-shell],
+  main {
+    padding-left: max(var(--sa-left), 12px);
+    padding-right: max(var(--sa-right), 12px);
+    padding-bottom: var(--gesture-bar);
+  }
+  /* Elementos flotantes fijos respetan el mismo margen. */
+  .fixed.left-0,
+  [data-float="left"] { margin-left: max(var(--sa-left), 8px); }
+  .fixed.right-0,
+  [data-float="right"] { margin-right: max(var(--sa-right), 8px); }
+}

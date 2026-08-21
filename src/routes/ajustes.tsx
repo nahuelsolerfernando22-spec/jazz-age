@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCasino } from "@/store/casino";
 import { toast } from "sonner";
 import { useSettings } from "@/store/settings";
 import { clearBuffer } from "@/lib/analytics";
@@ -401,6 +402,16 @@ function AjustesInner() {
                 </Link>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                useCasino.getState().resetTutorial();
+                toast.success("La bienvenida vuelve a aparecer en la portada");
+              }}
+              className="mt-3 inline-flex min-h-11 items-center rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--marfil)]/80 hover:border-[var(--oro)]/50 hover:text-[var(--oro)]"
+            >
+              Ver la bienvenida otra vez
+            </button>
           </Section>
 
           <Section title="Acerca de" hint="Información de la app y contenido.">

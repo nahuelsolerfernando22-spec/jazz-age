@@ -161,6 +161,7 @@ interface CasinoState {
 
   tutorialSeen: boolean;
   markTutorialSeen: () => void;
+  resetTutorial: () => void;
 
   lastCamerinoDay: number | null;
   camerinoOutfits: string[];
@@ -291,6 +292,7 @@ export const useCasino = create<CasinoState>()(
       setGuardiaBeaten: (v) => set({ guardiaBeaten: v }),
       tutorialSeen: false,
       markTutorialSeen: () => set({ tutorialSeen: true }),
+      resetTutorial: () => set({ tutorialSeen: false }),
       lastCamerinoDay: null,
       camerinoOutfits: [],
       lastTocadorDay: null,

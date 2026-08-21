@@ -20,6 +20,10 @@ interface Props {
   territories: number;
   totalTerritories: number;
   cards: number;
+  /** Vuelta actual de la mesa (T.E.G.: las dos primeras son de acomodo). */
+  round?: number;
+  /** Si es falso, la fase de asalto está cerrada esta vuelta. */
+  canAssault?: boolean;
 }
 
 export function TurnBanner({

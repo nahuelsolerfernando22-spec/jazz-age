@@ -242,7 +242,7 @@ function DificultadPage() {
           </div>
           <Link
             to="/ajustes"
-            className="rounded-full border border-[var(--oro)]/50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--oro)] hover:bg-[var(--oro)]/10"
+            className="rounded-full border border-[var(--oro)]/50 px-4 py-3 min-h-[44px] inline-flex items-center text-xs font-semibold uppercase tracking-[0.2em] text-[var(--oro)] hover:bg-[var(--oro)]/10"
           >
             Ajustes
           </Link>

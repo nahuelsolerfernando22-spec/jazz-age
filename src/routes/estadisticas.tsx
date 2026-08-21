@@ -216,7 +216,7 @@ function EstadisticasPage() {
                     <td className="px-3 py-2">
                       <Link
                         to={r.to}
-                        className="inline-flex min-h-[32px] items-center text-[var(--marfil)] hover:text-[var(--oro)]"
+                        className="inline-flex min-h-[44px] items-center text-[var(--marfil)] hover:text-[var(--oro)]"
                       >
                         {r.name}
                       </Link>
@@ -284,7 +284,7 @@ function StatsTable({ rows, showNet }: { rows: Row[]; showNet?: boolean }) {
             <td className="px-3 py-2">
               <Link
                 to={r.to}
-                className="inline-flex min-h-[32px] items-center text-[var(--marfil)] hover:text-[var(--oro)]"
+                className="inline-flex min-h-[44px] items-center text-[var(--marfil)] hover:text-[var(--oro)]"
               >
                 {r.name}
               </Link>

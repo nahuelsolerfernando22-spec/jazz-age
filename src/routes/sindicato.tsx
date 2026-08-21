@@ -920,7 +920,7 @@ function SindicatoPage() {
                               d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
                               fill="#0b0806"
                               fillOpacity="0.9"
-                              stroke="url(#laton-canto)"
+                              stroke="url(#tex-laton)"
                               strokeWidth="1.2"
                             />
                             <text
@@ -952,10 +952,10 @@ function SindicatoPage() {
                         >
                           <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
-                          <circle r="16" fill="url(#laton-canto)" fillOpacity="0.9" />
+                          <circle r="16" fill="url(#tex-laton)" fillOpacity="0.95" />
                           <circle
                             r="14.5"
-                            fill="url(#laton-ficha)"
+                            fill="url(#tex-laton)"
                             filter="url(#bakelite-relief)"
                           />
                           <circle

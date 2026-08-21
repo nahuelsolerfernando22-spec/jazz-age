@@ -1,4 +1,21 @@
-import { type Card, type GameState, type Player, type Suit } from "@/lib/games/truco/truco";
+import {
+  cantarEnvido,
+  cantarFlor,
+  cantarTruco,
+  irseAlMazo,
+  pasarReclamoEnvido,
+  playCard,
+  reclamarEnvido,
+  responderEnvido,
+  responderFlor,
+  responderTruco,
+  startHand,
+  type Card,
+  type EnvidoLevel,
+  type GameState,
+  type Player,
+  type Suit,
+} from "@/lib/games/truco/truco";
 
 // ---------- Card art ----------
 const CARD_ART = import.meta.glob("@/assets/chinchon-v2/*.webp", {
@@ -106,8 +123,57 @@ export type Action =
 
 export function reducer(state: GameState | null, action: Action): GameState | null {
   if (action.t === "init") return action.g;
+  if (action.t === "hydrate") return action.g ?? null;
+  if (action.t === "start") {
+    return startHand(null, action.flor, action.pointGoal ?? action.goal ?? 30, Math.random, action.aiName ?? "Eulalia");
+  }
   if (!state) return null;
-  return state;
+
+  switch (action.t) {
+    case "nextHand": {
+      if (state.winner) return state;
+      return startHand(state, state.florEnabled, state.pointGoal);
+    }
+    case "play":
+      return playCard(state, action.who, action.cardId);
+    case "truco":
+      return cantarTruco(state, action.who);
+    case "respTruco":
+      return responderTruco(state, action.who, action.ok);
+    case "envido":
+      return cantarEnvido(state, action.who, action.level as EnvidoLevel);
+    case "respEnvido":
+      return responderEnvido(state, action.who, action.ok, {
+        playerDeclared: action.playerDeclared,
+        aiLieRate: action.aiLieRate,
+      });
+    case "flor":
+      return cantarFlor(state, action.who);
+    case "respFlor":
+      return responderFlor(state, action.who, action.act as "achicar" | "subir" | "noquiero");
+    case "reclamar":
+      return reclamarEnvido(state, action.who);
+    case "pasarReclamo":
+      return pasarReclamoEnvido(state);
+    case "mazo":
+      return irseAlMazo(state, action.who);
+    case "surrender": {
+      const who = action.who ?? "you";
+      const loser: Player = who;
+      return {
+        ...state,
+        winner: loser === "you" ? "ai" : "you",
+        hand: {
+          ...state.hand,
+          handOver: true,
+          pending: null,
+          log: [...state.hand.log, loser === "you" ? "Te retirás de la mesa." : "Se retira."],
+        },
+      };
+    }
+    default:
+      return state;
+  }
 }
 
 export type ZoomLevel = 0.85 | 1.0 | 1.15 | 1.3;

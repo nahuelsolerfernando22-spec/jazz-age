@@ -692,7 +692,17 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
   return { bajasAtacante, bajasDefensor, dadosA: a, dadosD: d };
 }
 
+/** ¿Tres naipes forman un canje legal? */
+export function esTrioValido(cards: SyndicateCard[]): boolean {
+  if (cards.length !== 3) return false;
+  const symbols = cards.map((c) => c.symbol);
+  return (
+    new Set(symbols).size === 1 || new Set(symbols).size === 3 || symbols.includes("wildcard")
+  );
+}
+
 function findValidSet(cards: SyndicateCard[]) {
+
 
   if (cards.length < 3) return null;
   for (let i = 0; i < cards.length; i++) {

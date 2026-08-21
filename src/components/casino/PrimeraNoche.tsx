@@ -167,7 +167,7 @@ export function PrimeraNoche() {
 
           <div className="mt-6">
             <BrassButton block variant="primary" size="lg" onClick={avanzar}>
-              {ultimo ? "Entrar al salón" : "Seguir"}
+              {ultimo ? "Abrir la puerta" : "Seguir"}
             </BrassButton>
           </div>
         </div>

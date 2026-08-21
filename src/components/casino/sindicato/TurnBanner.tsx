@@ -37,10 +37,15 @@ export function TurnBanner({
   territories,
   totalTerritories,
   cards,
+  round,
+  canAssault = true,
 }: Props) {
   const faccion = faccionDe(factionId);
   const activeIndex = PHASES.findIndex((p) => p.id === phase);
-  const hint = PHASES[activeIndex]?.hint ?? "";
+  const hint = canAssault
+    ? (PHASES[activeIndex]?.hint ?? "")
+    : "Vuelta de acomodo: sin asaltos";
+
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[70] px-2 pt-[max(0.5rem,env(safe-area-inset-top))]">

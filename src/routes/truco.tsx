@@ -1520,7 +1520,7 @@ function ScoreBoard({
           type="button"
           aria-label="Abrir historial"
           onClick={() => window.dispatchEvent(new Event("truco:open-history"))}
-          className="shrink-0 grid h-7 w-7 place-items-center rounded-full border border-[var(--cd-ink)]/40 bg-[var(--cd-ink)]/10 text-[var(--cd-ink-deep)] active:brightness-125"
+          className="cd-hit-44 shrink-0 grid h-7 w-7 place-items-center rounded-full border border-[var(--cd-ink)]/40 bg-[var(--cd-ink)]/10 text-[var(--cd-ink-deep)] active:brightness-125"
           style={{ WebkitTapHighlightColor: "transparent" }}
         >
           {}

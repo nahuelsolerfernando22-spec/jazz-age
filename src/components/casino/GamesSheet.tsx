@@ -237,7 +237,7 @@ export function GamesSheet({ open, onClose }: Props) {
                   searchRef.current?.focus();
                 }}
                 aria-label="Borrar búsqueda"
-                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[var(--marfil)]/80 hover:text-[var(--oro-claro)] focus-visible:ring-2 focus-visible:ring-[var(--oro-palido)]"
+                className="cd-hit-44 absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[var(--marfil)]/80 hover:text-[var(--oro-claro)] focus-visible:ring-2 focus-visible:ring-[var(--oro-palido)]"
               >
                 ×
               </button>

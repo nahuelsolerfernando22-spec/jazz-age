@@ -44,7 +44,7 @@ export function MahjongSettingsDialog({ open, onClose }: { open: boolean; onClos
             type="checkbox"
             checked={s.showAiExplain}
             onChange={(e) => s.set({ showAiExplain: e.target.checked })}
-            className="h-6 w-6 accent-[var(--brass-bright)]"
+            className="cd-hit-44 h-6 w-6 accent-[var(--brass-bright)]"
           />
         </label>
 
@@ -61,7 +61,7 @@ export function MahjongSettingsDialog({ open, onClose }: { open: boolean; onClos
             type="checkbox"
             checked={s.showBestMoveGlow}
             onChange={(e) => s.set({ showBestMoveGlow: e.target.checked })}
-            className="h-6 w-6 accent-[var(--brass-bright)]"
+            className="cd-hit-44 h-6 w-6 accent-[var(--brass-bright)]"
           />
         </label>
 

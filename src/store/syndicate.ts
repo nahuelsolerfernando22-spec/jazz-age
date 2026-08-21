@@ -386,7 +386,9 @@ export const useSyndicate = create<SyndicateState>()(
 
       nextTurn: () =>
         set((state) => {
-          if (state.turnPhase === "deployment") return { turnPhase: "attack" };
+          // T.E.G.: en las dos primeras rondas sólo se colocan fichas, nadie asalta.
+          if (state.turnPhase === "deployment")
+            return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
           if (state.turnPhase === "attack") return { turnPhase: "fortification" };
 
           let nextIndex = (state.currentPlayerIndex + 1) % state.players.length;

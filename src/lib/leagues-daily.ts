@@ -135,6 +135,7 @@ export const LEAGUE_GAMES = [
   { id: "slots", label: "La Palanca del Milagro" },
   { id: "escoba", label: "Barrido de Quince" },
   { id: "dados", label: "Cinco Huesos" },
+  { id: "sindicato", label: "El Sindicato" },
 ] as const;
 
 export type LeagueGameId = (typeof LEAGUE_GAMES)[number]["id"];

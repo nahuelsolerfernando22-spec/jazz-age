@@ -721,7 +721,7 @@ function SolitarioPage() {
               <div
                 // En móvil el ancho de carta se deriva del viewport para que las
                 // 7 columnas del tableau entren completas sin recortar la última.
-                className="relative rounded-[20px] border-4 border-[oklch(0.35_0.04_60)] p-2 shadow-deep sm:rounded-[24px] sm:p-5 [--soli-w:calc((100vw-3.6rem)/7)] [--soli-h:calc(var(--soli-w)/0.7)] sm:[--soli-h:148px] sm:[--soli-w:calc(var(--soli-h)*0.7)] lg:[--soli-h:160px] [--soli-o:calc(var(--soli-h)*0.26)] [--soli-od:calc(var(--soli-h)*0.13)]"
+                className="relative rounded-[20px] border-4 border-[oklch(0.35_0.04_60)] p-2 shadow-deep sm:rounded-[24px] sm:p-5 [--soli-w:calc((100vw-2.75rem-6*0.375rem)/7)] [--soli-h:calc(var(--soli-w)/0.7)] sm:[--soli-h:148px] sm:[--soli-w:calc(var(--soli-h)*0.7)] lg:[--soli-h:160px] [--soli-o:calc(var(--soli-h)*0.26)] [--soli-od:calc(var(--soli-h)*0.13)]"
                 style={{
                   background:
                     "radial-gradient(ellipse at center, oklch(0.32 0.10 145) 0%, oklch(0.16 0.06 145) 85%)",
@@ -835,7 +835,7 @@ function SolitarioPage() {
                 <div className="my-3 h-px bg-gradient-to-r from-transparent via-[var(--brass)]/40 to-transparent" />
 
                 {}
-                <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
                   {game.tableau.map((col, ci) => {
                     const isEmpty = col.length === 0;
                     const isSelTarget = selected != null && !isSameTarget(selected, ci);

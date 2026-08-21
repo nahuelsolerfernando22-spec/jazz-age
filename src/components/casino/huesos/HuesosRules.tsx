@@ -135,14 +135,20 @@ export function HuesosRules({ onClose }: { onClose: () => void }) {
             </li>
           ))}
         </ul>
+        </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-6 w-full rounded-sm border border-[oklch(0.78_0.16_70)] bg-gradient-to-br from-[oklch(0.45_0.12_60)] to-[oklch(0.30_0.10_50)] py-2.5 font-display text-[11px] uppercase tracking-[0.3em] text-[oklch(0.98_0.06_85)]"
+        <div
+          className="relative z-[1] border-t border-[var(--brass)]/20 bg-[oklch(0.09_0.015_30)]/80 px-5 pt-3 backdrop-blur"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
-          Entendido
-        </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-[48px] w-full rounded-sm border border-[oklch(0.78_0.16_70)] bg-gradient-to-br from-[oklch(0.45_0.12_60)] to-[oklch(0.30_0.10_50)] py-2.5 font-display text-[11px] uppercase tracking-[0.3em] text-[oklch(0.98_0.06_85)] shadow-gold active:translate-y-px"
+          >
+            Entendido
+          </button>
+        </div>
       </motion.div>
     </div>,
     document.body,

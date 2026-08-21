@@ -742,7 +742,53 @@ function SindicatoPage() {
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#ff5a4a" stroke="#000" strokeWidth="1" />
                 </marker>
 
+                {/* Latón: gradientes de ficha y bisel de sector */}
+                <linearGradient id="laton-ficha" x1="0" y1="0" x2="0.4" y2="1">
+                  <stop offset="0%" stopColor="#f4dfa6" />
+                  <stop offset="45%" stopColor="#c9a24a" />
+                  <stop offset="100%" stopColor="#6d4f18" />
+                </linearGradient>
+                <linearGradient id="laton-canto" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffeec4" />
+                  <stop offset="100%" stopColor="#8a6a24" />
+                </linearGradient>
+                {/* Mármol: veta diagonal tenue sobre el color del dueño */}
+                <pattern
+                  id="veta-marmol"
+                  width="26"
+                  height="26"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(38)"
+                >
+                  <rect width="26" height="26" fill="transparent" />
+                  <line x1="0" y1="0" x2="0" y2="26" stroke="#fff6dc" strokeOpacity="0.14" strokeWidth="1.4" />
+                  <line x1="9" y1="0" x2="9" y2="26" stroke="#000" strokeOpacity="0.18" strokeWidth="2.6" />
+                  <line x1="18" y1="0" x2="18" y2="26" stroke="#fff6dc" strokeOpacity="0.07" strokeWidth="0.9" />
+                </pattern>
+                <radialGradient id="marmol-luz" cx="0.32" cy="0.22" r="0.9">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
+                  <stop offset="60%" stopColor="#000000" stopOpacity="0" />
+                  <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
+                </radialGradient>
               </defs>
+
+              {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
+              <g className="pointer-events-none" opacity="0.4">
+                {conexiones.map((c) => (
+                  <line
+                    key={c.id}
+                    x1={c.a.x}
+                    y1={c.a.y}
+                    x2={c.b.x}
+                    y2={c.b.y}
+                    stroke="#c5a059"
+                    strokeWidth={1.6}
+                    strokeDasharray="7 6"
+                    strokeLinecap="round"
+                  />
+                ))}
+              </g>
+
 
               {activeTerritories.map((t) => {
                 const conquest = conquests[t.id];

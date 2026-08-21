@@ -702,7 +702,7 @@ function SindicatoPage() {
                 backgroundImage: `url(${MAP_IMAGE_URL})`,
                 backgroundSize: "100% 100%",
                 backgroundPosition: "center",
-                filter: "saturate(1.25) contrast(1.3) brightness(0.9) sepia(0.2)",
+                filter: "saturate(1.1) contrast(1.08) brightness(1.05)",
               }}
             />
 

@@ -54,6 +54,8 @@ const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 1000;
 const INITIAL_SCALE = 1.0;
 const MIN_SCALE = 0.4;
+/** Margen de seguridad del encuadre: el tablero nunca roza el borde en Android. */
+const FIT_MARGIN = 0.9;
 const CONTENT_BOX_GEN = (territorios: Territorio[]) => {
   const xs = territorios.flatMap((t) => t.points.map((p) => p.x * 10));
   const ys = territorios.flatMap((t) => t.points.map((p) => p.y * 10));
@@ -61,7 +63,16 @@ const CONTENT_BOX_GEN = (territorios: Territorio[]) => {
     maxX = Math.max(...xs);
   const minY = Math.min(...ys),
     maxY = Math.max(...ys);
-  return { width: maxX - minX, height: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+  return {
+    width: maxX - minX,
+    height: maxY - minY,
+    cx: (minX + maxX) / 2,
+    cy: (minY + maxY) / 2,
+    minX,
+    maxX,
+    minY,
+    maxY,
+  };
 };
 
 const MAX_SCALE = 4.0;

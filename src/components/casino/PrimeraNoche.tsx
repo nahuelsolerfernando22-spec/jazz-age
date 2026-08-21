@@ -113,8 +113,8 @@ export function PrimeraNoche() {
             haptic("tap");
             cerrar("salteado");
           }}
-          className="cd-hit-44 absolute right-4 top-4 text-[10px] uppercase tracking-[0.32em] text-[var(--cd-gold-dim)] transition-colors hover:text-[var(--cd-gold)]"
-          style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
+          className="absolute right-2 px-4 py-3 text-[10px] uppercase tracking-[0.32em] text-[var(--cd-gold-dim)] transition-colors hover:text-[var(--cd-gold)]"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 8px)" }}
         >
           Saltear
         </button>

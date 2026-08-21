@@ -315,7 +315,7 @@ export const useDadosRun = create<DadosRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = DADOS_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       clockRemaining: () => {

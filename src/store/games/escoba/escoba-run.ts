@@ -308,7 +308,7 @@ export const useEscobaRun = create<EscobaRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = ESCOBA_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       clockRemaining: () => {
@@ -333,7 +333,13 @@ export const useEscobaRun = create<EscobaRunStore>()(
         };
       },
     }),
-    { name: "cuervo:escoba-run:v1" },
+    {
+      name: "cuervo:escoba-run:v1",
+      version: 2,
+      // Sólo el progreso duro sobrevive al reload: un encargo activo con su
+      // reloj viejo dejaría el HUD colgado y falsearía el tiempo jugado.
+      partialize: (s) => ({ cleared: s.cleared }) as Partial<EscobaRunStore>,
+    },
   ),
 );
 

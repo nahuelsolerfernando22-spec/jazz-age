@@ -152,7 +152,7 @@ export const useChinchonRun = create<ChinchonRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = CHINCHON_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       clockRemaining: () => {

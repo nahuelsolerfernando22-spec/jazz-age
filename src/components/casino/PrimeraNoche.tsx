@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { BrassButton } from "@/components/casino/BrassButton";
 import { OrnamentoTinta } from "@/components/casino/DecoIcons";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -60,14 +60,16 @@ export function PrimeraNoche() {
   const navigate = useNavigate();
   const [abierto, setAbierto] = useState(false);
   const [i, setI] = useState(0);
+  const enPortada = useRouterState({ select: (s) => s.location.pathname === "/" });
 
   // Se decide en el cliente: el store viene de almacenamiento persistido.
+  // Solo interrumpe en la portada, nunca sobre una pantalla de juego o ajustes.
   useEffect(() => {
-    if (!vista) {
+    if (!vista && enPortada) {
       setAbierto(true);
       track("tutorial_step", { step: 0 });
     }
-  }, [vista]);
+  }, [vista, enPortada]);
 
   const paso = PASOS[i];
   const ultimo = i === PASOS.length - 1;

@@ -93,7 +93,14 @@ function PortadaPage() {
             Ajustes
           </BrassButton>
         </Link>
+        <p className="mt-1 text-[10px] leading-snug tracking-wide text-[var(--marfil)]/45">
+          Juego de casino simulado. Fichas ficticias, sin dinero real ni premios. +18.{" "}
+          <Link to="/privacidad" className="underline underline-offset-2 hover:text-[var(--oro)]">
+            Privacidad
+          </Link>
+        </p>
       </div>
+
     </div>
   );
 }

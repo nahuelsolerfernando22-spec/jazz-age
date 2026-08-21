@@ -124,7 +124,7 @@ function useOficina(playerLevel: number): Fila[] {
       requisito: !rangoOk
         ? `Rango nivel ${r.game.requiredLevel}`
         : !prevOk
-          ? `Cerrá ${CARPETAS_PARA_ABRIR} encargos de ${previaHabilitada?.game.title ?? "la mesa anterior"}`
+          ? `Cerrá ${CARPETAS_PARA_ABRIR} encargos de ${previa?.game.title ?? "la mesa anterior"}`
           : "",
     };
     filas.push(fila);

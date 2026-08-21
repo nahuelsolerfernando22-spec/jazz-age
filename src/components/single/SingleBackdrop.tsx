@@ -11,7 +11,7 @@ interface Props {
   dim?: number;
 }
 
-export function SingleBackdrop({ gameId, dim = 0.62 }: Props) {
+export function SingleBackdrop({ gameId, dim = 0.44 }: Props) {
   const bg = useMemo(() => backgroundForGame(gameId), [gameId]);
   const lqip = useMemo(() => backgroundPlaceholderForGame(gameId), [gameId]);
   const tone = useMemo(() => toneForGame(gameId), [gameId]);

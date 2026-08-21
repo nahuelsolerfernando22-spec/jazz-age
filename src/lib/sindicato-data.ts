@@ -1,4 +1,4 @@
-import mapaNoirFinal from "@/assets/mapa-sindicato-noir.jpg.asset.json";
+import mapaNoirFinal from "@/assets/mapa-sindicato-arte.jpg";
 
 export type BarrioId = "puerto" | "bajo" | "casino" | "rojo" | "alta" | "rieles";
 
@@ -549,7 +549,7 @@ export const TERRITORIOS: Territorio[] = [
   },
 ];
 
-export const MAP_IMAGE_URL = mapaNoirFinal.url;
+export const MAP_IMAGE_URL = mapaNoirFinal;
 
 export const TERRITORIOS_POR_ID: Record<string, Territorio> = Object.fromEntries(
   TERRITORIOS.map((t) => [t.id, t]),

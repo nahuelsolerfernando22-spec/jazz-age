@@ -34,6 +34,7 @@ import { LivesNotifier } from "@/components/casino/LivesNotifier";
 import { EncargoResultToaster } from "@/components/casino/EncargoResultToaster";
 import { EncargoRunBanner } from "@/components/casino/EncargoRunBanner";
 import { CupRunBanner } from "@/components/casino/CupRunBanner";
+import { PrimeraNoche } from "@/components/casino/PrimeraNoche";
 import { OfflineReadyIndicator } from "@/components/casino/OfflineReadyIndicator";
 import { PwaPrompts } from "@/components/casino/PwaPrompts";
 import { Toaster } from "sonner";

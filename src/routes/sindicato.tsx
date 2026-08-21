@@ -862,6 +862,7 @@ function SindicatoPage() {
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill={
+                        patronDeDueno(previewOwner) ??
                         (conquest ? patronDeDueno(conquest.ownerId) : null) ??
                         patronDeFaccion(owner?.faction)
                       }

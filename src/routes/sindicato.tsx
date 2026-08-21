@@ -964,9 +964,10 @@ function SindicatoPage() {
                               {t.nombre}
                             </text>
                           </g>
-                        );
-                      })()}
-                    </g>
+                        </g>
+                      );
+                    })()}
+
 
 
                     {(conquest || pending > 0) && (

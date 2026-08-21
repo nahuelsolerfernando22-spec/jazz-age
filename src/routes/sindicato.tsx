@@ -748,16 +748,6 @@ function SindicatoPage() {
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#ff5a4a" stroke="#000" strokeWidth="1" />
                 </marker>
 
-                {/* Latón: gradientes de ficha y bisel de sector */}
-                <linearGradient id="laton-ficha" x1="0" y1="0" x2="0.4" y2="1">
-                  <stop offset="0%" stopColor="#f4dfa6" />
-                  <stop offset="45%" stopColor="#c9a24a" />
-                  <stop offset="100%" stopColor="#6d4f18" />
-                </linearGradient>
-                <linearGradient id="laton-canto" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ffeec4" />
-                  <stop offset="100%" stopColor="#8a6a24" />
-                </linearGradient>
                 {/* Arte raster: una textura pintada por facción + mármol neutro + latón */}
                 {PATRONES_TABLERO.map((p) => (
                   <pattern

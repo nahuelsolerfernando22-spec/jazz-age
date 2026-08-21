@@ -72,6 +72,24 @@ export function msUntilNextLife(current: number, lastRegenAt: number): number {
   return Math.max(0, REGEN_MS - (elapsed % REGEN_MS));
 }
 
+/** Tiempo restante hasta volver a tener el corazón completo. */
+export function msUntilFull(current: number, lastRegenAt: number): number {
+  if (current >= MAX_LIVES) return 0;
+  const missing = MAX_LIVES - current;
+  return msUntilNextLife(current, lastRegenAt) + (missing - 1) * REGEN_MS;
+}
+
+/** "1 h 20 min" / "12 min" — para textos largos, no para el contador vivo. */
+export function formatLongWait(ms: number): string {
+  if (ms <= 0) return "ahora";
+  const totalMin = Math.ceil(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h <= 0) return `${m} min`;
+  return m > 0 ? `${h} h ${m} min` : `${h} h`;
+}
+
+
 export function formatRegen(ms: number): string {
   if (ms <= 0) return "lleno";
   const total = Math.ceil(ms / 1000);

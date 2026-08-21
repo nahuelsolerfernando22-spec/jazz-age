@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { MAX_LIVES, formatRegen, msUntilNextLife, useLives } from "@/store/lives";
+import { LivesSheet } from "./LivesSheet";
 import { IconCorazon } from "./DecoIcons";
 
 function HeartArt({ size = 16, dim = false }: { size?: number; dim?: boolean }) {
@@ -27,6 +28,7 @@ export function LivesIndicator({
   const lastRegenAt = useLives((s) => s.lastRegenAt);
   const tick = useLives((s) => s.tick);
   const [, setNow] = useState(Date.now());
+  const [sheet, setSheet] = useState(false);
 
   useEffect(() => {
     tick();
@@ -38,31 +40,48 @@ export function LivesIndicator({
   }, [tick]);
 
   const remaining = msUntilNextLife(current, lastRegenAt);
+  const title =
+    current >= MAX_LIVES
+      ? "Vidas al máximo — tocá para ver la sala de descanso"
+      : `Próxima vida en ${formatRegen(remaining)} — tocá para recuperarlas`;
+
+  // El corazón del HUD es la puerta a la sala de descanso: esperar el reloj
+  // o mirar una función. Antes sólo aparecía al quedarse sin vidas.
+  const wrap = (node: ReactNode) => (
+    <>
+      <button
+        type="button"
+        onClick={() => setSheet(true)}
+        aria-label={title}
+        title={title}
+        className="cd-hit-44 inline-flex shrink-0 rounded-sm transition active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brass-bright)]/80"
+      >
+        {node}
+      </button>
+      <LivesSheet open={sheet} onClose={() => setSheet(false)} />
+    </>
+  );
 
   if (compact && !ultra) {
     const critical = current <= 1;
-    return (
+    return wrap(
       <div
         className={`hud-plate ${critical ? "hud-plate-blood" : ""} inline-flex h-9 shrink-0 items-center gap-1 px-2.5 tabular-nums ${
           critical ? "text-red-300" : "text-[var(--oro-claro)]"
         }`}
-        title={
-          current >= MAX_LIVES ? "Vidas al máximo" : `Próxima vida en ${formatRegen(remaining)}`
-        }
       >
         <HeartArt size={16} />
         <span className="font-bold text-[12px] leading-none">
           {current}
           <span className="opacity-50">/{MAX_LIVES}</span>
         </span>
-      </div>
+      </div>,
     );
   }
 
-  return (
+  return wrap(
     <div
       className="hud-plate inline-flex items-center gap-1.5 px-2 py-1"
-      title={current >= MAX_LIVES ? "Vidas al máximo" : `Próxima vida en ${formatRegen(remaining)}`}
     >
       {ultra ? (
         <span className="flex items-center gap-1 font-numerals text-[13px] leading-none tabular-nums text-[var(--blood)]">
@@ -84,6 +103,6 @@ export function LivesIndicator({
           )}
         </>
       )}
-    </div>
+    </div>,
   );
 }

@@ -8,6 +8,7 @@ import { useCasino } from "@/store/casino";
 import { AD_REWARD_CHIPS } from "@/store/daily-rewards";
 import { toast } from "sonner";
 import { BrassButton } from "@/components/casino/BrassButton";
+import { RewardedAdPlayer } from "@/components/casino/RewardedAdPlayer";
 import corvinaPortrait from "@/assets/_placeholder.webp";
 
 interface Props {
@@ -26,6 +27,7 @@ export function NoLivesGate({ open, onClose, line }: Props) {
   const consumeAd = useMembership((s) => s.consumeAd);
   const addChips = useCasino((s) => s.addChips);
   const [adRunning, setAdRunning] = useState<null | "life" | "chips">(null);
+  const [adPlaying, setAdPlaying] = useState<null | "life" | "chips">(null);
   const [, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -39,20 +41,31 @@ export function NoLivesGate({ open, onClose, line }: Props) {
       toast.error(`Ya tenés ${MAX_LIVES}/${MAX_LIVES} vidas.`);
       return;
     }
-    if (!consumeAd()) return;
+    if (!consumeAd()) {
+      toast.error("No quedan funciones por hoy. El reloj de la casa sigue corriendo.");
+      return;
+    }
     setAdRunning(reward);
+    setAdPlaying(reward);
+  }
 
-    window.setTimeout(() => {
-      if (reward === "life") {
-        add(1);
-        const nextLives = useLives.getState().current;
-        toast.success(`+1 vida · ahora ${nextLives}/${MAX_LIVES}`);
-      } else {
-        addChips(AD_REWARD_CHIPS);
-        toast.success(`+¢${AD_REWARD_CHIPS} — el Cuervo paga por mirar.`);
-      }
-      setAdRunning(null);
-    }, 1500);
+  function finishAd() {
+    const reward = adPlaying;
+    setAdPlaying(null);
+    setAdRunning(null);
+    if (reward === "life") {
+      add(1);
+      toast.success(`+1 vida · ahora ${useLives.getState().current}/${MAX_LIVES}`);
+    } else if (reward === "chips") {
+      addChips(AD_REWARD_CHIPS);
+      toast.success(`+¢${AD_REWARD_CHIPS} — el Cuervo paga por mirar.`);
+    }
+  }
+
+  function cancelAd() {
+    setAdPlaying(null);
+    setAdRunning(null);
+    toast("Cortaste la función", { description: "Sin función completa no hay premio." });
   }
 
   useEffect(() => {
@@ -199,6 +212,13 @@ export function NoLivesGate({ open, onClose, line }: Props) {
           </motion.div>
         </motion.div>
       )}
+      <RewardedAdPlayer
+        key="rewarded-ad"
+        open={adPlaying !== null}
+        rewardLabel={adPlaying === "chips" ? `+¢${AD_REWARD_CHIPS}` : "+1 vida"}
+        onComplete={finishAd}
+        onCancel={cancelAd}
+      />
     </AnimatePresence>
   );
 }

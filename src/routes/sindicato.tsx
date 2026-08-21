@@ -846,10 +846,14 @@ function SindicatoPage() {
                       }
                     }}
                   >
-                    {/* Sector: arte raster de la facción dueña + tinte de banda */}
+                    {/* Sector: arte raster propio del dueño (o de la facción si es neutral) */}
                     <path
                       d={bordeIrregular(t.points, t.id)}
-                      fill={patronDeFaccion(owner?.faction)}
+                      fill={
+                        (conquest ? patronDeDueno(conquest.ownerId) : null) ??
+                        patronDeFaccion(owner?.faction)
+                      }
+
                       fillOpacity={
                         altoContraste
                           ? isSelected

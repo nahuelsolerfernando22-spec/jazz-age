@@ -1679,8 +1679,8 @@ function Table({
           );
         })()}
         <div
-          className="grid min-h-0 flex-1 grid-cols-3 gap-1 sm:gap-2.5 items-stretch"
-          style={{ maxHeight: "min(42svh, 320px)" }}
+          className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:gap-3 items-stretch"
+          style={{ maxHeight: "min(56svh, 460px)", minHeight: "min(38svh, 300px)" }}
         >
           {h.table.map((t, i) => {
             const winner = h.trickWinners[i];

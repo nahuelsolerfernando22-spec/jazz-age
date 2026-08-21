@@ -282,7 +282,7 @@ export const useBagatelleRun = create<BagatelleRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = BAGATELLE_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       minStake: () => {
@@ -305,7 +305,13 @@ export const useBagatelleRun = create<BagatelleRunStore>()(
         return Math.max(0, tc.seconds - elapsed);
       },
     }),
-    { name: "cuervo:bagatelle-run:v1" },
+    {
+      name: "cuervo:bagatelle-run:v1",
+      version: 2,
+      // Sólo el progreso duro sobrevive al reload: un encargo activo con su
+      // reloj viejo dejaría el HUD colgado y falsearía el tiempo jugado.
+      partialize: (s) => ({ cleared: s.cleared }) as Partial<BagatelleRunStore>,
+    },
   ),
 );
 

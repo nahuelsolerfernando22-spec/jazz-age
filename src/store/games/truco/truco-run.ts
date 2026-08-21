@@ -153,7 +153,7 @@ export const useTrucoRun = create<TrucoRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = TRUCO_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       clockRemaining: () => {

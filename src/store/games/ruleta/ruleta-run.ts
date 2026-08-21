@@ -274,7 +274,7 @@ export const useRuletaRun = create<RuletaRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = RULETA_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       betCap: () => {
@@ -299,7 +299,13 @@ export const useRuletaRun = create<RuletaRunStore>()(
         return Math.max(0, tc.seconds - elapsed);
       },
     }),
-    { name: "cuervo:ruleta-run:v1" },
+    {
+      name: "cuervo:ruleta-run:v1",
+      version: 2,
+      // Sólo el progreso duro sobrevive al reload: un encargo activo con su
+      // reloj viejo dejaría el HUD colgado y falsearía el tiempo jugado.
+      partialize: (s) => ({ cleared: s.cleared }) as Partial<RuletaRunStore>,
+    },
   ),
 );
 

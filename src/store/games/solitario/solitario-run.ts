@@ -179,7 +179,7 @@ export const useSolitarioRun = create<SolitarioRunStore>()(
         if (!l) return false;
         if (l.order === 1) return true;
         const prev = SOLITARIO_LEVELS[l.order - 2];
-        return !!s.cleared[prev.id];
+        return !!s.cleared[prev?.id ?? ""];
       },
 
       clockRemaining: () => {
@@ -221,13 +221,9 @@ export const useSolitarioRun = create<SolitarioRunStore>()(
     {
       name: "cuervo:solitario-run:v1",
       version: 2,
-      partialize: (s) =>
-        ({
-          cleared: s.cleared,
-          activeLevel: s.activeLevel,
-          startedAt: s.startedAt,
-          movesUsed: s.movesUsed,
-        }) as Partial<SolitarioRunStore>,
+      // El tablero no se guarda: si restauráramos el encargo activo, el HUD
+      // quedaría colgado y el reloj contaría horas fuera de la app.
+      partialize: (s) => ({ cleared: s.cleared }) as Partial<SolitarioRunStore>,
     },
   ),
 );

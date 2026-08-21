@@ -104,27 +104,35 @@ function useOficina(playerLevel: number): Fila[] {
   }));
 
   const filas: Fila[] = [];
-  raw.forEach((r, i) => {
+  // La cadena de carpetas sólo encadena mesas que el rango ya habilita: si no,
+  // un jugador nivel 1 quedaba trabado detrás de mesas que exigen nivel 2 y
+  // Corvina no tenía nada para ofrecerle.
+  let previaHabilitada: Fila | null = null;
+  raw.forEach((r) => {
     const clearedCount = Object.keys(r.cleared).length;
     const next =
       [...r.game.levels].sort((a, b) => a.order - b.order).find((l) => !r.cleared[l.id]) ?? null;
-    const prev = filas[i - 1];
-    const prevOk = i === 0 || (prev != null && prev.clearedCount >= CARPETAS_PARA_ABRIR);
     const rangoOk = playerLevel >= r.game.requiredLevel;
-    filas.push({
+    const previa: Fila | null = previaHabilitada;
+    const prevOk = previa == null || previa.clearedCount >= CARPETAS_PARA_ABRIR;
+
+    const fila: Fila = {
       ...r,
       clearedCount,
       next,
-      unlocked: prevOk && rangoOk,
+      unlocked: rangoOk && prevOk,
       requisito: !rangoOk
         ? `Rango nivel ${r.game.requiredLevel}`
         : !prevOk
-          ? `Cerrá ${CARPETAS_PARA_ABRIR} encargos de ${prev?.game.title ?? "la mesa anterior"}`
+          ? `Cerrá ${CARPETAS_PARA_ABRIR} encargos de ${previa?.game.title ?? "la mesa anterior"}`
           : "",
-    });
+    };
+    filas.push(fila);
+    if (rangoOk) previaHabilitada = fila;
   });
   return filas;
 }
+
 
 function EncargosPage() {
   const xp = useCasino((s) => s.xp);

@@ -919,9 +919,9 @@ function SindicatoPage() {
                             <path
                               d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
                               fill="#0b0806"
-                              fillOpacity="0.9"
+                              fillOpacity={altoContraste ? 1 : 0.9}
                               stroke="url(#tex-laton)"
-                              strokeWidth="1.2"
+                              strokeWidth={altoContraste ? 1.8 : 1.2}
                             />
                             <text
                               textAnchor="middle"

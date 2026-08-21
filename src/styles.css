@@ -4705,7 +4705,7 @@ body[data-app-paused="1"] *::after {
   .room-bg-img {
     object-fit: cover;
     object-position: center 45%;
-    filter: saturate(0.98) brightness(0.86);
+    filter: saturate(1.04) brightness(1.02) contrast(1.02);
     transform: none;
   }
 }
@@ -4714,9 +4714,9 @@ body[data-app-paused="1"] *::after {
    de juego sigan destacando sobre el arte en pantallas chicas. */
 @media (max-aspect-ratio: 3 / 4) {
   .cuervo-game-root {
-    --room-scrim-alpha: 0.56;
-    --room-scrim-alpha-bottom: 0.52;
-    --room-scrim-radial-stop: 44%;
+    --room-scrim-alpha: 0.34;
+    --room-scrim-alpha-bottom: 0.3;
+    --room-scrim-radial-stop: 56%;
   }
 }
 

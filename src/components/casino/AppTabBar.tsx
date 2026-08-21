@@ -145,28 +145,14 @@ export function AppTabBar() {
                   to={t.to}
                   data-haptic="tap"
                   aria-current={active ? "page" : undefined}
-                  className={`relative mx-1 my-1 flex h-[62px] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${active ? "hud-plate" : ""}`}
-                  style={{
-                    color: active ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.78)",
-                    touchAction: "manipulation",
-                    fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
-                    fontSize: "0.5625rem",
-                    letterSpacing: "0.26em",
-                    textShadow: "0 1px 0 rgba(0,0,0,0.75)",
-                  }}
+                  className={tabClass(active)}
+                  style={tabStyle(active)}
                 >
-                  <span
-                    className="grid place-items-center"
-                    style={{ width: 34, height: 34 }}
-                    aria-hidden
-                  >
-                    {t.icon}
-                  </span>
-                  <span>{t.label}</span>
+                  <TabInner active={active} icon={t.icon} label={t.label} />
                   {showBadge ? (
                     <span
                       aria-label="Novedades en encargos"
-                      className="absolute right-3 top-2 h-2 w-2 rounded-full"
+                      className="absolute right-3 top-2 h-2 w-2 animate-pulse rounded-full"
                       style={{
                         background: "var(--cd-gold-tab)",
                         boxShadow: "0 0 0 2px var(--cd-noir-1), 0 0 8px rgba(244,217,122,0.9)",
@@ -181,27 +167,14 @@ export function AppTabBar() {
                 <li key="__games" className="flex-1">
                   <button
                     type="button"
+                    data-haptic="tap"
                     onClick={() => setGamesOpen(true)}
                     aria-label="Ver todos los juegos"
                     aria-expanded={gamesOpen}
-                    className={`relative mx-1 my-1 flex h-[62px] w-[calc(100%-0.5rem)] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${gamesOpen ? "hud-plate" : ""}`}
-                    style={{
-                      color: gamesOpen ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.78)",
-                      touchAction: "manipulation",
-                      fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
-                      fontSize: "0.5625rem",
-                      letterSpacing: "0.26em",
-                      textShadow: "0 1px 0 rgba(0,0,0,0.75)",
-                    }}
+                    className={`${tabClass(gamesOpen)} w-[calc(100%-0.5rem)]`}
+                    style={tabStyle(gamesOpen)}
                   >
-                    <span
-                      className="grid place-items-center"
-                      style={{ width: 34, height: 34 }}
-                      aria-hidden
-                    >
-                      <IconGrid />
-                    </span>
-                    <span>Juegos</span>
+                    <TabInner active={gamesOpen} icon={<IconGrid />} label="Juegos" />
                   </button>
                 </li>
               );

@@ -83,9 +83,9 @@ export function SingleHostessBubble({ gameId, overrideLine }: Props) {
 
   return (
     <div
-      className="pointer-events-none fixed z-30 flex items-start justify-end gap-2"
+      className="pointer-events-none fixed z-30 flex items-end justify-end gap-2"
       style={{
-        top: "calc(var(--hud-h) + env(safe-area-inset-top, 0px) + 8px)",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
         right: "max(8px, env(safe-area-inset-right, 0px))",
         maxWidth: "min(320px, calc(100vw - 96px))",
         fontFamily: "'Barlow', system-ui, sans-serif",
@@ -96,7 +96,7 @@ export function SingleHostessBubble({ gameId, overrideLine }: Props) {
     >
       {open ? (
         <div
-          className="pointer-events-auto max-w-[220px] rounded-2xl rounded-tr-sm border border-[var(--oro-viejo)]/60 bg-[#1a1612]/95 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.6)] backdrop-blur-md"
+          className="pointer-events-auto max-w-[220px] rounded-2xl rounded-br-sm border border-[var(--oro-viejo)]/60 bg-[#1a1612]/95 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.6)] backdrop-blur-md"
           aria-live="polite"
         >
           <div className="flex items-baseline gap-2">

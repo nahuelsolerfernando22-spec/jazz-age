@@ -825,6 +825,7 @@ function SindicatoPage() {
                       }
                     }}
                   >
+                    {/* Sector en mármol: color del dueño + veta + luz cenital */}
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       initial={false}
@@ -832,44 +833,83 @@ function SindicatoPage() {
                         fill: owner
                           ? owner.color
                           : BARRIOS.find((b) => b.id === t.barrio)?.color || "#666",
-                        stroke: isSelected ? "#fff3c4" : owner ? "#0b0806" : "#0b0806",
-                        strokeWidth: isSelected ? 7 : 4.5,
-                        strokeOpacity: 1,
                       }}
                       style={{
-                        fillOpacity: isSelected ? 0.95 : owner ? 0.88 : 0.5,
-                        strokeLinejoin: "round",
+                        fillOpacity: isSelected ? 0.95 : owner ? 0.86 : 0.46,
                       }}
-                      filter={isSelected ? "url(#glow-selected)" : "none"}
                     />
-                    {isMine && (
-                      <path
-                        d={bordeIrregular(t.points, t.id)}
-                        fill="none"
-                        stroke="#fff8e0"
-                        strokeWidth={1.5}
-                        strokeOpacity={0.55}
-                        className="pointer-events-none"
-                      />
-                    )}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="url(#veta-marmol)"
+                      className="pointer-events-none"
+                    />
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="url(#marmol-luz)"
+                      className="pointer-events-none"
+                    />
+                    {/* Canto de latón: trazo oscuro exterior + filete dorado interior */}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      stroke="#0b0806"
+                      strokeWidth={isSelected ? 8 : 6}
+                      strokeLinejoin="round"
+                      className="pointer-events-none"
+                    />
+                    <motion.path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      initial={false}
+                      animate={{
+                        stroke: isSelected ? "#fff3c4" : isMine ? "#e3c67e" : "#9c7c38",
+                        strokeWidth: isSelected ? 3.4 : 2,
+                      }}
+                      strokeLinejoin="round"
+                      filter={isSelected ? "url(#glow-selected)" : "none"}
+                      className="pointer-events-none"
+                    />
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      stroke="#fff8e0"
+                      strokeWidth={0.8}
+                      strokeOpacity={isMine ? 0.5 : 0.22}
+                      strokeDasharray="3 5"
+                      className="pointer-events-none"
+                    />
+                    {/* Cartucho déco con el nombre del sector */}
                     <g
-                      transform={`translate(${center.x}, ${center.y - 26}) scale(${Math.min(2.2, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
+                      transform={`translate(${center.x}, ${center.y - 34}) scale(${Math.min(2.2, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       className="pointer-events-none"
                     >
-                      <text
-                        textAnchor="middle"
-                        fill="#fff8e0"
-                        fontSize="15"
-                        fontWeight="900"
-                        dy="0"
-                        stroke="#000000"
-                        strokeWidth="5"
-                        className="font-serif uppercase tracking-[0.08em] italic pointer-events-none"
-                        style={{ paintOrder: "stroke" }}
-                      >
-                        {t.nombre}
-                      </text>
+                      {(() => {
+                        const w = Math.max(52, t.nombre.length * 6.6 + 18);
+                        const h = 17;
+                        return (
+                          <g>
+                            <path
+                              d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
+                              fill="#0b0806"
+                              fillOpacity="0.9"
+                              stroke="url(#laton-canto)"
+                              strokeWidth="1.2"
+                            />
+                            <text
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              fill="#e9cf94"
+                              fontSize="9.5"
+                              fontWeight="900"
+                              className="font-serif uppercase tracking-[0.18em]"
+                            >
+                              {t.nombre}
+                            </text>
+                          </g>
+                        );
+                      })()}
                     </g>
+
 
                     {(conquest || pending > 0) && (
                       <g

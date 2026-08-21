@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameRoomShell } from "@/components/casino/GameRoomShell";
+import { useHaptics } from "@/hooks/use-haptics";
 
 import { useCampaignBridge, bumpCampaignEvent } from "@/hooks/use-campaign-bridge";
 import { BoardFit } from "@/components/casino/BoardFit";

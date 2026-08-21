@@ -1,4 +1,21 @@
-import { type Card, type GameState, type Player, type Suit } from "@/lib/games/truco/truco";
+import {
+  cantarEnvido,
+  cantarFlor,
+  cantarTruco,
+  irseAlMazo,
+  pasarReclamoEnvido,
+  playCard,
+  reclamarEnvido,
+  responderEnvido,
+  responderFlor,
+  responderTruco,
+  startHand,
+  type Card,
+  type EnvidoLevel,
+  type GameState,
+  type Player,
+  type Suit,
+} from "@/lib/games/truco/truco";
 
 // ---------- Card art ----------
 const CARD_ART = import.meta.glob("@/assets/chinchon-v2/*.webp", {

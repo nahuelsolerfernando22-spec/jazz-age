@@ -387,11 +387,9 @@ function SindicatoPage() {
     const contentBox = CONTENT_BOX_GEN(activeTerritories);
     const cw = contentBox.width + pad * 2;
     const ch = contentBox.height + pad * 2;
-    // El area jugable entera entra en pantalla; el fondo fijo del main evita bandas negras.
-    const base = Math.min(w / cw, h / ch);
-    const s = Math.max(MIN_SCALE, Math.min(MAX_SCALE, base));
-
-
+    // El area jugable entera entra en pantalla con margen: nunca roza el borde.
+    const base = Math.min(w / cw, h / ch) * FIT_MARGIN;
+    const s = Math.min(MAX_SCALE, base);
 
     setFitScale(s);
     const ox = (contentBox.cx - MAP_WIDTH / 2) * s;

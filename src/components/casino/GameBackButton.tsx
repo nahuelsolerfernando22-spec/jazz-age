@@ -174,8 +174,8 @@ export function GameBackButton() {
         hidden={paused}
 
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          left: "calc(env(safe-area-inset-left, 0px) + 10px)",
+          top: "calc(var(--sa-top) + 8px)",
+          left: "calc(var(--sa-left) + 10px)",
           width: "var(--hud-btn)",
           height: "var(--hud-btn)",
           touchAction: "manipulation",

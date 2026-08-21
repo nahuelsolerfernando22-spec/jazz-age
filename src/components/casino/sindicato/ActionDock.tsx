@@ -48,7 +48,7 @@ export function ActionDock({
   const PrimaryIcon = primary.icon;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[70] border-t-2 border-[var(--oro)]/40 bg-black/92 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md">
+    <nav className="fixed inset-x-0 bottom-0 z-[70] border-t-2 border-[var(--oro)]/40 bg-black/92 px-3 pb-[max(0.5rem,var(--sa-bottom))] pt-2 backdrop-blur-md">
       {canConfirm ? (
         <div className="mb-2 flex gap-2">
           <button

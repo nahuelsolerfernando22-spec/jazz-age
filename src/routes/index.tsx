@@ -95,7 +95,7 @@ function PortadaPage() {
         </Link>
         <p className="mt-1 text-[10px] leading-snug tracking-wide text-[var(--marfil)]/45">
           Juego de casino simulado. Fichas ficticias, sin dinero real ni premios. +18.{" "}
-          <Link to="/privacidad" className="underline underline-offset-2 hover:text-[var(--oro)]">
+          <Link to="/privacidad" className="cd-hit-44 underline underline-offset-2 hover:text-[var(--oro)]">
             Privacidad
           </Link>
         </p>

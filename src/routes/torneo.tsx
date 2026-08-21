@@ -84,7 +84,7 @@ function TorneoPage() {
     >
       <NoirBackdrop variant="logros" />
 
-      <div className="mx-auto max-w-3xl pb-28">
+      <div className="mx-auto max-w-3xl" style={{ paddingBottom: "calc(var(--app-tabbar-h, 74px) + 32px)" }}>
         <header className="mb-5">
           <p className="font-display text-[11px] uppercase tracking-[0.35em] text-[var(--oro)]/70">
             Trastienda del salón

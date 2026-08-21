@@ -180,7 +180,7 @@ function SinglePage() {
       {/* Dock físico inferior */}
       <div
         className="mx-auto flex w-full max-w-2xl shrink-0 items-stretch gap-2 px-3 pt-2 sm:px-5"
-        style={{ paddingBottom: "calc(74px + env(safe-area-inset-bottom, 0px))" }}
+        style={{ paddingBottom: "calc(74px + var(--sa-bottom))" }}
       >
         <BrassButton variant="ghost" size="md" block onClick={() => setRetosOpen(true)}>
           Retos
@@ -204,7 +204,7 @@ function SinglePage() {
         >
           <div
             className="max-h-[82dvh] overflow-y-auto border-t border-[var(--oro)]/40 bg-[var(--cd-noir-1)] px-3 pt-3"
-            style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom, 0px))" }}
+            style={{ paddingBottom: "calc(84px + var(--sa-bottom))" }}
             onClick={(e) => e.stopPropagation()}
           >
             <ChallengesSwitcher />

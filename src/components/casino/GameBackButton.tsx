@@ -33,6 +33,9 @@ const GAME_ROUTES = new Set([
   "/solitario",
   "/tables",
   "/generala",
+  "/poker",
+  "/sindicato",
+  "/torneo",
 ]);
 
 export function GameBackButton() {

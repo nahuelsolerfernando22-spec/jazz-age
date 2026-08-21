@@ -59,8 +59,8 @@ describe("economía · 30 días simulados", () => {
     const r = simulateEconomy(perfil("medio"), 30);
     expect(r.netoDiario).toBeGreaterThan(0);
     expect(Math.min(...r.dias.map((d) => d.saldo))).toBeGreaterThan(0);
-    // Crecer sí, romper la economía no: menos de 40x el saldo inicial en un mes.
-    expect(r.saldoFinal).toBeLessThan(500 * 40);
+    // Crecer sí, romper la economía no: el mes no le da para 100 torneos.
+    expect(r.saldoFinal).toBeLessThan(CUP_BUYIN * 100);
   });
 
   it("ni el exprimidor rompe la banca: el mes no le da para diez mil torneos", () => {

@@ -1,5 +1,5 @@
 import { useCasino } from "@/store/casino";
-import { useSyndicate } from "@/store/syndicate";
+import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {
   BARRIOS,
   sonVecinos,
@@ -322,6 +322,7 @@ function SindicatoPage() {
     startGame,
     nextTurn,
     turnPhase,
+    roundNumber,
     winner,
     botPlay,
     drawCard,
@@ -1318,7 +1319,9 @@ function SindicatoPage() {
                   >
                     <Sword size={20} className="shrink-0" />
                     <span className="truncate">
-                      {turnPhase !== "attack"
+                      {!puedeAsaltar(roundNumber)
+                        ? "VUELTA DE ACOMODO"
+                        : turnPhase !== "attack"
                         ? "NO ES FASE DE ASALTO"
                         : canAttack
                           ? "INICIAR ASALTO"
@@ -1435,6 +1438,8 @@ function SindicatoPage() {
         territories={controlCounts[currentPlayerIndex] || 0}
         totalTerritories={activeTerritories.length}
         cards={myCards.length}
+        round={roundNumber}
+        canAssault={puedeAsaltar(roundNumber)}
       />
 
       <ControlBar

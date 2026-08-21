@@ -20,6 +20,10 @@ interface Props {
   territories: number;
   totalTerritories: number;
   cards: number;
+  /** Vuelta actual de la mesa (T.E.G.: las dos primeras son de acomodo). */
+  round?: number;
+  /** Si es falso, la fase de asalto está cerrada esta vuelta. */
+  canAssault?: boolean;
 }
 
 export function TurnBanner({
@@ -33,10 +37,15 @@ export function TurnBanner({
   territories,
   totalTerritories,
   cards,
+  round,
+  canAssault = true,
 }: Props) {
   const faccion = faccionDe(factionId);
   const activeIndex = PHASES.findIndex((p) => p.id === phase);
-  const hint = PHASES[activeIndex]?.hint ?? "";
+  const hint = canAssault
+    ? (PHASES[activeIndex]?.hint ?? "")
+    : "Vuelta de acomodo: sin asaltos";
+
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[70] px-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
@@ -74,10 +83,11 @@ export function TurnBanner({
           {PHASES.map((p, i) => {
             const done = i < activeIndex;
             const active = i === activeIndex;
+            const locked = p.id === "attack" && !canAssault;
             return (
               <div key={p.id} className="flex-1">
                 <div className="relative h-[6px] overflow-hidden rounded-full border border-black bg-white/10">
-                  {(active || done) && (
+                  {(active || done) && !locked && (
                     <motion.div
                       layout
                       initial={{ width: 0 }}
@@ -86,14 +96,19 @@ export function TurnBanner({
                       style={{ backgroundColor: done ? "#6b5a24" : "var(--cd-gold-tab)" }}
                     />
                   )}
+                  {locked && (
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.18)_0_4px,transparent_4px_8px)]" />
+                  )}
                 </div>
                 <p
                   className={`mt-1 text-center text-[11px] font-black uppercase tracking-[0.14em] ${
-                    active
-                      ? "text-[var(--oro-palido)]"
-                      : done
-                        ? "text-[var(--oro)]/80"
-                        : "text-[var(--crema-clara)]/65"
+                    locked
+                      ? "text-[var(--crema-clara)]/35 line-through"
+                      : active
+                        ? "text-[var(--oro-palido)]"
+                        : done
+                          ? "text-[var(--oro)]/80"
+                          : "text-[var(--crema-clara)]/65"
                   }`}
                 >
                   {p.label}
@@ -102,6 +117,12 @@ export function TurnBanner({
             );
           })}
         </div>
+
+        {!canAssault && (
+          <p className="mt-1.5 rounded-md border border-[var(--oro)]/40 bg-[var(--oro)]/10 px-2 py-1 text-center text-[10px] font-black uppercase tracking-[0.14em] text-[var(--oro-palido)]">
+            {`Vuelta ${round ?? 1} de acomodo · el fuego se abre en la 3ª`}
+          </p>
+        )}
       </div>
     </div>
   );

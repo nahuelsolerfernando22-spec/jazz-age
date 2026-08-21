@@ -263,6 +263,8 @@ export const useSyndicate = create<SyndicateState>()(
         const from = state.conquests[fromId];
         const to = state.conquests[toId];
         if (!from || !to || from.ownerId === to.ownerId || from.troops <= 1) return false;
+        // Rondas de acomodo: nadie asalta hasta la tercera vuelta.
+        if (!puedeAsaltar(state.roundNumber)) return false;
 
         // Efecto del naipe: Toque de Queda (lockdown global)
         const activeLockdowns = Object.values(state.activeEffects).filter(
@@ -386,7 +388,9 @@ export const useSyndicate = create<SyndicateState>()(
 
       nextTurn: () =>
         set((state) => {
-          if (state.turnPhase === "deployment") return { turnPhase: "attack" };
+          // T.E.G.: en las dos primeras rondas sólo se colocan fichas, nadie asalta.
+          if (state.turnPhase === "deployment")
+            return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
           if (state.turnPhase === "attack") return { turnPhase: "fortification" };
 
           let nextIndex = (state.currentPlayerIndex + 1) % state.players.length;
@@ -781,6 +785,15 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
     else bajasAtacante++;
   }
   return { bajasAtacante, bajasDefensor, dadosA: a, dadosD: d };
+}
+
+/**
+ * Rondas de acomodo del T.E.G. original: en la primera se colocan 5 fichas y en
+ * la segunda 3, sin poder asaltar. Recién en la tercera se abre el fuego.
+ */
+export const RONDAS_SIN_ASALTO = 2;
+export function puedeAsaltar(roundNumber: number): boolean {
+  return roundNumber > RONDAS_SIN_ASALTO;
 }
 
 /** ¿Tres naipes forman un canje legal? */

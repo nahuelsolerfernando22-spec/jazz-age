@@ -152,6 +152,25 @@ iframe[src*="ovable.app"] {
   --cd-radius-chip: 9999px;
   --cd-radius-tile: 1.25rem;
   --cd-radius-hero: 1.75rem;
+
+  /* Paleta canónica de chrome (Tanda de unificación).
+     Todo componente de UI debe usar estos tokens en lugar de hex crudo. */
+  --cd-ink: #3a2418;
+  --cd-ink-deep: #2b1a10;
+  --cd-wood: #5a3a1a;
+  --cd-noir-0: #050402;
+  --cd-noir-1: #0a0806;
+  --cd-noir-2: #0d0a06;
+  --cd-noir-3: #14100a;
+  --cd-felt: #2d5a3d;
+  --cd-red: #c9424c;
+  --cd-red-deep: #8b1e1e;
+  --cd-red-bright: #e94b4b;
+  --cd-gold-hot: #f0b64a;
+  --cd-gold-tab: #f4d97a;
+  --cd-gold-glim: #ffe28a;
+  --cd-green-ok: #7bd88f;
+  --cd-teal: #3e7c8c;
 }
 
 @media (min-width: 640px) {

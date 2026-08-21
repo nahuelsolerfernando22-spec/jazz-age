@@ -375,6 +375,9 @@ function SindicatoPage() {
     [activeTerritories],
   );
 
+  /** Límites reales del área jugable: usados para que ningún cartucho se salga. */
+  const lienzo = useMemo(() => CONTENT_BOX_GEN(activeTerritories), [activeTerritories]);
+
   const computeFit = useCallback(() => {
     // Espacio real reservado arriba (banner de turno + barra de control + fichas de barrio)
     // y abajo por el dock de acciones.

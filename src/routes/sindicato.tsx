@@ -825,7 +825,25 @@ function SindicatoPage() {
                       }
                     }}
                   >
-                    {/* Sector en mármol: color del dueño + veta + luz cenital */}
+                    {/* Sector: arte raster de la facción dueña + tinte de banda */}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill={patronDeFaccion(owner?.faction)}
+                      fillOpacity={
+                        altoContraste
+                          ? isSelected
+                            ? 0.98
+                            : owner
+                              ? 0.92
+                              : 0.7
+                          : isSelected
+                            ? 0.72
+                            : owner
+                              ? 0.58
+                              : 0.3
+                      }
+                      className="pointer-events-none"
+                    />
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       initial={false}
@@ -835,43 +853,50 @@ function SindicatoPage() {
                           : BARRIOS.find((b) => b.id === t.barrio)?.color || "#666",
                       }}
                       style={{
-                        fillOpacity: isSelected ? 0.6 : owner ? 0.46 : 0.16,
+                        fillOpacity: altoContraste
+                          ? isSelected
+                            ? 0.5
+                            : owner
+                              ? 0.42
+                              : 0.2
+                          : isSelected
+                            ? 0.34
+                            : owner
+                              ? 0.24
+                              : 0.12,
                       }}
-                    />
-                    <path
-                      d={bordeIrregular(t.points, t.id)}
-                      fill="url(#veta-marmol)"
-                      opacity={0.5}
-                      className="pointer-events-none"
-                    />
-                    <path
-                      d={bordeIrregular(t.points, t.id)}
-                      fill="url(#marmol-luz)"
-                      opacity={0.55}
                       className="pointer-events-none"
                     />
 
-                    {/* Canto de latón: trazo oscuro exterior + filete dorado interior */}
+                    {/* Canto de latón raster: trazo oscuro exterior + filete de latón */}
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"
                       stroke="#0b0806"
-                      strokeWidth={isSelected ? 8 : 6}
+                      strokeWidth={altoContraste ? (isSelected ? 10 : 8) : isSelected ? 8 : 6}
                       strokeLinejoin="round"
                       className="pointer-events-none"
                     />
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"
+                      stroke="url(#tex-laton)"
                       initial={false}
                       animate={{
-                        stroke: isSelected ? "#fff3c4" : isMine ? "#e3c67e" : "#9c7c38",
-                        strokeWidth: isSelected ? 3.4 : 2,
+                        strokeWidth: altoContraste
+                          ? isSelected
+                            ? 5
+                            : 3.4
+                          : isSelected
+                            ? 3.4
+                            : 2,
+                        strokeOpacity: isSelected ? 1 : isMine ? 0.95 : 0.7,
                       }}
                       strokeLinejoin="round"
                       filter={isSelected ? "url(#glow-selected)" : "none"}
                       className="pointer-events-none"
                     />
+
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"

@@ -758,24 +758,18 @@ function SindicatoPage() {
                   <stop offset="0%" stopColor="#ffeec4" />
                   <stop offset="100%" stopColor="#8a6a24" />
                 </linearGradient>
-                {/* Mármol: veta diagonal tenue sobre el color del dueño */}
-                <pattern
-                  id="veta-marmol"
-                  width="26"
-                  height="26"
-                  patternUnits="userSpaceOnUse"
-                  patternTransform="rotate(38)"
-                >
-                  <rect width="26" height="26" fill="transparent" />
-                  <line x1="0" y1="0" x2="0" y2="26" stroke="#fff6dc" strokeOpacity="0.14" strokeWidth="1.4" />
-                  <line x1="9" y1="0" x2="9" y2="26" stroke="#000" strokeOpacity="0.18" strokeWidth="2.6" />
-                  <line x1="18" y1="0" x2="18" y2="26" stroke="#fff6dc" strokeOpacity="0.07" strokeWidth="0.9" />
-                </pattern>
-                <radialGradient id="marmol-luz" cx="0.32" cy="0.22" r="0.9">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
-                  <stop offset="60%" stopColor="#000000" stopOpacity="0" />
-                  <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
-                </radialGradient>
+                {/* Arte raster: una textura pintada por facción + mármol neutro + latón */}
+                {PATRONES_TABLERO.map((p) => (
+                  <pattern
+                    key={p.id}
+                    id={p.id}
+                    width="220"
+                    height="220"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                ))}
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}

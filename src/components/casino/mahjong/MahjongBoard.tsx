@@ -29,11 +29,12 @@ interface MahjongBoardProps {
   matchBurst?: { x: number; y: number; z: number; tick: number; big: boolean } | null;
 }
 
-const TILE_W = 80;
+const TILE_W = 96;
 const TILE_H = Math.round((TILE_W * 4) / 3);
 
-const Z_OFFSET_X = 7;
-const Z_OFFSET_Y = -11;
+const Z_OFFSET_X = 8;
+const Z_OFFSET_Y = -13;
+
 
 // En gama baja evitamos montar un componente de framer-motion por ficha
 // (100+ suscripciones al motor de animación ahogan la WebView de Android):

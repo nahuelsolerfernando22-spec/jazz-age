@@ -372,6 +372,18 @@ function SindicatoPage() {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
+  /** Alto real del HUD superior: se mide para que el mapa nunca quede tapado. */
+  const [hudH, setHudH] = useState(186);
+
+  useEffect(() => {
+    const el = hudRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setHudH(Math.round(el.getBoundingClientRect().height)));
+    ro.observe(el);
+    setHudH(Math.round(el.getBoundingClientRect().height));
+    return () => ro.disconnect();
+  }, []);
 
   const territoriesKey = useMemo(
     () => activeTerritories.map((t) => t.id).join("|"),
@@ -382,9 +394,8 @@ function SindicatoPage() {
   const lienzo = useMemo(() => CONTENT_BOX_GEN(activeTerritories), [activeTerritories]);
 
   const computeFit = useCallback(() => {
-    // Espacio real reservado arriba (banner de turno + barra de control + fichas de barrio)
-    // y abajo por el dock de acciones.
-    const HEADER = 186;
+    // Espacio real reservado arriba (HUD medido) y abajo por el dock de acciones.
+    const HEADER = Math.max(120, hudH + 8);
     const NAVBAR = 148;
     const w = window.innerWidth;
     const h = Math.max(240, window.innerHeight - HEADER - NAVBAR);
@@ -401,13 +412,14 @@ function SindicatoPage() {
     const ox = (contentBox.cx - MAP_WIDTH / 2) * s;
     const oy = (contentBox.cy - MAP_HEIGHT / 2) * s;
     setTransform({ x: -ox, y: -oy + (HEADER - NAVBAR) / 2, scale: s });
-  }, [activeTerritories]);
+  }, [activeTerritories, hudH]);
 
   useEffect(() => {
     computeFit();
     window.addEventListener("resize", computeFit);
     return () => window.removeEventListener("resize", computeFit);
   }, [territoriesKey, computeFit]);
+
 
 
   const runStatus = useSyndicateRun((s) => s.status);

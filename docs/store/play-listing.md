@@ -57,9 +57,9 @@ juegos de apuestas con dinero real. Recomendado para mayores de 18 años.
 
 | Recurso | Tamaño | Estado |
 | --- | --- | --- |
-| Ícono de la tienda | 512×512 PNG | pendiente de exportar desde `mipmap-xxxhdpi/ic_launcher_foreground.png` sobre `#0B1512` |
-| Gráfico destacado | 1024×500 PNG/JPG | pendiente |
-| Capturas de teléfono | mín. 4, 1080×1920+ | usar portada, salón, torneo (cuadro) y una mesa en juego |
+| Ícono de la tienda | 512×512 PNG | listo → `docs/store/play-icon-512.png` |
+| Gráfico destacado | 1024×500 PNG/JPG | listo → `docs/store/play-feature-graphic.jpg` (recortar a 1024×500 al subir) |
+| Capturas de teléfono | mín. 4, 1080×1920+ | generar con `bun run shots:store` (salón, truco, torneo, sindicato, mahjong, blackjack, solitario, logros) |
 
 Ícono adaptativo: foreground escalado al 62 % del lienzo para que ninguna máscara
 (circular, squircle) recorte el emblema; fondo sólido `#0B1512` y capa monochrome para
@@ -96,7 +96,8 @@ los temas dinámicos de Android 13+.
 - [ ] `bun run build` en verde y suite de tests completa.
 - [ ] `bun run check:offline` sin hallazgos (la app no debe pedir red).
 - [ ] `bun scripts/check-version.ts` en verde.
-- [ ] AAB firmado con la clave de release (no la de debug).
+- [ ] Clave de release creada: `bun run apk:keystore -- --pass "TuClaveLarga"` (guardá keystore + contraseña fuera de la compu).
+- [ ] AAB firmado con la clave de release (no la de debug): `bun run apk:release`.
 - [ ] Capturas y gráfico destacado subidos.
 - [ ] URL pública de la política de privacidad cargada en la ficha.
 - [ ] Cuestionario de contenido respondido con "juegos de azar simulados: sí".

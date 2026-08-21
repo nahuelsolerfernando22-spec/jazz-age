@@ -103,7 +103,7 @@ export function ActionDock({
           data-haptic="heavy"
           disabled={locked || (primary.disabled && !primary.urgent)}
           onClick={onAdvance}
-          className={`flex h-14 flex-1 items-center justify-center gap-2 rounded-xl border-[3px] border-black font-bebas text-2xl shadow-[0_6px_0_#000] transition-all active:translate-y-1 active:shadow-none ${
+          className={`flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border-[3px] border-black px-2 font-bebas text-xl shadow-[0_6px_0_#000] transition-all active:translate-y-1 active:shadow-none ${
             locked || (primary.disabled && !primary.urgent)
               ? "bg-[#2a251a] text-[var(--crema-brillo)]/65 shadow-none border-[var(--oro)]/10"
               : primary.urgent
@@ -113,9 +113,12 @@ export function ActionDock({
                   : "bg-[var(--oro-viejo)] text-black border-black/20"
           }`}
         >
-          <PrimaryIcon size={24} className={primary.urgent ? "animate-pulse" : ""} />{" "}
-          {locked ? "TURNO DEL RIVAL" : primary.label}
+          <PrimaryIcon size={22} className={`shrink-0 ${primary.urgent ? "animate-pulse" : ""}`} />
+          <span className="min-w-0 truncate whitespace-nowrap leading-none">
+            {locked ? "TURNO DEL RIVAL" : primary.label}
+          </span>
         </button>
+
       </div>
     </nav>
   );

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { createElement } from "react";
-import { SingleHostessCorner } from "@/components/single/SingleHostessCorner";
+import { SingleHostessBubble } from "@/components/single/SingleHostessBubble";
 import { SingleBackdrop } from "@/components/single/SingleBackdrop";
 import { Fragment } from "react";
 import { warmSingleBackgrounds } from "@/lib/single-bg-preload";
@@ -17,10 +17,9 @@ interface Opts {
 }
 
 export function useSingleHostessCorner(gameId: string, opts?: Opts) {
-  // Los retratos ya no viven en la mesa: se ven en /camerinos. Acá sólo
-  // queda el fondo del salón para que el juego entre entero sin scroll.
-  void opts?.backdropOnly;
-  const backdropOnly = true;
+  // En las mesas queda sólo una burbuja compacta (no reserva alto en el
+  // layout); los retratos en grande viven en /camerinos.
+  const backdropOnly = opts?.backdropOnly ?? false;
   const mobileOnly = opts?.mobileOnly ?? false;
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -32,11 +31,9 @@ export function useSingleHostessCorner(gameId: string, opts?: Opts) {
     let root: Root | null = createRoot(host);
     const cornerNode = backdropOnly
       ? null
-      : createElement(SingleHostessCorner, {
+      : createElement(SingleHostessBubble, {
           gameId,
           overrideLine: opts?.overrideLine,
-          position: opts?.position ?? "top-left",
-          compact: opts?.compact ?? false,
         });
     root.render(
       createElement(Fragment, null, createElement(SingleBackdrop, { gameId }), cornerNode),

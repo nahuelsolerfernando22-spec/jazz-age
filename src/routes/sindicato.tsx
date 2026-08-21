@@ -1154,6 +1154,33 @@ function SindicatoPage() {
         <Contrast size={18} />
       </button>
 
+      {/* Previsualizar el tablero con la estética de cada propietario */}
+      <div className="fixed right-3 top-[340px] z-[85] flex flex-col items-end gap-2">
+        <button
+          onClick={() => {
+            setPreviewOwner((v) => (v === null ? 0 : v + 1 >= players.length ? null : v + 1));
+            haptics("tap");
+          }}
+          aria-label="Previsualizar arte del tablero por propietario"
+          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+            previewOwner !== null
+              ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+              : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+          }`}
+        >
+          <MapIcon size={18} />
+        </button>
+        {previewOwner !== null && players[previewOwner] && (
+          <span className="rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
+            <span
+              className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
+              style={{ background: players[previewOwner].color }}
+            />
+            {players[previewOwner].name ?? `Banda ${previewOwner + 1}`}
+          </span>
+        )}
+      </div>
+
       {/* HUD de Efectos Activos y Talismanes */}
       <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">
         {runTalismanes.map((tId: string) => (

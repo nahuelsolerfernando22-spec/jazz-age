@@ -385,6 +385,7 @@ function AjustesInner() {
             <div className="flex flex-wrap gap-2">
               {(
                 [
+                  { to: "/torneo", label: "Torneo" },
                   { to: "/logros", label: "Logros" },
                   { to: "/estadisticas", label: "Estadísticas" },
                   { to: "/diario", label: "Diario" },

@@ -24,6 +24,10 @@ export function reportGameOutcome(gameId: string, outcome: NemesisOutcome | bool
     typeof outcome === "boolean" ? (outcome ? "win" : "loss") : outcome;
   useNemesis.getState().recordResult(gameId, normalized);
   markResolvedNow(gameId);
+  // Si hay un torneo abierto en esta mesa, esta partida cierra la ronda.
+  void import("@/store/cup").then(({ recordCupOutcome }) =>
+    recordCupOutcome(gameId, normalized === "win" ? "win" : normalized === "draw" ? "draw" : "loss"),
+  );
   if (normalized === "win" || normalized === "loss") {
     void import("@/lib/win-sfx").then(({ playWin, playLose }) => {
       const s = useSettings.getState();

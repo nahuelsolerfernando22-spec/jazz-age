@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useHydrated } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useCasino } from "@/store/casino";
 import { useDailyRewards, DAILY_GIFT_CHIPS } from "@/store/daily-rewards";
@@ -9,6 +10,7 @@ export function DailyRewardsPanel({ compact = false }: { compact?: boolean }) {
   const canClaim = useDailyRewards((s) => s.canClaimGift());
   const claim = useDailyRewards((s) => s.claimGift);
   const ensureDay = useDailyRewards((s) => s.ensureDay);
+  const hydrated = useHydrated();
 
   useEffect(() => {
     ensureDay();
@@ -21,7 +23,8 @@ export function DailyRewardsPanel({ compact = false }: { compact?: boolean }) {
     }
   }
 
-  if (!canClaim) return null;
+  // El estado del regalo vive en almacenamiento local: sólo existe tras hidratar.
+  if (!hydrated || !canClaim) return null;
 
   return (
     <div className={`flex items-center gap-2 ${compact ? "" : "px-2"}`}>

@@ -14,6 +14,7 @@ const PATH_TO_GAME: Readonly<Record<string, LeagueGameId>> = {
   "/escoba": "escoba",
   "/solitario": "solitario",
   "/truco": "truco",
+  "/sindicato": "sindicato",
 };
 
 function currentGame(): LeagueGameId | null {

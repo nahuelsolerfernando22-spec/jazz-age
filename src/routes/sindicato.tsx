@@ -418,6 +418,14 @@ function SindicatoPage() {
     }
   }, [secretObjective, setSecretObjective, ola]);
 
+  // El desenlace del mapa también cierra la ronda del torneo, si hay uno abierto.
+  useEffect(() => {
+    if (!winner) return;
+    void import("@/lib/nemesis").then(({ reportGameOutcome }) =>
+      reportGameOutcome("sindicato", winner.isBot ? "loss" : "win"),
+    );
+  }, [winner]);
+
   useEffect(() => {
     if (!enRun || !winner) return;
     if (winner.isBot) {

@@ -28,6 +28,7 @@ const ENTRIES: SitemapEntry[] = [
   { path: "/solitario", changefreq: "monthly", priority: "0.8" },
 
   { path: "/logros", changefreq: "weekly", priority: "0.6" },
+  { path: "/torneo", changefreq: "weekly", priority: "0.7" },
   { path: "/estadisticas", changefreq: "weekly", priority: "0.6" },
   { path: "/diario", changefreq: "weekly", priority: "0.6" },
   { path: "/reglas", changefreq: "monthly", priority: "0.5" },

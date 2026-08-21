@@ -69,10 +69,13 @@ function PortadaPage() {
         <h1 className="paria-sign mt-1 text-4xl leading-none sm:text-6xl">EL CUERVO DORADO</h1>
         <OrnamentoTinta size={30} className="mt-3 text-[var(--oro)]/80" />
         <p
-          className="mt-3 max-w-xs text-[13px] italic text-[var(--marfil)]/75"
+          className="mt-3 max-w-xs text-[13px] italic text-[var(--marfil)]/75 whitespace-pre-wrap"
           style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
         >
-          La puerta está sin cartel. Golpeá tres veces y sentate a jugar.
+          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            mostrame le juego en un celular android asi peudo ver todos los errores que tiene
         </p>
       </div>
 

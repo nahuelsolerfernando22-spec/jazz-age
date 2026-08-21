@@ -1227,8 +1227,10 @@ function ClickableCard({
   onClick: () => void;
   onDoubleClick: () => void;
 }) {
+  const haptic = useHaptics();
   const pressTimer = useRef<number | null>(null);
   const longPressed = useRef(false);
+  const lastTapAt = useRef(0);
   const clearTimer = () => {
     if (pressTimer.current !== null) {
       window.clearTimeout(pressTimer.current);
@@ -1243,6 +1245,16 @@ function ClickableCard({
           longPressed.current = false;
           return;
         }
+        // Doble toque rápido = mandar a las pilas, como en cualquier solitario móvil.
+        const now = Date.now();
+        if (now - lastTapAt.current < 300) {
+          lastTapAt.current = 0;
+          haptic("success");
+          onDoubleClick();
+          return;
+        }
+        lastTapAt.current = now;
+        haptic("card");
         onClick();
       }}
       onPointerDown={() => {
@@ -1250,6 +1262,7 @@ function ClickableCard({
         clearTimer();
         pressTimer.current = window.setTimeout(() => {
           longPressed.current = true;
+          haptic("success");
           onDoubleClick();
         }, 420);
       }}
@@ -1258,8 +1271,9 @@ function ClickableCard({
       onPointerCancel={clearTimer}
       style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       className="block rounded-md active:brightness-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brass-bright)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.16_0.06_145)]"
-      aria-label={`${RANK_LABEL[card.rank]} de ${card.suit} — mantené presionado para enviar a las pilas`}
+      aria-label={`${RANK_LABEL[card.rank]} de ${card.suit} — doble toque o mantené presionado para enviar a las pilas`}
       aria-pressed={selected}
+
     >
       <CardFace card={card} selected={selected} hint={hint} reduced={reduced} />
     </button>

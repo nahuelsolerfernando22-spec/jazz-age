@@ -1,5 +1,5 @@
 import { useCasino } from "@/store/casino";
-import { useSyndicate } from "@/store/syndicate";
+import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {
   BARRIOS,
   sonVecinos,

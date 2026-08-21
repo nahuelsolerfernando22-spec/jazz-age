@@ -21,6 +21,7 @@ import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { faccionDe } from "@/lib/sindicato-facciones";
+import { PATRONES_TABLERO, patronDeFaccion } from "@/lib/sindicato-texturas";
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
@@ -35,6 +36,7 @@ import {
   Briefcase,
   AlertCircle,
   Maximize2,
+  Contrast,
   Minimize2,
   X,
   Plus,
@@ -344,6 +346,7 @@ function SindicatoPage() {
     def: 0,
   });
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
+  const [altoContraste, setAltoContraste] = useState(false);
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);
@@ -681,7 +684,9 @@ function SindicatoPage() {
             backgroundImage: `url(${MAP_IMAGE_URL})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "saturate(0.8) contrast(1.1) brightness(0.42) blur(3px)",
+            filter: altoContraste
+              ? "saturate(0.35) contrast(1.2) brightness(0.2) blur(5px)"
+              : "saturate(0.8) contrast(1.1) brightness(0.42) blur(3px)",
           }}
         />
 
@@ -702,7 +707,9 @@ function SindicatoPage() {
                 backgroundImage: `url(${MAP_IMAGE_URL})`,
                 backgroundSize: "100% 100%",
                 backgroundPosition: "center",
-                filter: "saturate(1.1) contrast(1.08) brightness(1.05)",
+                filter: altoContraste
+                  ? "saturate(0.4) contrast(0.9) brightness(0.45)"
+                  : "saturate(1.1) contrast(1.08) brightness(1.05)",
               }}
             />
 
@@ -742,34 +749,18 @@ function SindicatoPage() {
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#ff5a4a" stroke="#000" strokeWidth="1" />
                 </marker>
 
-                {/* Latón: gradientes de ficha y bisel de sector */}
-                <linearGradient id="laton-ficha" x1="0" y1="0" x2="0.4" y2="1">
-                  <stop offset="0%" stopColor="#f4dfa6" />
-                  <stop offset="45%" stopColor="#c9a24a" />
-                  <stop offset="100%" stopColor="#6d4f18" />
-                </linearGradient>
-                <linearGradient id="laton-canto" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ffeec4" />
-                  <stop offset="100%" stopColor="#8a6a24" />
-                </linearGradient>
-                {/* Mármol: veta diagonal tenue sobre el color del dueño */}
-                <pattern
-                  id="veta-marmol"
-                  width="26"
-                  height="26"
-                  patternUnits="userSpaceOnUse"
-                  patternTransform="rotate(38)"
-                >
-                  <rect width="26" height="26" fill="transparent" />
-                  <line x1="0" y1="0" x2="0" y2="26" stroke="#fff6dc" strokeOpacity="0.14" strokeWidth="1.4" />
-                  <line x1="9" y1="0" x2="9" y2="26" stroke="#000" strokeOpacity="0.18" strokeWidth="2.6" />
-                  <line x1="18" y1="0" x2="18" y2="26" stroke="#fff6dc" strokeOpacity="0.07" strokeWidth="0.9" />
-                </pattern>
-                <radialGradient id="marmol-luz" cx="0.32" cy="0.22" r="0.9">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
-                  <stop offset="60%" stopColor="#000000" stopOpacity="0" />
-                  <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
-                </radialGradient>
+                {/* Arte raster: una textura pintada por facción + mármol neutro + latón */}
+                {PATRONES_TABLERO.map((p) => (
+                  <pattern
+                    key={p.id}
+                    id={p.id}
+                    width="220"
+                    height="220"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                ))}
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
@@ -825,7 +816,25 @@ function SindicatoPage() {
                       }
                     }}
                   >
-                    {/* Sector en mármol: color del dueño + veta + luz cenital */}
+                    {/* Sector: arte raster de la facción dueña + tinte de banda */}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill={patronDeFaccion(owner?.faction)}
+                      fillOpacity={
+                        altoContraste
+                          ? isSelected
+                            ? 0.98
+                            : owner
+                              ? 0.92
+                              : 0.7
+                          : isSelected
+                            ? 0.72
+                            : owner
+                              ? 0.58
+                              : 0.3
+                      }
+                      className="pointer-events-none"
+                    />
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       initial={false}
@@ -835,43 +844,50 @@ function SindicatoPage() {
                           : BARRIOS.find((b) => b.id === t.barrio)?.color || "#666",
                       }}
                       style={{
-                        fillOpacity: isSelected ? 0.6 : owner ? 0.46 : 0.16,
+                        fillOpacity: altoContraste
+                          ? isSelected
+                            ? 0.5
+                            : owner
+                              ? 0.42
+                              : 0.2
+                          : isSelected
+                            ? 0.34
+                            : owner
+                              ? 0.24
+                              : 0.12,
                       }}
-                    />
-                    <path
-                      d={bordeIrregular(t.points, t.id)}
-                      fill="url(#veta-marmol)"
-                      opacity={0.5}
-                      className="pointer-events-none"
-                    />
-                    <path
-                      d={bordeIrregular(t.points, t.id)}
-                      fill="url(#marmol-luz)"
-                      opacity={0.55}
                       className="pointer-events-none"
                     />
 
-                    {/* Canto de latón: trazo oscuro exterior + filete dorado interior */}
+                    {/* Canto de latón raster: trazo oscuro exterior + filete de latón */}
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"
                       stroke="#0b0806"
-                      strokeWidth={isSelected ? 8 : 6}
+                      strokeWidth={altoContraste ? (isSelected ? 10 : 8) : isSelected ? 8 : 6}
                       strokeLinejoin="round"
                       className="pointer-events-none"
                     />
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"
+                      stroke="url(#tex-laton)"
                       initial={false}
                       animate={{
-                        stroke: isSelected ? "#fff3c4" : isMine ? "#e3c67e" : "#9c7c38",
-                        strokeWidth: isSelected ? 3.4 : 2,
+                        strokeWidth: altoContraste
+                          ? isSelected
+                            ? 5
+                            : 3.4
+                          : isSelected
+                            ? 3.4
+                            : 2,
+                        strokeOpacity: isSelected ? 1 : isMine ? 0.95 : 0.7,
                       }}
                       strokeLinejoin="round"
                       filter={isSelected ? "url(#glow-selected)" : "none"}
                       className="pointer-events-none"
                     />
+
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="none"
@@ -894,9 +910,9 @@ function SindicatoPage() {
                             <path
                               d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
                               fill="#0b0806"
-                              fillOpacity="0.9"
-                              stroke="url(#laton-canto)"
-                              strokeWidth="1.2"
+                              fillOpacity={altoContraste ? 1 : 0.9}
+                              stroke="url(#tex-laton)"
+                              strokeWidth={altoContraste ? 1.8 : 1.2}
                             />
                             <text
                               textAnchor="middle"
@@ -927,10 +943,10 @@ function SindicatoPage() {
                         >
                           <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
-                          <circle r="16" fill="url(#laton-canto)" fillOpacity="0.9" />
+                          <circle r="16" fill="url(#tex-laton)" fillOpacity="0.95" />
                           <circle
                             r="14.5"
-                            fill="url(#laton-ficha)"
+                            fill="url(#tex-laton)"
                             filter="url(#bakelite-relief)"
                           />
                           <circle
@@ -1050,6 +1066,23 @@ function SindicatoPage() {
         className="fixed right-3 top-[236px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--oro)]/60 bg-black/85 text-[var(--oro)] backdrop-blur-md active:translate-y-[1px] touch-manipulation"
       >
         <Maximize2 size={18} />
+      </button>
+
+      {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
+      <button
+        onClick={() => {
+          setAltoContraste((v) => !v);
+          haptics("tap");
+        }}
+        aria-label={altoContraste ? "Desactivar alto contraste" : "Activar alto contraste"}
+        aria-pressed={altoContraste}
+        className={`fixed right-3 top-[288px] z-[85] flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+          altoContraste
+            ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+            : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+        }`}
+      >
+        <Contrast size={18} />
       </button>
 
       {/* HUD de Efectos Activos y Talismanes */}

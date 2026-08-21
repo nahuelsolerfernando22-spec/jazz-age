@@ -15,7 +15,7 @@ const POSE_ROTATE_MS = 4200;
 const POSE_XFADE_MS = 780;
 
 const FALLBACK_LINES = [
-  "'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan",
+  "El portero cuenta hasta tres antes de abrir.",
   "El humo se acomoda, la mesa espera.",
   "Última carta al fondo… ya vamos.",
   "Estamos montando el espectáculo…",

@@ -798,9 +798,7 @@ function SolitarioPage() {
                       const top = stack[stack.length - 1] ?? null;
                       const isSel = selected?.kind === "foundation" && selected.suit === s;
                       const red = SUIT_COLOR[s] === "red";
-                      const dropKey = `F:${s}`;
-                      const isDropOk = dragSrc ? canDropOn({ kind: "foundation", suit: s }) : false;
-                      const isDropHover = dragOverKey === dropKey && isDropOk;
+                      const isDropOk = canDropOn({ kind: "foundation", suit: s });
                       return (
                         <button
                           key={s}
@@ -812,15 +810,14 @@ function SolitarioPage() {
                               handleClick({ kind: "foundation", suit: s }, true);
                             }
                           }}
-                          className={`relative transition-transform rounded-md ${
+                          className={`relative rounded-md transition-transform ${
                             closingSuit === s
                               ? "ring-4 ring-[oklch(0.88_0.19_90/0.95)] animate-pulse"
-                              : isDropHover
-                                ? "ring-2 ring-[oklch(0.82_0.18_140/0.9)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
-                                : isDropOk
-                                  ? "ring-1 ring-[oklch(0.75_0.14_140/0.55)]"
-                                  : ""
+                              : isDropOk
+                                ? "animate-pulse ring-2 ring-[oklch(0.82_0.18_140/0.85)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
+                                : ""
                           }`}
+
                           aria-label={`Pila de ${s}`}
                         >
                           {top ? (

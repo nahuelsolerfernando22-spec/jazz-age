@@ -415,7 +415,7 @@ export function PickerPortal({ children }: { children: React.ReactNode }) {
         // Velo en degradé en vez de negro parejo: el 78% plano borraba el
         // retrato de la anfitriona que vive detrás del panel.
         background:
-          "linear-gradient(180deg, rgba(20,13,10,0.34) 0%, rgba(16,11,9,0.52) 38%, rgba(10,8,8,0.78) 100%)",
+          "linear-gradient(180deg, rgba(20,13,10,0.3) 0%, rgba(16,11,9,0.46) 34%, rgba(13,9,8,0.6) 62%, rgba(11,8,8,0.5) 100%)",
       }}
     >
       {children}

@@ -96,6 +96,10 @@ interface SyndicateState {
   cardDrawnThisTurn: boolean;
   /** Reagrupes usados en la fase de fortificación. */
   fortifyMoves: number;
+  /** Sectores tomados en el turno en curso (define si te llevás naipe). */
+  conquestsThisTurn: number;
+  /** Último sector conquistado: ahí van las tropas del canje post-conquista. */
+  lastConqueredId: string | null;
   objectiveProgress: (playerId: number) => ProgresoObjetivo;
 
 
@@ -201,6 +205,8 @@ export const useSyndicate = create<SyndicateState>()(
       roundNumber: 1,
       cardDrawnThisTurn: false,
       fortifyMoves: 0,
+      conquestsThisTurn: 0,
+      lastConqueredId: null,
 
       objectiveProgress: (playerId) => {
         const s = get();
@@ -381,6 +387,8 @@ export const useSyndicate = create<SyndicateState>()(
             roundNumber: 1,
             cardDrawnThisTurn: false,
             fortifyMoves: 0,
+            conquestsThisTurn: 0,
+            lastConqueredId: null,
             tradeCount: 0,
             activeEffects: {},
           };
@@ -453,7 +461,8 @@ export const useSyndicate = create<SyndicateState>()(
             roundNumber,
             cardDrawnThisTurn: false,
             fortifyMoves: 0,
-
+            conquestsThisTurn: 0,
+            lastConqueredId: null,
 
             // Limpiar efectos caducados del jugador que empieza
             activeEffects: Object.fromEntries(
@@ -490,6 +499,12 @@ export const useSyndicate = create<SyndicateState>()(
           if (state.deck.length === 0) return state;
           // Un solo naipe por turno, como manda la mesa.
           if (playerId === state.currentPlayerIndex && state.cardDrawnThisTurn) return state;
+          // T.E.G.: hace falta 1 sector tomado, o 2 si ya hiciste 3 canjes o más.
+          if (
+            playerId === state.currentPlayerIndex &&
+            state.conquestsThisTurn < naipesRequeridos(state.tradeCount)
+          )
+            return state;
           const newDeck = [...state.deck];
           const card = newDeck.pop()!;
           const newPlayers = state.players.map((p) =>
@@ -536,10 +551,27 @@ export const useSyndicate = create<SyndicateState>()(
             }
           });
 
+          // T.E.G.: si ya conquistaste este turno, el canje se coloca sí o sí
+          // en el último sector tomado; si no, engrosa el pozo de refuerzos.
+          const destinoForzado =
+            playerId === state.currentPlayerIndex &&
+            state.lastConqueredId &&
+            updatedConquests[state.lastConqueredId]?.ownerId === playerId
+              ? state.lastConqueredId
+              : null;
+          if (destinoForzado) {
+            updatedConquests[destinoForzado] = {
+              ...updatedConquests[destinoForzado],
+              troops: updatedConquests[destinoForzado].troops + bonus,
+            };
+          }
+
           return {
             players: newPlayers,
             deck: newDeck,
-            unassignedTroops: state.unassignedTroops + bonus,
+            unassignedTroops: destinoForzado
+              ? state.unassignedTroops
+              : state.unassignedTroops + bonus,
             tradeCount: state.tradeCount + 1,
             conquests: updatedConquests,
           };
@@ -577,7 +609,15 @@ export const useSyndicate = create<SyndicateState>()(
               }
             }
           }
-          return { conquests: newConquests, players: newPlayers };
+          const esTurnoDelJugador = playerId === state.currentPlayerIndex;
+          return {
+            conquests: newConquests,
+            players: newPlayers,
+            conquestsThisTurn: esTurnoDelJugador
+              ? state.conquestsThisTurn + 1
+              : state.conquestsThisTurn,
+            lastConqueredId: esTurnoDelJugador ? id : state.lastConqueredId,
+          };
         }),
 
       updateTroops: (id, delta) =>
@@ -794,6 +834,14 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
 export const RONDAS_SIN_ASALTO = 2;
 export function puedeAsaltar(roundNumber: number): boolean {
   return roundNumber > RONDAS_SIN_ASALTO;
+}
+
+/**
+ * T.E.G.: para llevarte un naipe hace falta haber tomado al menos un sector,
+ * o dos si ya canjeaste tres veces o más en la partida.
+ */
+export function naipesRequeridos(tradeCount: number): number {
+  return tradeCount >= 3 ? 2 : 1;
 }
 
 /** ¿Tres naipes forman un canje legal? */

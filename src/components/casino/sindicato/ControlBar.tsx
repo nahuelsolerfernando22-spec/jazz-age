@@ -20,7 +20,7 @@ export function ControlBar({ players, counts, total, currentPlayerId }: Props) {
   if (players.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[100px] z-[65] px-2 min-[420px]:top-[106px]">
+    <div className="pointer-events-none mt-1.5 px-2">
       <div className="pointer-events-auto rounded-xl border-2 border-[var(--oro-viejo)]/60 bg-black/90 px-2 py-1 backdrop-blur-md shadow-lg">
         <div className="flex h-2.5 w-full overflow-hidden rounded-full border border-black bg-white/12">
           {players.map((p) => {

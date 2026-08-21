@@ -1434,34 +1434,53 @@ function SindicatoPage() {
         )}
       </AnimatePresence>
 
-      <TurnBanner
-        playerName={currentPlayer?.name ?? "Sindicato"}
-        playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
-        factionId={currentPlayer?.faction}
-        isBot={!!currentPlayer?.isBot}
-        phase={turnPhase}
-        unassignedTroops={unassignedTroops}
-        pendingTroops={pendingTroops}
-        territories={controlCounts[currentPlayerIndex] || 0}
-        totalTerritories={activeTerritories.length}
-        cards={myCards.length}
-        round={roundNumber}
-        canAssault={puedeAsaltar(roundNumber)}
-      />
+      {/* HUD superior: una sola columna medida, así nada se solapa en ninguna pantalla. */}
+      <div ref={hudRef} className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
+        <TurnBanner
+          playerName={currentPlayer?.name ?? "Sindicato"}
+          playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
+          factionId={currentPlayer?.faction}
+          isBot={!!currentPlayer?.isBot}
+          phase={turnPhase}
+          unassignedTroops={unassignedTroops}
+          pendingTroops={pendingTroops}
+          territories={controlCounts[currentPlayerIndex] || 0}
+          totalTerritories={activeTerritories.length}
+          cards={myCards.length}
+          round={roundNumber}
+          canAssault={puedeAsaltar(roundNumber)}
+        />
 
-      <ControlBar
-        players={players}
-        counts={controlCounts}
-        total={activeTerritories.length}
-        currentPlayerId={currentPlayerIndex}
-      />
+        <ControlBar
+          players={players}
+          counts={controlCounts}
+          total={activeTerritories.length}
+          currentPlayerId={currentPlayerIndex}
+        />
 
-      <BarriosPanel
-        territories={activeTerritories}
-        conquests={conquests}
-        myPlayerId={0}
-        myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
-      />
+        <BarriosPanel
+          territories={activeTerritories}
+          conquests={conquests}
+          myPlayerId={0}
+          myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
+        />
+
+        <div className="mt-1.5 flex items-start gap-2 px-2">
+          <ObjetivoCard />
+          <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
+            <span className="text-sm text-[var(--oro)]">&#9824;</span>
+            <span className="min-w-0">
+              <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
+                {ola.titulo}
+              </span>
+              <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
+                {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
 
       <ActionDock
         phase={turnPhase}

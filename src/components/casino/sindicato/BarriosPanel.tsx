@@ -19,7 +19,7 @@ export function BarriosPanel({ territories, conquests, myPlayerId, myColor }: Pr
   if (filas.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[148px] z-[64] px-2 min-[420px]:top-[154px]">
+    <div className="pointer-events-none mt-1.5 px-2">
       <div className="pointer-events-auto flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
         {filas.map(({ barrio, total, mios, completo }) => (
           <div

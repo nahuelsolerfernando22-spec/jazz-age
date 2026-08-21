@@ -701,8 +701,6 @@ function SindicatoPage() {
           if (e.clientX <= edge || e.clientX >= window.innerWidth - edge) return;
           let startX = e.clientX;
           let startY = e.clientY;
-
-          let startY = e.clientY;
           const onPointerMove = (moveEvent: PointerEvent) => {
             const dx = moveEvent.clientX - startX;
             const dy = moveEvent.clientY - startY;

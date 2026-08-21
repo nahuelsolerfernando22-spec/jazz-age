@@ -80,6 +80,63 @@ const TABS: Tab[] = [
   },
 ];
 
+/* Superficie táctil única para todas las pestañas: 64px de alto (por encima
+   del mínimo de 48dp de Android) y estados activos con placa de latón. */
+const tabClass = (active: boolean) =>
+  `relative mx-1 my-1 flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[10px] uppercase transition-[color,transform,background] duration-200 active:scale-[0.96] ${
+    active ? "hud-plate" : ""
+  }`;
+
+const tabStyle = (active: boolean): React.CSSProperties => ({
+  color: active ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.72)",
+  touchAction: "manipulation",
+  WebkitTapHighlightColor: "transparent",
+  fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
+  fontSize: "0.5625rem",
+  letterSpacing: "0.26em",
+  textShadow: active ? "0 0 10px rgba(244,217,122,0.35)" : "0 1px 0 rgba(0,0,0,0.75)",
+});
+
+function TabInner({
+  active,
+  icon,
+  label,
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-3 top-0 h-[2px] rounded-full transition-opacity duration-300"
+        style={{
+          opacity: active ? 1 : 0,
+          background:
+            "linear-gradient(90deg, transparent 0%, var(--cd-gold-tab) 50%, transparent 100%)",
+          boxShadow: "0 0 10px rgba(244,217,122,0.7)",
+        }}
+      />
+      <span
+        className="grid place-items-center transition-transform duration-200"
+        style={{
+          width: 34,
+          height: 34,
+          transform: active ? "translateY(-1px) scale(1.06)" : "none",
+          filter: active
+            ? "drop-shadow(0 2px 6px rgba(244,217,122,0.45))"
+            : "grayscale(0.25) opacity(0.9)",
+        }}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <span>{label}</span>
+    </>
+  );
+}
+
 export function AppTabBar() {
   const location = useLocation();
   const path = location.pathname;

@@ -28,7 +28,11 @@ const GAME_ROUTES = new Set([
   "/solitario",
   "/tables",
   "/generala",
+  "/poker",
+  "/sindicato",
+  "/torneo",
 ]);
+
 
 const CONFIRM_EXIT_WINDOW_MS = 2500;
 let lastGameBackAt = 0;

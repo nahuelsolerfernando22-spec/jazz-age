@@ -476,6 +476,40 @@ function SindicatoPage() {
 
   const isMine = selectedId ? conquests[selectedId]?.ownerId === currentPlayerIndex : false;
 
+  // Centros de cada sector (coordenadas del lienzo) para rutas y cartuchos.
+  const centros = useMemo(() => {
+    const m: Record<string, Point> = {};
+    activeTerritories.forEach((t) => {
+      m[t.id] = t.points.reduce(
+        (acc: Point, p: Point) => ({
+          x: acc.x + (p.x * 10) / t.points.length,
+          y: acc.y + (p.y * 10) / t.points.length,
+        }),
+        { x: 0, y: 0 },
+      );
+    });
+    return m;
+  }, [activeTerritories]);
+
+  // Rutas punteadas entre sectores vecinos (una sola por par).
+  const conexiones = useMemo(() => {
+    const vistas = new Set<string>();
+    const out: { id: string; a: Point; b: Point }[] = [];
+    activeTerritories.forEach((t) => {
+      t.vecinos.forEach((vId) => {
+        const key = [t.id, vId].sort().join("|");
+        if (vistas.has(key)) return;
+        const a = centros[t.id];
+        const b = centros[vId];
+        if (!a || !b) return;
+        vistas.add(key);
+        out.push({ id: key, a, b });
+      });
+    });
+    return out;
+  }, [activeTerritories, centros]);
+
+
   // Sector propio que lidera el asalto: se calcula una sola vez y se usa en dados y resolución.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;
@@ -708,7 +742,53 @@ function SindicatoPage() {
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#ff5a4a" stroke="#000" strokeWidth="1" />
                 </marker>
 
+                {/* Latón: gradientes de ficha y bisel de sector */}
+                <linearGradient id="laton-ficha" x1="0" y1="0" x2="0.4" y2="1">
+                  <stop offset="0%" stopColor="#f4dfa6" />
+                  <stop offset="45%" stopColor="#c9a24a" />
+                  <stop offset="100%" stopColor="#6d4f18" />
+                </linearGradient>
+                <linearGradient id="laton-canto" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffeec4" />
+                  <stop offset="100%" stopColor="#8a6a24" />
+                </linearGradient>
+                {/* Mármol: veta diagonal tenue sobre el color del dueño */}
+                <pattern
+                  id="veta-marmol"
+                  width="26"
+                  height="26"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(38)"
+                >
+                  <rect width="26" height="26" fill="transparent" />
+                  <line x1="0" y1="0" x2="0" y2="26" stroke="#fff6dc" strokeOpacity="0.14" strokeWidth="1.4" />
+                  <line x1="9" y1="0" x2="9" y2="26" stroke="#000" strokeOpacity="0.18" strokeWidth="2.6" />
+                  <line x1="18" y1="0" x2="18" y2="26" stroke="#fff6dc" strokeOpacity="0.07" strokeWidth="0.9" />
+                </pattern>
+                <radialGradient id="marmol-luz" cx="0.32" cy="0.22" r="0.9">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
+                  <stop offset="60%" stopColor="#000000" stopOpacity="0" />
+                  <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
+                </radialGradient>
               </defs>
+
+              {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
+              <g className="pointer-events-none" opacity="0.4">
+                {conexiones.map((c) => (
+                  <line
+                    key={c.id}
+                    x1={c.a.x}
+                    y1={c.a.y}
+                    x2={c.b.x}
+                    y2={c.b.y}
+                    stroke="#c5a059"
+                    strokeWidth={1.6}
+                    strokeDasharray="7 6"
+                    strokeLinecap="round"
+                  />
+                ))}
+              </g>
+
 
               {activeTerritories.map((t) => {
                 const conquest = conquests[t.id];
@@ -745,6 +825,7 @@ function SindicatoPage() {
                       }
                     }}
                   >
+                    {/* Sector en mármol: color del dueño + veta + luz cenital */}
                     <motion.path
                       d={bordeIrregular(t.points, t.id)}
                       initial={false}
@@ -752,78 +833,132 @@ function SindicatoPage() {
                         fill: owner
                           ? owner.color
                           : BARRIOS.find((b) => b.id === t.barrio)?.color || "#666",
-                        stroke: isSelected ? "#fff3c4" : owner ? "#0b0806" : "#0b0806",
-                        strokeWidth: isSelected ? 7 : 4.5,
-                        strokeOpacity: 1,
                       }}
                       style={{
-                        fillOpacity: isSelected ? 0.95 : owner ? 0.88 : 0.5,
-                        strokeLinejoin: "round",
+                        fillOpacity: isSelected ? 0.95 : owner ? 0.86 : 0.46,
                       }}
-                      filter={isSelected ? "url(#glow-selected)" : "none"}
                     />
-                    {isMine && (
-                      <path
-                        d={bordeIrregular(t.points, t.id)}
-                        fill="none"
-                        stroke="#fff8e0"
-                        strokeWidth={1.5}
-                        strokeOpacity={0.55}
-                        className="pointer-events-none"
-                      />
-                    )}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="url(#veta-marmol)"
+                      className="pointer-events-none"
+                    />
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="url(#marmol-luz)"
+                      className="pointer-events-none"
+                    />
+                    {/* Canto de latón: trazo oscuro exterior + filete dorado interior */}
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      stroke="#0b0806"
+                      strokeWidth={isSelected ? 8 : 6}
+                      strokeLinejoin="round"
+                      className="pointer-events-none"
+                    />
+                    <motion.path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      initial={false}
+                      animate={{
+                        stroke: isSelected ? "#fff3c4" : isMine ? "#e3c67e" : "#9c7c38",
+                        strokeWidth: isSelected ? 3.4 : 2,
+                      }}
+                      strokeLinejoin="round"
+                      filter={isSelected ? "url(#glow-selected)" : "none"}
+                      className="pointer-events-none"
+                    />
+                    <path
+                      d={bordeIrregular(t.points, t.id)}
+                      fill="none"
+                      stroke="#fff8e0"
+                      strokeWidth={0.8}
+                      strokeOpacity={isMine ? 0.5 : 0.22}
+                      strokeDasharray="3 5"
+                      className="pointer-events-none"
+                    />
+                    {/* Cartucho déco con el nombre del sector */}
                     <g
-                      transform={`translate(${center.x}, ${center.y - 26}) scale(${Math.min(2.2, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
+                      transform={`translate(${center.x}, ${center.y - 34}) scale(${Math.min(2.2, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       className="pointer-events-none"
                     >
-                      <text
-                        textAnchor="middle"
-                        fill="#fff8e0"
-                        fontSize="15"
-                        fontWeight="900"
-                        dy="0"
-                        stroke="#000000"
-                        strokeWidth="5"
-                        className="font-serif uppercase tracking-[0.08em] italic pointer-events-none"
-                        style={{ paintOrder: "stroke" }}
-                      >
-                        {t.nombre}
-                      </text>
+                      {(() => {
+                        const w = Math.max(52, t.nombre.length * 6.6 + 18);
+                        const h = 17;
+                        return (
+                          <g>
+                            <path
+                              d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
+                              fill="#0b0806"
+                              fillOpacity="0.9"
+                              stroke="url(#laton-canto)"
+                              strokeWidth="1.2"
+                            />
+                            <text
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              fill="#e9cf94"
+                              fontSize="9.5"
+                              fontWeight="900"
+                              className="font-serif uppercase tracking-[0.18em]"
+                            >
+                              {t.nombre}
+                            </text>
+                          </g>
+                        );
+                      })()}
                     </g>
+
 
                     {(conquest || pending > 0) && (
                       <g
                         transform={`translate(${center.x}, ${center.y}) scale(${Math.min(1.8, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       >
 
+                        {/* Ficha de latón troquelada con la guarnición */}
                         <motion.g
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           whileHover={{ scale: 1.3 }}
                         >
-                          <ellipse rx="17" ry="8" cy="13" fill="#000" fillOpacity="0.75" />
+                          <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
+                          <circle r="16" fill="url(#laton-canto)" fillOpacity="0.9" />
                           <circle
-                            r="14"
-                            fill={owner?.color || "var(--cd-gold-mid)"}
-                            stroke="#fff8e0"
-                            strokeWidth="1.5"
+                            r="14.5"
+                            fill="url(#laton-ficha)"
                             filter="url(#bakelite-relief)"
+                          />
+                          <circle
+                            r="11.5"
+                            fill="none"
+                            stroke="#3a2a08"
+                            strokeOpacity="0.55"
+                            strokeWidth="1"
+                          />
+                          <circle
+                            r="9.5"
+                            fill={owner?.color || "#1a1410"}
+                            fillOpacity={owner ? 0.85 : 0.7}
+                            stroke="#2b1f0a"
+                            strokeWidth="0.8"
                           />
                           <text
                             textAnchor="middle"
                             dominantBaseline="central"
-                            fill="#fff"
-                            fontSize="18"
+                            fill="#fff3d0"
+                            fontSize="15"
                             fontWeight="900"
                             stroke="#000"
-                            strokeWidth="4"
+                            strokeWidth="3.5"
                             className="font-bebas text-contrast-outline"
                             style={{ paintOrder: "stroke" }}
                           >
                             {canSeeTroops ? (conquest?.troops || 0) + pending : "?"}
                           </text>
                         </motion.g>
+
                       </g>
                     )}
                   </g>

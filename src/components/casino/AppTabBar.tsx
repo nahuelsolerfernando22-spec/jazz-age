@@ -30,6 +30,7 @@ const HUB_ROUTES = new Set([
   "/ajustes",
   "/diario",
   "/logros",
+  "/torneo",
   "/estadisticas",
   "/dificultad",
   "/reglas",

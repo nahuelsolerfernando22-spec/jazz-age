@@ -432,6 +432,8 @@ export const useSyndicate = create<SyndicateState>()(
           if (!player) return state;
 
           const tradedCards = player.cards.filter((c) => cardIds.includes(c.id));
+          // La mesa sólo acepta tríos legales: tres iguales, tres distintos o con comodín.
+          if (!esTrioValido(tradedCards)) return state;
           const remainingCards = player.cards.filter((c) => !cardIds.includes(c.id));
 
           const newPlayers = state.players.map((p) =>

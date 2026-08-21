@@ -30,7 +30,8 @@ const PASOS: Paso[] = [
     titulo: "El Cuervo Dorado",
     cuerpo:
       "Un salón clandestino detrás de una puerta sin cartel. Naipes criollos, dados y mesas de casino contra la casa y sus habitués.",
-    detalle: "Todo funciona sin conexión: el salón viaja con vos.",
+    detalle:
+      "Todo funciona sin conexión. Casino simulado: fichas ficticias, sin dinero real ni premios. +18.",
   },
   {
     kicker: "La caja",

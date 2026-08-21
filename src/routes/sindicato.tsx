@@ -397,7 +397,10 @@ function SindicatoPage() {
     // Espacio real reservado arriba (HUD medido) y abajo por el dock de acciones.
     const HEADER = Math.max(120, hudH + 8);
     const NAVBAR = 148;
-    const w = window.innerWidth;
+    // Columna de botones flotantes a la derecha: se descuenta para que ningún
+    // cartucho del mapa quede tapado por ellos.
+    const GUTTER = 64;
+    const w = Math.max(200, window.innerWidth - GUTTER);
     const h = Math.max(240, window.innerHeight - HEADER - NAVBAR);
     // Encuadre sobre el area jugable real (no sobre el lienzo de 1000x1000).
     const pad = 10;

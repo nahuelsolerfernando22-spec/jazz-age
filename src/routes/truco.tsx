@@ -1611,7 +1611,7 @@ function Table({
 
       {}
       <div
-        className="relative flex min-h-0 flex-1 flex-col rounded-sm border-2 border-[var(--brass)]/50 p-1.5 sm:p-3 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]"
+        className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border-2 border-[var(--brass)]/50 p-1.5 sm:p-3 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]"
 
         style={{
           background:

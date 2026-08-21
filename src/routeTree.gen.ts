@@ -32,6 +32,7 @@ import { Route as SingleRouteImport } from './routes/single'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SolitarioRouteImport } from './routes/solitario'
 import { Route as TablesRouteImport } from './routes/tables'
+import { Route as TorneoRouteImport } from './routes/torneo'
 import { Route as TrucoRouteImport } from './routes/truco'
 
 const IndexRoute = IndexRouteImport.update({
@@ -149,6 +150,11 @@ const TablesRoute = TablesRouteImport.update({
   path: '/tables',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TorneoRoute = TorneoRouteImport.update({
+  id: '/torneo',
+  path: '/torneo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrucoRoute = TrucoRouteImport.update({
   id: '/truco',
   path: '/truco',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solitario': typeof SolitarioRoute
   '/tables': typeof TablesRoute
+  '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
 }
 export interface FileRoutesByTo {
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solitario': typeof SolitarioRoute
   '/tables': typeof TablesRoute
+  '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
 }
 export interface FileRoutesById {
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solitario': typeof SolitarioRoute
   '/tables': typeof TablesRoute
+  '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
 }
 export interface FileRouteTypes {
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solitario'
     | '/tables'
+    | '/torneo'
     | '/truco'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solitario'
     | '/tables'
+    | '/torneo'
     | '/truco'
   id:
     | '__root__'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solitario'
     | '/tables'
+    | '/torneo'
     | '/truco'
   fileRoutesById: FileRoutesById
 }
@@ -339,6 +351,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SolitarioRoute: typeof SolitarioRoute
   TablesRoute: typeof TablesRoute
+  TorneoRoute: typeof TorneoRoute
   TrucoRoute: typeof TrucoRoute
 }
 
@@ -505,6 +518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TablesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/torneo': {
+      id: '/torneo'
+      path: '/torneo'
+      fullPath: '/torneo'
+      preLoaderRoute: typeof TorneoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/truco': {
       id: '/truco'
       path: '/truco'
@@ -539,6 +559,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SolitarioRoute: SolitarioRoute,
   TablesRoute: TablesRoute,
+  TorneoRoute: TorneoRoute,
   TrucoRoute: TrucoRoute,
 }
 export const routeTree = rootRouteImport

@@ -10,6 +10,16 @@ import {
 } from "@/lib/sindicato-data";
 import { FACCIONES, faccionDe, type FactionId } from "@/lib/sindicato-facciones";
 import { generateSubMap } from "@/lib/sindicato-map-gen";
+import {
+  NIVEL_TUNING,
+  amenaza,
+  debeCanjear,
+  mejorAsalto,
+  planDeployment,
+  planFortify,
+  type AiBoard,
+  type AiNivel,
+} from "@/lib/sindicato-ai";
 import { useCasino } from "@/store/casino";
 
 export type SpecialCardType = "bribe" | "informant" | "surprise" | "lockdown";
@@ -64,6 +74,9 @@ interface SyndicateState {
   deck: SyndicateCard[];
   hasMovedFortification: boolean;
   assaultsThisTurn: number;
+  /** Cabeza de los capos rivales: matón, capo o consejero. */
+  aiNivel: AiNivel;
+  setAiNivel: (n: AiNivel) => void;
   tradeCount: number;
 
 
@@ -157,6 +170,8 @@ export const useSyndicate = create<SyndicateState>()(
       deck: [...INITIAL_DECK],
       hasMovedFortification: false,
       assaultsThisTurn: 0,
+      aiNivel: "capo",
+      setAiNivel: (aiNivel) => set({ aiNivel }),
       tradeCount: 0,
       pendingDeployment: {},
       activeEffects: {},
@@ -581,24 +596,32 @@ export const useSyndicate = create<SyndicateState>()(
         const bot = state.players[state.currentPlayerIndex];
         if (!bot || !bot.isBot || bot.eliminated) return;
 
-        const vecinosDe = (id: string) =>
-          get().activeTerritories.find((t) => t.id === id)?.vecinos ?? [];
+        const tuning = NIVEL_TUNING[state.aiNivel ?? "capo"];
+        const board = (): AiBoard => {
+          const s = get();
+          return { botId: bot.id, conquests: s.conquests, territories: s.activeTerritories };
+        };
 
         if (state.turnPhase === "deployment") {
-          // Refuerza la frontera: reparte en los sectores propios que tocan enemigos.
-          const propios = Object.values(state.conquests).filter((c) => c.ownerId === bot.id);
-          const frontera = propios.filter((c) =>
-            vecinosDe(c.id).some((n) => state.conquests[n] && state.conquests[n].ownerId !== bot.id),
-          );
-          const destinos = (frontera.length ? frontera : propios).sort(
-            (a, b) => a.troops - b.troops,
-          );
-          let restantes = state.unassignedTroops;
-          let i = 0;
-          while (restantes > 0 && destinos.length > 0) {
-            get().assignTroops(destinos[i % destinos.length].id, 1);
-            restantes--;
-            i++;
+          // Antes de repartir, canjea naipes si tiene un trío: refuerzos gratis.
+          const trio = findValidSet(bot.cards);
+          if (trio && debeCanjear(bot.cards.length, true)) {
+            get().tradeCards(
+              bot.id,
+              trio.map((c) => c.id),
+            );
+            await new Promise((r) => setTimeout(r, 350));
+          }
+
+          const plan = planDeployment(board(), get().unassignedTroops, tuning);
+          for (const paso of plan) {
+            get().assignTroops(paso.id, paso.troops);
+          }
+          // Lo que sobre (por redondeos) va al frente más débil.
+          const sobra = get().unassignedTroops;
+          if (sobra > 0) {
+            const resto = planDeployment(board(), sobra, tuning);
+            for (const paso of resto) get().assignTroops(paso.id, paso.troops);
           }
           get().confirmDeployment();
           await new Promise((r) => setTimeout(r, 700));
@@ -607,38 +630,25 @@ export const useSyndicate = create<SyndicateState>()(
         }
 
         if (state.turnPhase === "attack") {
-          // Resuelve hasta 3 asaltos reales contra vecinos más débiles.
-          for (let asalto = 0; asalto < 3; asalto++) {
+          for (let asalto = 0; asalto < tuning.maxAsaltos; asalto++) {
             const s = get();
-            const candidatos = Object.values(s.conquests)
-              .filter((c) => c.ownerId === bot.id && c.troops > 1)
-              .sort((a, b) => b.troops - a.troops);
-            let origen: string | null = null;
-            let destino: string | null = null;
-            for (const t of candidatos) {
-              const objetivo = vecinosDe(t.id)
-                .filter((nId) => {
-                  const conq = s.conquests[nId];
-                  return conq && conq.ownerId !== bot.id && s.canAttack(t.id, nId);
-                })
-                .sort((a, b) => s.conquests[a].troops - s.conquests[b].troops)[0];
-              if (objetivo && s.conquests[objetivo].troops < t.troops) {
-                origen = t.id;
-                destino = objetivo;
-                break;
-              }
-            }
-            if (!origen || !destino) break;
+            const plan = mejorAsalto(board(), tuning, (from, to) => s.canAttack(from, to));
+            if (!plan) break;
 
-            const atkDados = Math.min(3, s.conquests[origen].troops - 1);
-            const defDados = Math.min(3, s.conquests[destino].troops);
+            const origen = plan.from;
+            const destino = plan.to;
+            const atkDados = Math.min(3, get().conquests[origen].troops - 1);
+            const defDados = Math.min(3, get().conquests[destino].troops);
             const { bajasAtacante, bajasDefensor } = tirarAsalto(atkDados, defDados);
 
             get().updateTroops(origen, -bajasAtacante);
             const defRestantes = get().conquests[destino].troops - bajasDefensor;
             if (defRestantes <= 0) {
+              // Ocupa con fuerza suficiente para seguir empujando, pero deja
+              // guarnición si el sector de origen está amenazado.
               const disponibles = get().conquests[origen].troops - 1;
-              const mueve = Math.max(1, Math.min(disponibles, atkDados));
+              const guardia = amenaza(board(), origen) > 0 ? 1 : 0;
+              const mueve = Math.max(1, Math.min(disponibles - guardia, Math.max(atkDados, 2)));
               get().updateTroops(origen, -mueve);
               get().conquerTerritory(destino, mueve, bot.id);
               get().drawCard(bot.id);
@@ -652,26 +662,11 @@ export const useSyndicate = create<SyndicateState>()(
         }
 
         if (state.turnPhase === "fortification") {
-          // Mueve tropas del interior seguro hacia la frontera.
-          const s = get();
-          const propios = Object.values(s.conquests).filter((c) => c.ownerId === bot.id);
-          const interior = propios.find(
-            (c) =>
-              c.troops > 2 &&
-              vecinosDe(c.id).every(
-                (n) => !s.conquests[n] || s.conquests[n].ownerId === bot.id,
-              ),
-          );
-          if (interior) {
-            const destino = vecinosDe(interior.id).find(
-              (n) => s.conquests[n]?.ownerId === bot.id,
-            );
-            if (destino) get().moveTroops(interior.id, destino, interior.troops - 1);
-          }
+          const plan = planFortify(board(), tuning);
+          if (plan) get().moveTroops(plan.from, plan.to, plan.amount);
           await new Promise((r) => setTimeout(r, 400));
           get().nextTurn();
         }
-
       },
     }),
     { name: "syndicate-storage" },

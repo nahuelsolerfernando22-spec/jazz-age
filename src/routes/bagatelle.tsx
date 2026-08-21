@@ -2965,9 +2965,10 @@ function PinballPage() {
                 </FitBoardArea>
 
                 {}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between font-display text-[11px] uppercase tracking-[0.34em] text-[var(--ivory)]/65">
-                    <span className="flex items-center gap-2">
+                <div className="relative z-10 mt-4">
+                  <div className="flex items-center justify-between gap-3 font-display text-[10px] uppercase tracking-[0.2em] text-[var(--ivory)]/65">
+                    <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+
                       medidor de fuerza
                       <button
                         type="button"
@@ -2979,7 +2980,10 @@ function PinballPage() {
                         ⚙
                       </button>
                     </span>
-                    <span style={{ color: meterArmed ? meterZoneColor : undefined }}>
+                    <span
+                      className="min-w-0 truncate whitespace-nowrap text-right"
+                      style={{ color: meterArmed ? meterZoneColor : undefined }}
+                    >
                       {meterArmed
                         ? meterSettings.showLiveForce
                           ? `${meterZoneLabel} · ${liveForce}%`

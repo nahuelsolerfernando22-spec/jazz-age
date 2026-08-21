@@ -256,7 +256,7 @@ export function buildStandings(
 export const CUP_ENTRANTS = 1 << CUP_TOTAL_ROUNDS; // 16 anotados, 4 rondas
 
 /** Entrada al torneo: lo que cuesta anotarse en cada mesa. */
-export const CUP_BUYIN = 200;
+export const CUP_BUYIN = 350;
 
 /** El pozo lo arma la mesa: todos ponen. */
 export function cupPozo(buyin = CUP_BUYIN): number {

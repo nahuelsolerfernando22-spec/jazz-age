@@ -2234,7 +2234,7 @@ iframe[src*="ovable.app"] {
   padding-right: max(var(--sa-right), 0px);
 }
 
-@supports (top: var(--sa-top)) {
+@supports (top: env(safe-area-inset-top)) {
   .hud-safe-top {
     top: max(var(--sa-top), 0px);
   }

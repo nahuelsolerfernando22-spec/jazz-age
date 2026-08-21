@@ -283,9 +283,9 @@ export function CasinoHUD({ showBack: _showBack = true }: { showBack?: boolean }
         className="pointer-events-auto mx-auto flex w-full max-w-[1280px] items-center justify-between gap-2 px-2 min-[400px]:gap-3 min-[400px]:px-2.5 sm:gap-3 sm:px-6 lg:px-10"
         style={{
           minHeight: "var(--hud-h)",
-          paddingRight: "calc(var(--hud-btn) + 26px + env(safe-area-inset-right, 0px))",
+          paddingRight: "calc(var(--hud-btn) + 26px + var(--sa-right))",
           paddingLeft: isGameRoute(location.pathname)
-            ? "calc(var(--hud-btn) + 20px + env(safe-area-inset-left, 0px))"
+            ? "calc(var(--hud-btn) + 20px + var(--sa-left))"
             : undefined,
         }}
       >
@@ -593,7 +593,7 @@ function RoomIdentity({ room, accent }: { room: RoomMeta | null; accent: string 
           active
           label={surrenderLabel ?? "Rendirse"}
           onSurrender={effectiveSurrender}
-          className="fixed left-[max(0.75rem,env(safe-area-inset-left))] bottom-[calc(max(env(safe-area-inset-bottom),0px)+var(--app-tabbar-h,0px)+12px)] z-[330] inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-sm border border-[var(--oxblood)]/80 bg-[var(--noir)]/92 px-3 py-2 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--ivory)] shadow-[0_8px_22px_rgba(0,0,0,0.55)] backdrop-blur transition-colors hover:bg-[var(--oxblood)]/30 hover:border-[var(--oxblood)] active:bg-[var(--oxblood)]/50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brass)]/70 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="fixed left-[max(0.75rem,var(--sa-left))] bottom-[calc(max(var(--sa-bottom),0px)+var(--app-tabbar-h,0px)+12px)] z-[330] inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-sm border border-[var(--oxblood)]/80 bg-[var(--noir)]/92 px-3 py-2 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--ivory)] shadow-[0_8px_22px_rgba(0,0,0,0.55)] backdrop-blur transition-colors hover:bg-[var(--oxblood)]/30 hover:border-[var(--oxblood)] active:bg-[var(--oxblood)]/50 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brass)]/70 disabled:opacity-40 disabled:cursor-not-allowed"
         />
       )}
 

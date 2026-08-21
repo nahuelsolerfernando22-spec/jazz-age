@@ -36,10 +36,10 @@ function SingleLoaderImpl({
         fontFamily: "'Barlow', system-ui, sans-serif",
 
         minHeight: "100dvh",
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-        paddingLeft: "env(safe-area-inset-left)",
-        paddingRight: "env(safe-area-inset-right)",
+        paddingTop: "var(--sa-top)",
+        paddingBottom: "var(--sa-bottom)",
+        paddingLeft: "var(--sa-left)",
+        paddingRight: "var(--sa-right)",
         isolation: "isolate",
       }}
     >

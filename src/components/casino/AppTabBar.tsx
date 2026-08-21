@@ -183,9 +183,9 @@ export function AppTabBar() {
         aria-label="Navegación principal"
         className="fixed inset-x-0 bottom-0 z-[200] bg-[var(--cd-noir-1)]"
         style={{
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-          paddingLeft: "env(safe-area-inset-left, 0px)",
-          paddingRight: "env(safe-area-inset-right, 0px)",
+          paddingBottom: "var(--sa-bottom)",
+          paddingLeft: "var(--sa-left)",
+          paddingRight: "var(--sa-right)",
           borderTop: "1px solid rgba(201,168,76,0.5)",
           backgroundImage: `linear-gradient(180deg, rgba(10,8,6,0.7) 0%, rgba(10,8,6,0.93) 100%), url(${tabbarBrass})`,
           backgroundSize: "auto, 320px 100%",

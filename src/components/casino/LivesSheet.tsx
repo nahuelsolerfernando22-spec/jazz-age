@@ -103,7 +103,7 @@ export function LivesSheet({ open, onClose }: { open: boolean; onClose: () => vo
               aria-modal="true"
               aria-label="Recuperar vidas"
               className="relative w-full max-w-md overflow-hidden rounded-t-md border border-[var(--brass)]/55 bg-gradient-to-b from-[var(--mahogany)]/90 to-[var(--noir)] px-5 pt-5 shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.9)] sm:rounded-md"
-              style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+              style={{ paddingBottom: "max(1.25rem, var(--sa-bottom))" }}
             >
               <div className="pointer-events-none absolute inset-2 rounded-sm border border-[var(--brass)]/15" />
 

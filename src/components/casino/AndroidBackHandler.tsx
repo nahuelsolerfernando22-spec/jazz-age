@@ -64,7 +64,7 @@ function toastPressBackAgain() {
     const el = document.createElement("div");
     el.setAttribute("role", "status");
     el.style.cssText =
-      "position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));" +
+      "position:fixed;left:50%;bottom:calc(90px + var(--sa-bottom));" +
       "transform:translateX(-50%);z-index:10000;padding:10px 16px;border-radius:999px;" +
       "background:rgba(10,6,4,0.92);color:#f3e6c9;font:600 13px/1.2 system-ui;" +
       "border:1px solid rgba(196,148,86,0.55);box-shadow:0 6px 20px rgba(0,0,0,0.5);" +

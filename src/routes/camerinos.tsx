@@ -54,7 +54,7 @@ function CamerinosPage() {
   const open = list.find((h) => h.hostess.npcId === openId) ?? null;
 
   return (
-    <main className="cuervo-game-root min-h-svh px-3 pb-24 pt-[calc(var(--cd-content-offset,72px))]">
+    <main className="cuervo-game-root min-h-svh px-3 pt-[calc(var(--cd-content-offset,72px))] pb-[calc(var(--app-tabbar-h,74px)+32px)]">
       <header className="mx-auto max-w-[560px] px-1 pb-4">
         <h1
           className="text-[26px] uppercase tracking-[0.28em] text-[var(--oro,var(--cd-gold))]"

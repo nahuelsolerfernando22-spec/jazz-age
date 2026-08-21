@@ -1023,7 +1023,7 @@ function SolitarioPage() {
                     transition={
                       reduced ? { duration: 0.15 } : { type: "spring", stiffness: 260, damping: 22 }
                     }
-                    className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center"
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-[max(0.75rem,var(--sa-bottom))] sm:items-center"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="soli-win-title"

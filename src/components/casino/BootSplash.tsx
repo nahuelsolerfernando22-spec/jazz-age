@@ -92,7 +92,7 @@ export function BootSplash() {
       />
       <div
         className="pointer-events-none absolute inset-x-0 flex justify-center"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 28px)" }}
+        style={{ bottom: "calc(var(--sa-bottom) + 28px)" }}
       >
         <div
           className="h-[3px] w-40 overflow-hidden rounded-full"

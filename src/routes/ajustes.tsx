@@ -240,7 +240,7 @@ function AjustesInner() {
   const s = useSettings();
   return (
     <div className="min-h-dvh bg-[var(--verde-noche)] text-[var(--marfil)]">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 pt-8 sm:px-6" style={{ paddingBottom: "calc(var(--app-tabbar-h, 74px) + 24px)" }}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--marfil)]/65">
             El Cuervo Dorado

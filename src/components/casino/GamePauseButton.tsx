@@ -133,8 +133,8 @@ export function GamePauseButton() {
         data-hud="pause"
         className="fixed z-[220] grid place-items-center rounded-full border border-[var(--oro)]/55 bg-[var(--verde-noche)]/95 text-[var(--crema)] shadow-[0_6px_18px_rgba(0,0,0,0.65)] backdrop-blur active:scale-95"
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          right: "calc(env(safe-area-inset-right, 0px) + 10px)",
+          top: "calc(var(--sa-top) + 8px)",
+          right: "calc(var(--sa-right) + 10px)",
           width: "var(--hud-btn)",
           height: "var(--hud-btn)",
           touchAction: "manipulation",
@@ -163,8 +163,8 @@ export function GamePauseButton() {
                 className="fixed inset-0 z-[400] flex flex-col items-center justify-center px-6 text-center"
                 style={{
                   touchAction: "none",
-                  paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)",
-                  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
+                  paddingTop: "calc(var(--sa-top) + 24px)",
+                  paddingBottom: "calc(var(--sa-bottom) + 24px)",
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

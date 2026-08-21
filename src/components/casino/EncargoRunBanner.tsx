@@ -64,7 +64,7 @@ export function EncargoRunBanner() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-3"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+      style={{ bottom: "calc(var(--sa-bottom) + 0.5rem)" }}
     >
       <div
         className="hud-plate pointer-events-auto w-full max-w-md rounded-sm px-3 py-2"

@@ -78,7 +78,7 @@ function PortadaPage() {
 
       <div
         className="relative mt-8 flex w-full max-w-xs flex-col gap-2.5"
-        style={{ paddingBottom: "calc(78px + env(safe-area-inset-bottom, 0px))" }}
+        style={{ paddingBottom: "calc(78px + var(--sa-bottom))" }}
       >
         <BrassButton variant="primary" size="lg" block onClick={() => navigate({ to: "/single" })}>
           Entrar al salón
@@ -95,7 +95,7 @@ function PortadaPage() {
         </Link>
         <p className="mt-1 text-[10px] leading-snug tracking-wide text-[var(--marfil)]/45">
           Juego de casino simulado. Fichas ficticias, sin dinero real ni premios. +18.{" "}
-          <Link to="/privacidad" className="underline underline-offset-2 hover:text-[var(--oro)]">
+          <Link to="/privacidad" className="cd-hit-44 underline underline-offset-2 hover:text-[var(--oro)]">
             Privacidad
           </Link>
         </p>

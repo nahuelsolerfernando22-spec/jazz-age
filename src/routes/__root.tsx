@@ -504,11 +504,12 @@ function RootComponent() {
       {/* Flotantes de audio: fuera de mesas y de pantallas de datos/ajustes. */}
       {mounted && !inGame && !NO_FLOATING_AUDIO.has(targetPath) && (
         <div
-          className="fixed right-4 z-[190] print:hidden"
+          className="fixed z-[190] print:hidden"
           style={{
+            right: "calc(var(--sa-right) + 1rem)",
             bottom: GAME_ROUTES_WITH_ACTION_BAR.has(targetPath)
-              ? "calc(env(safe-area-inset-bottom, 0px) + 156px)"
-              : "calc(env(safe-area-inset-bottom, 0px) + 68px)",
+              ? "calc(var(--sa-bottom) + 156px)"
+              : "calc(var(--sa-bottom) + 68px)",
           }}
         >
           <div className="flex flex-col items-center gap-2">
@@ -522,9 +523,9 @@ function RootComponent() {
         position="top-center"
         richColors
         closeButton
-        offset="calc(env(safe-area-inset-top, 0px) + 84px)"
+        offset="calc(var(--sa-top) + 84px)"
         mobileOffset={{
-          top: "calc(env(safe-area-inset-top, 0px) + 84px)",
+          top: "calc(var(--sa-top) + 84px)",
           left: "12px",
           right: "12px",
         }}

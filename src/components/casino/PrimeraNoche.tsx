@@ -106,8 +106,8 @@ export function PrimeraNoche() {
         style={{
           background:
             "radial-gradient(120% 80% at 50% 12%, oklch(0.22 0.03 60 / 0.96), var(--cd-noir-0) 62%)",
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
+          paddingTop: "calc(var(--sa-top) + 24px)",
+          paddingBottom: "calc(var(--sa-bottom) + 24px)",
         }}
       >
         <button
@@ -120,7 +120,7 @@ export function PrimeraNoche() {
           style={{
             position: "absolute",
             right: 8,
-            top: "calc(env(safe-area-inset-top, 0px) + 8px)",
+            top: "calc(var(--sa-top) + 8px)",
           }}
         >
           Saltear

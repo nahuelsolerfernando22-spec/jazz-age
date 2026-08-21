@@ -48,7 +48,7 @@ export function TurnBanner({
 
 
   return (
-    <div className="pointer-events-none px-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
+    <div className="pointer-events-none px-2 pt-[max(0.5rem,var(--sa-top))]">
       <div className="pointer-events-auto rounded-2xl border-2 border-[var(--oro)]/70 bg-black/85 px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.9)] backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div

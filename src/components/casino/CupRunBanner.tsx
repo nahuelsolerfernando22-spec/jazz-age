@@ -20,7 +20,7 @@ export function CupRunBanner() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 z-40 flex justify-center px-3"
-      style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.5rem)" }}
+      style={{ top: "calc(var(--sa-top) + 0.5rem)" }}
     >
       <div
         className="pointer-events-auto w-full max-w-md rounded-sm px-3 py-1.5"

@@ -390,8 +390,8 @@ function ReglasPage() {
       <div
         className="mx-auto max-w-3xl px-4 sm:px-6"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 140px)",
+          paddingTop: "calc(var(--sa-top) + 16px)",
+          paddingBottom: "calc(var(--sa-bottom) + 140px)",
         }}
       >
         {/* Barra superior con retorno */}

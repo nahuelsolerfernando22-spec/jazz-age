@@ -697,7 +697,7 @@ function TablesPage() {
         }}
       />
       <div
-        className="relative mx-auto flex max-w-5xl flex-col px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)] sm:px-6"
+        className="relative mx-auto flex max-w-5xl flex-col px-4 pb-[calc(var(--sa-bottom)+1.5rem)] sm:px-6"
         style={{
           paddingTop: "calc(var(--hud-h, 64px) + 12px)",
           minHeight: "calc(100svh - var(--cd-content-offset, 0px) - var(--hud-h, 64px) - 12px)",
@@ -874,7 +874,7 @@ function TablesPage() {
         </section>
 
         {}
-        <div className="mt-auto sticky bottom-0 z-20 -mx-4 border-t border-white/10 bg-[var(--verde-noche)]/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-6 lg:pb-0 lg:backdrop-blur-0">
+        <div className="mt-auto sticky bottom-0 z-20 -mx-4 border-t border-white/10 bg-[var(--verde-noche)]/95 px-4 pt-3 pb-[max(0.75rem,var(--sa-bottom))] backdrop-blur-md lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-6 lg:pb-0 lg:backdrop-blur-0">
           {hostessLine && (
             <div
               key={hostessLine + phase}

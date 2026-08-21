@@ -57,7 +57,7 @@ function ProgresoPage() {
       {/* Encabezado fijo + pestañas: no tapan el contenido, el scroll vive abajo */}
       <header
         className="relative z-10 shrink-0 border-b border-[var(--oro)]/20 bg-black/55 backdrop-blur"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 0.5rem)" }}
+        style={{ paddingTop: "max(var(--sa-top), 0.5rem)" }}
       >
         <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-3 pb-1">
           <Link
@@ -106,7 +106,7 @@ function ProgresoPage() {
 
       <div
         className="cuervo-scroll-perf relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 7.5rem)" }}
+        style={{ paddingBottom: "calc(var(--sa-bottom) + 7.5rem)" }}
       >
         <div className="mx-auto w-full max-w-3xl">
           {!hydrated ? (

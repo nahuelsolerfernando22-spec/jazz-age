@@ -38,8 +38,8 @@ export function RoomNotePin() {
     <div
       className="pointer-events-auto fixed z-30 max-w-[280px] rotate-[-1.5deg] rounded-sm border border-amber-500/40 bg-[oklch(0.14_0.04_65/0.92)] p-3 pr-6 shadow-[0_6px_20px_oklch(0_0_0/0.5)] backdrop-blur-sm"
       style={{
-        left: "calc(env(safe-area-inset-left, 0px) + 12px)",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 148px)",
+        left: "calc(var(--sa-left) + 12px)",
+        bottom: "calc(var(--sa-bottom) + 148px)",
       }}
       role="note"
       aria-label="Nota del día en la sala"

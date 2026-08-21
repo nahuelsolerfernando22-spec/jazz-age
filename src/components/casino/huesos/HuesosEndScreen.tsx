@@ -44,7 +44,7 @@ export function HuesosEndScreen({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 40, opacity: 0 }}
           transition={{ type: "spring", stiffness: 240, damping: 26 }}
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}
+          style={{ paddingBottom: "calc(var(--sa-bottom) + 10px)" }}
           role="dialog"
           aria-label="Resultado de la noche"
         >

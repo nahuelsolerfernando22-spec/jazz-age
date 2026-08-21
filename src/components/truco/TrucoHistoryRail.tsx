@@ -57,7 +57,7 @@ export function TrucoHistoryRail({
               onClick={(e) => e.stopPropagation()}
               className="w-full sm:max-w-md max-h-[80vh] rounded-t-lg sm:rounded-sm border-2 border-[var(--brass)]/60 bg-[var(--noir)] shadow-deep flex flex-col"
               style={{
-                paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)",
+                paddingBottom: "max(var(--sa-bottom), 0.75rem)",
               }}
             >
               <div className="flex items-center justify-between p-3 border-b border-[var(--brass)]/25 shrink-0">

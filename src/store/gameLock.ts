@@ -48,7 +48,7 @@ export function useLockGame(active: boolean, started = active) {
             duration: 1200,
             position: "top-center",
             style: {
-              marginTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+              marginTop: "calc(var(--sa-top) + 8px)",
               fontSize: "12px",
               maxWidth: "92vw",
             },

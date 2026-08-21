@@ -138,7 +138,7 @@ export function HuesosRules({ onClose }: { onClose: () => void }) {
 
         <div
           className="relative z-[1] border-t border-[var(--brass)]/20 bg-[oklch(0.09_0.015_30)]/80 px-5 pt-3 backdrop-blur"
-          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          style={{ paddingBottom: "max(0.75rem, var(--sa-bottom))" }}
         >
           <button
             type="button"

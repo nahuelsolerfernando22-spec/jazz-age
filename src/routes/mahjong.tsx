@@ -1108,8 +1108,8 @@ function MahjongPage() {
               aria-label="Habilidades especiales"
               className="cd-scroll-x-fade mt-3 flex snap-x snap-mandatory items-stretch gap-3 overflow-x-auto overflow-y-visible overscroll-x-contain scroll-smooth pt-4 pb-2 [-webkit-overflow-scrolling:touch] [scroll-padding-inline:20px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:snap-start sm:mt-4 sm:flex-wrap sm:justify-center sm:gap-3 sm:overflow-visible sm:[&>*]:snap-none"
               style={{
-                paddingLeft: "max(env(safe-area-inset-left, 0px), 4px)",
-                paddingRight: "max(env(safe-area-inset-right, 0px), 4px)",
+                paddingLeft: "max(var(--sa-left), 4px)",
+                paddingRight: "max(var(--sa-right), 4px)",
               }}
             >
               <ActionBtn
@@ -1257,8 +1257,8 @@ function MahjongPage() {
             title={`Deshacer última ficha — ${game.undosLeft}/${game.undoLimit}`}
             className="fixed z-[210] grid place-items-center rounded-full border-2 border-[var(--brass)]/75 bg-[var(--noir)]/95 text-[var(--brass-bright)] shadow-[0_6px_18px_rgba(0,0,0,0.65)] backdrop-blur active:scale-95"
             style={{
-              bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-              left: "calc(env(safe-area-inset-left, 0px) + 12px)",
+              bottom: "calc(var(--sa-bottom) + 16px)",
+              left: "calc(var(--sa-left) + 12px)",
               width: "calc(52px * var(--hud-scale, 1))",
               height: "calc(52px * var(--hud-scale, 1))",
               touchAction: "manipulation",

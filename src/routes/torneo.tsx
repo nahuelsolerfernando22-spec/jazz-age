@@ -9,10 +9,16 @@ import {
   CUP_ROUND_REWARDS,
   CUP_SWEEP_BONUS,
   CUP_TOTAL_ROUNDS,
+  CUP_BUYIN,
   buildStandings,
   cupCountdown,
+  cupPozo,
+  matchesAt,
+  participantsAt,
+  rivalAt,
   cupRoundName,
   cupSchedule,
+  cupDivision,
   garraLabel,
 } from "@/lib/cup";
 import { useCup } from "@/store/cup";
@@ -145,10 +151,18 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
   const abandon = useCup((s) => s.abandon);
   const retry = useCup((s) => s.retry);
   const cupos = useCup((s) => s.cupos)();
+  const reserved = useCup((s) => s.reserved);
+  const reserve = useCup((s) => s.reserve);
+  const cancelReserve = useCup((s) => s.cancelReserve);
   const navigate = useNavigate();
   const agenda = useMemo(() => cupSchedule(Date.now(), 3), []);
 
   const enCurso = Boolean(active && active.status === "jugando");
+  const onEntrar = (gameId: string) => {
+    if (!start(gameId)) {
+      void import("sonner").then(({ toast }) => toast.error("No pudiste entrar: revisá cupo y fichas."));
+    }
+  };
 
   return (
     <>
@@ -168,6 +182,9 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
                 "…"
               )}
             </p>
+            <p className="mt-1 text-[11px] text-[var(--crema)]/55">
+              Entrada ¢{CUP_BUYIN} · pozo ¢{cupPozo()}
+            </p>
           </div>
           <div className="text-right">
             <h2 className="font-display text-[11px] uppercase tracking-[0.28em] text-[var(--oro)]/80">
@@ -177,6 +194,33 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
               {CUP_GAME_BY_ID[agenda[0].gameId]?.nombre} · en {cupCountdown(agenda[0].at)}
             </p>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {hydrated && reserved ? (
+            <>
+              <p className="flex-1 text-xs text-[var(--crema)]/70">
+                Tenés lugar guardado en {CUP_GAME_BY_ID[reserved.gameId]?.nombre} — abre en{" "}
+                {cupCountdown(reserved.at)}.
+              </p>
+              {Date.now() >= reserved.at ? (
+                <button type="button" className={btn} onClick={() => onEntrar(reserved.gameId)}>
+                  Entrar
+                </button>
+              ) : (
+                <button type="button" className={btn} onClick={cancelReserve}>
+                  Soltar lugar
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              type="button"
+              className={btn}
+              onClick={() => reserve(agenda[0].gameId, agenda[0].at)}
+            >
+              Reservar lugar
+            </button>
+          )}
         </div>
         <ul className="mt-3 space-y-1 text-xs text-[var(--crema)]/60">
           {agenda.slice(1).map((s) => (
@@ -233,10 +277,24 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
                   <button
                     type="button"
                     disabled={esta || enCurso || (hydrated && cupos.entradas === 0)}
-                    onClick={() => start(g.id)}
+                    onClick={() => {
+                      if (!start(g.id)) {
+                        void import("sonner").then(({ toast }) =>
+                          toast.error(
+                            cupos.entradas === 0
+                              ? "No te quedan anotadas por hoy."
+                              : `Te faltan fichas: la entrada sale ¢${CUP_BUYIN}.`,
+                          ),
+                        );
+                      }
+                    }}
                     className={btn}
                   >
-                    {esta ? "En curso" : hydrated && cupos.entradas === 0 ? "Sin cupo" : "Anotarse"}
+                    {esta
+                      ? "En curso"
+                      : hydrated && cupos.entradas === 0
+                        ? "Sin cupo"
+                        : `Anotarse ¢${CUP_BUYIN}`}
                   </button>
                   <Link
                     to={g.ruta}
@@ -264,6 +322,10 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
             </li>
           ))}
           <li>Barrer las cuatro suma ¢{CUP_SWEEP_BONUS} y la corona.</li>
+          <li>
+            Se anotan 16: entrada ¢{CUP_BUYIN} cada uno, pozo ¢{cupPozo()}. Los otros cruces se
+            juegan en las mesas de al lado mientras vos jugás la tuya.
+          </li>
           <li>Un empate no cierra la ronda: se vuelve a jugar.</li>
           <li>Los rivales suben o bajan la garra según cómo venís en esa mesa.</li>
         </ul>
@@ -286,6 +348,7 @@ function CuadroActivo({
   const active = useCup((s) => s.active)!;
   const juego = CUP_GAME_BY_ID[active.gameId];
   const rival = active.rivals[active.round];
+  const rivalInfo = active.bracket ? rivalAt(active.bracket, active.round) : null;
   const terminado = active.status !== "jugando";
 
   return (
@@ -304,6 +367,8 @@ function CuadroActivo({
         </p>
       </div>
 
+      <BracketView />
+
       <ol className="mt-4 space-y-2">
         {CUP_ROUNDS.map((r, i) => {
           const res = active.results[i];
@@ -321,11 +386,13 @@ function CuadroActivo({
                 {r.corto}
               </span>
               <span className="flex-1 truncate text-[var(--crema)]/80">
-                {active.rivals[i]?.nombre}
-                <span className="text-[var(--crema)]/45">
-                  {" "}
-                  · {garraLabel(active.rivals[i]?.garra ?? 1)}
-                </span>
+                {active.rivals[i]?.nombre ?? "Por definir"}
+                {active.rivals[i] ? (
+                  <span className="text-[var(--crema)]/45">
+                    {" "}
+                    · {garraLabel(active.rivals[i]!.garra)}
+                  </span>
+                ) : null}
               </span>
               <span
                 className={`font-display text-[11px] uppercase tracking-[0.2em] ${
@@ -350,12 +417,31 @@ function CuadroActivo({
       ) : null}
 
       {terminado ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <p className="flex-1 text-sm text-[var(--crema)]/80">
-            {active.status === "campeon"
-              ? `Campeón de ${juego?.nombre}. La casa te pagó ¢${active.purse}.`
-              : `Te dejaron afuera. La bolsa quedó en ¢${active.purse}.`}
-          </p>
+        <div className="mt-4">
+          <div className="rounded-sm border border-[var(--oro)]/35 bg-black/45 p-3">
+            <p className="font-display text-[11px] uppercase tracking-[0.26em] text-[var(--oro)]/80">
+              {active.status === "campeon" ? "Premiación" : "Fin del cuadro"}
+            </p>
+            <p className="mt-1 text-sm text-[var(--crema)]/80">
+              {active.status === "campeon"
+                ? `Campeón de ${juego?.nombre}. La casa te pagó ¢${active.purse}.`
+                : `Te dejaron afuera en ${cupRoundName(active.round)}. La bolsa quedó en ¢${active.purse}.`}
+            </p>
+            <ul className="mt-2 space-y-0.5 text-[11px] text-[var(--crema)]/60">
+              {active.results.map((r, i) => (
+                <li key={i}>
+                  {CUP_ROUNDS[i].corto} · {active.rivals[i]?.nombre ?? "—"} —{" "}
+                  {r === "win" ? "ganada" : "perdida"}
+                </li>
+              ))}
+              <li>
+                Entrada ¢{active.buyin} · saldo neto ¢{active.purse - active.buyin} ·{" "}
+                {active.puntos} pts de temporada
+              </li>
+              {active.trofeos.length ? <li>Vitrina: {active.trofeos.join(" · ")}</li> : null}
+            </ul>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
           {active.status === "eliminado" ? (
             <button
               type="button"
@@ -369,12 +455,18 @@ function CuadroActivo({
           <button type="button" onClick={onCerrar} className={btn}>
             Cerrar cuadro
           </button>
+          </div>
         </div>
       ) : (
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <p className="flex-1 text-sm text-[var(--crema)]/80">
             {cupRoundName(active.round)} contra <strong>{rival?.nombre}</strong> (
             {garraLabel(rival?.garra ?? 1)}). {juego?.criterio}
+            {rivalInfo ? (
+              <span className="block text-[11px] text-[var(--crema)]/50">
+                {rivalInfo.apodo} · {rivalInfo.record.g}-{rivalInfo.record.p} en el salón
+              </span>
+            ) : null}
           </p>
           <button
             type="button"
@@ -435,8 +527,39 @@ function PosicionesTab({
     [mesa, sc?.puntos, sc?.titulos, hydrated],
   );
 
+  const totalPuntos = hydrated
+    ? Object.values(scores).reduce((a, b) => a + b.puntos, 0)
+    : 0;
+  const div = cupDivision(totalPuntos);
+
   return (
     <section>
+      <div className={`${card} mb-3`}>
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-display text-[11px] uppercase tracking-[0.28em] text-[var(--oro)]/80">
+            Temporada
+          </h2>
+          <span className="font-display text-[12px] tracking-[0.14em] text-[var(--oro)]">
+            {div.actual.nombre}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-[var(--crema)]/65">
+          {totalPuntos} pts en total
+          {div.siguiente
+            ? ` · faltan ${Math.max(0, div.siguiente.desde - totalPuntos)} para ${div.siguiente.nombre}`
+            : " · estás en lo más alto del salón"}
+        </p>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--oro)]/10">
+          <div
+            className="h-full rounded-full bg-[var(--oro)]/70"
+            style={{
+              width: div.siguiente
+                ? `${Math.min(100, Math.round(((totalPuntos - div.actual.desde) / (div.siguiente.desde - div.actual.desde)) * 100))}%`
+                : "100%",
+            }}
+          />
+        </div>
+      </div>
       <MesaPicker mesa={mesa} setMesa={setMesa} />
       <ol className={`${card} divide-y divide-[var(--oro)]/10 p-0`}>
         {filas.map((f, i) => (
@@ -525,5 +648,80 @@ function HistorialTab({ hydrated }: { hydrated: boolean }) {
         )}
       </div>
     </section>
+  );
+}
+
+/* ─────────────────────────  Llave de 16 en vivo  ─────────────────────── */
+
+function BracketView() {
+  const active = useCup((s) => s.active)!;
+  const b = active.bracket;
+  if (!b) return null;
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="font-display text-[10px] uppercase tracking-[0.28em] text-[var(--oro)]/70">
+          La llave · 16 anotados
+        </h3>
+        <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--crema)]/50">
+          Pozo ¢{b.pozo}
+        </span>
+      </div>
+      <div className="cuervo-scroll-perf mt-2 flex gap-2 overflow-x-auto pb-1">
+        {CUP_ROUNDS.map((r, ri) => {
+          const cruces = matchesAt(b, ri);
+          const jugada = Boolean(b.winners[ri]);
+          return (
+            <div key={r.id} className="min-w-[9.5rem] flex-1">
+              <p className="mb-1 font-display text-[9px] uppercase tracking-[0.2em] text-[var(--oro)]/60">
+                {r.corto}
+              </p>
+              <ul className="space-y-1">
+                {cruces.length === 0 ? (
+                  <li className="rounded-sm border border-dashed border-[var(--oro)]/20 px-2 py-3 text-center text-[10px] italic text-[var(--crema)]/35">
+                    por definir
+                  </li>
+                ) : (
+                  cruces.map(([a, c], mi) => {
+                    const ganador = b.winners[ri]?.[mi];
+                    return (
+                      <li
+                        key={`${ri}-${mi}`}
+                        className="rounded-sm border border-[var(--oro)]/20 bg-black/40 px-2 py-1"
+                      >
+                        {[a, c].map((idx) => {
+                          const e = b.entrants[idx];
+                          const gano = jugada && ganador === idx;
+                          const perdio = jugada && ganador !== idx;
+                          return (
+                            <p
+                              key={idx}
+                              className={`flex items-center justify-between gap-1 truncate text-[11px] leading-5 ${
+                                e?.esVos
+                                  ? "text-[var(--oro)] font-bold"
+                                  : perdio
+                                    ? "text-[var(--crema)]/30 line-through"
+                                    : "text-[var(--crema)]/80"
+                              }`}
+                            >
+                              <span className="truncate">{e?.nombre ?? "—"}</span>
+                              {gano ? <span className="text-emerald-300">✓</span> : null}
+                            </p>
+                          );
+                        })}
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-1 text-[10px] text-[var(--crema)]/45">
+        Quedan {participantsAt(b, active.round).length} en carrera.
+      </p>
+    </div>
   );
 }

@@ -97,6 +97,15 @@ const RIVALES: CupRival[] = [
   { nombre: "Doña Amparo", apodo: "la Prestamista", garra: 3 },
   { nombre: "El Turco", apodo: "vende humo", garra: 1 },
   { nombre: "Simón Vega", apodo: "el Cronómetro", garra: 2 },
+  { nombre: "Nelly Braun", apodo: "la Suiza", garra: 2 },
+  { nombre: "Ramón Ocampo", apodo: "dedo lento", garra: 1 },
+  { nombre: "La Gallega", apodo: "reparte y calla", garra: 3 },
+  { nombre: "Beto Iriarte", apodo: "el Muelle", garra: 1 },
+  { nombre: "Ada Zunino", apodo: "memoria de fichas", garra: 3 },
+  { nombre: "El Uruguayo", apodo: "cara de piedra", garra: 2 },
+  { nombre: "Ceferino", apodo: "el Sacristán", garra: 1 },
+  { nombre: "Perla Vidal", apodo: "manos de seda", garra: 2 },
+  { nombre: "Don Ismael", apodo: "el Patrón", garra: 3 },
 ];
 
 function hash(str: string): number {
@@ -240,4 +249,165 @@ export function buildStandings(
   filas.push({ nombre: jugador, puntos: misPuntos, titulos: misTitulos, esVos: true });
   filas.sort((a, b) => b.puntos - a.puntos || b.titulos - a.titulos);
   return filas;
+}
+
+/* ───────────────────  Cuadro completo de 16 (estilo llave)  ───────────── */
+
+export const CUP_ENTRANTS = 1 << CUP_TOTAL_ROUNDS; // 16 anotados, 4 rondas
+
+/** Entrada al torneo: lo que cuesta anotarse en cada mesa. */
+export const CUP_BUYIN = 200;
+
+/** El pozo lo arma la mesa: todos ponen. */
+export function cupPozo(buyin = CUP_BUYIN): number {
+  return buyin * CUP_ENTRANTS;
+}
+
+export interface CupEntrant {
+  nombre: string;
+  apodo: string;
+  garra: number;
+  esVos: boolean;
+  /** Récord del rival en el salón (sabor, se muestra al cruzarlo). */
+  record: { g: number; p: number };
+}
+
+export interface CupBracket {
+  entrants: CupEntrant[];
+  /** Orden inicial de la llave (índices de `entrants`). */
+  order: number[];
+  /** Ganadores por ronda: winners[r][m] es índice de `entrants`. */
+  winners: number[][];
+  buyin: number;
+  pozo: number;
+}
+
+function rngFrom(seed: string): () => number {
+  let a = hash(seed);
+  return () => {
+    a = (Math.imul(a, 1664525) + 1013904223) >>> 0;
+    return a / 4294967296;
+  };
+}
+
+/** Arma la llave de 16: vos más quince capos de la casa. */
+export function buildBracket(
+  seed: string,
+  jugador: string,
+  rating: number,
+  buyin = CUP_BUYIN,
+): CupBracket {
+  const rnd = rngFrom(seed);
+  const pool = [...RIVALES];
+  // Baraja el pool
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const rivales = pool.slice(0, CUP_ENTRANTS - 1).map((r) => ({
+    nombre: r.nombre,
+    apodo: r.apodo,
+    garra: Math.max(1, Math.min(5, r.garra + (rnd() < 0.35 ? 1 : 0))),
+    esVos: false,
+    record: { g: 4 + Math.floor(rnd() * 40), p: 2 + Math.floor(rnd() * 25) },
+  }));
+
+  const vos: CupEntrant = {
+    nombre: jugador,
+    apodo: "vos",
+    garra: 3,
+    esVos: true,
+    record: { g: 0, p: 0 },
+  };
+  const entrants = [vos, ...rivales];
+  const order = entrants.map((_, i) => i);
+  // Vos siempre arrancás arriba de la llave: se lee mejor en el celular.
+  for (let i = order.length - 1; i > 1; i--) {
+    const j = 1 + Math.floor(rnd() * i);
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  // Los pesados quedan del otro lado: tu rama sube de a poco.
+  const mitad = order.slice(0, CUP_ENTRANTS / 2);
+  const resto = order.slice(CUP_ENTRANTS / 2);
+  mitad.sort((a, b) =>
+    entrants[a].esVos ? -1 : entrants[b].esVos ? 1 : entrants[a].garra - entrants[b].garra,
+  );
+
+  return {
+    entrants: entrants.map((e) =>
+      e.esVos ? e : { ...e, garra: Math.max(1, Math.min(5, e.garra + Math.round(rating * 1.5))) },
+    ),
+    order: [...mitad, ...resto],
+    winners: [],
+    buyin,
+    pozo: cupPozo(buyin),
+  };
+}
+
+/** Índices de `entrants` que juegan la ronda `r`. */
+export function participantsAt(b: CupBracket, r: number): number[] {
+  return r === 0 ? b.order : (b.winners[r - 1] ?? []);
+}
+
+/** Cruces de la ronda `r` como pares de índices. */
+export function matchesAt(b: CupBracket, r: number): Array<[number, number]> {
+  const p = participantsAt(b, r);
+  const out: Array<[number, number]> = [];
+  for (let i = 0; i < p.length; i += 2) out.push([p[i], p[i + 1]]);
+  return out;
+}
+
+/** Rival del jugador en la ronda `r`, si ya está definido. */
+export function rivalAt(b: CupBracket, r: number): CupEntrant | null {
+  for (const [a, c] of matchesAt(b, r)) {
+    if (b.entrants[a]?.esVos) return b.entrants[c] ?? null;
+    if (b.entrants[c]?.esVos) return b.entrants[a] ?? null;
+  }
+  return null;
+}
+
+/**
+ * Resuelve la ronda `r` completa: tu cruce lo decide la partida, los otros
+ * se juegan solos en las mesas de al lado (peso por garra).
+ */
+export function resolveRound(b: CupBracket, r: number, ganasteVos: boolean): CupBracket {
+  const rnd = rngFrom(`${b.order.join(",")}:${r}:${b.winners.length}`);
+  const ganadores = matchesAt(b, r).map(([a, c]) => {
+    const ea = b.entrants[a];
+    const ec = b.entrants[c];
+    if (ea.esVos) return ganasteVos ? a : c;
+    if (ec.esVos) return ganasteVos ? c : a;
+    const pa = (ea.garra + 1) / (ea.garra + ec.garra + 2);
+    return rnd() < pa ? a : c;
+  });
+  const winners = [...b.winners];
+  winners[r] = ganadores;
+  return { ...b, winners: winners.slice(0, r + 1) };
+}
+
+/** Sigue vivo el jugador en la llave. */
+export function playerAlive(b: CupBracket, r: number): boolean {
+  return participantsAt(b, r).some((i) => b.entrants[i]?.esVos);
+}
+
+/* ───────────────────────  Temporada y divisiones  ────────────────────── */
+
+export interface CupDivision {
+  nombre: string;
+  desde: number;
+}
+
+/** Escalafón del salón: los puntos de todas las mesas suman a la temporada. */
+export const CUP_DIVISIONS: CupDivision[] = [
+  { nombre: "Vereda", desde: 0 },
+  { nombre: "Trastienda", desde: 150 },
+  { nombre: "Reservado", desde: 450 },
+  { nombre: "Palco", desde: 1000 },
+  { nombre: "Círculo del Cuervo", desde: 2200 },
+];
+
+export function cupDivision(puntos: number): { actual: CupDivision; siguiente: CupDivision | null } {
+  let idx = 0;
+  for (let i = 0; i < CUP_DIVISIONS.length; i++) if (puntos >= CUP_DIVISIONS[i].desde) idx = i;
+  return { actual: CUP_DIVISIONS[idx], siguiente: CUP_DIVISIONS[idx + 1] ?? null };
 }

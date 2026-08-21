@@ -916,34 +916,49 @@ function SindicatoPage() {
                         transform={`translate(${center.x}, ${center.y}) scale(${Math.min(1.8, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       >
 
+                        {/* Ficha de latón troquelada con la guarnición */}
                         <motion.g
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           whileHover={{ scale: 1.3 }}
                         >
-                          <ellipse rx="17" ry="8" cy="13" fill="#000" fillOpacity="0.75" />
+                          <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
+                          <circle r="16" fill="url(#laton-canto)" fillOpacity="0.9" />
                           <circle
-                            r="14"
-                            fill={owner?.color || "var(--cd-gold-mid)"}
-                            stroke="#fff8e0"
-                            strokeWidth="1.5"
+                            r="14.5"
+                            fill="url(#laton-ficha)"
                             filter="url(#bakelite-relief)"
+                          />
+                          <circle
+                            r="11.5"
+                            fill="none"
+                            stroke="#3a2a08"
+                            strokeOpacity="0.55"
+                            strokeWidth="1"
+                          />
+                          <circle
+                            r="9.5"
+                            fill={owner?.color || "#1a1410"}
+                            fillOpacity={owner ? 0.85 : 0.7}
+                            stroke="#2b1f0a"
+                            strokeWidth="0.8"
                           />
                           <text
                             textAnchor="middle"
                             dominantBaseline="central"
-                            fill="#fff"
-                            fontSize="18"
+                            fill="#fff3d0"
+                            fontSize="15"
                             fontWeight="900"
                             stroke="#000"
-                            strokeWidth="4"
+                            strokeWidth="3.5"
                             className="font-bebas text-contrast-outline"
                             style={{ paintOrder: "stroke" }}
                           >
                             {canSeeTroops ? (conquest?.troops || 0) + pending : "?"}
                           </text>
                         </motion.g>
+
                       </g>
                     )}
                   </g>

@@ -35,7 +35,7 @@ export function HostessRanksStrip() {
   return (
     <section
       aria-labelledby="rangos-heading"
-      className="rounded-lg border border-[var(--oro)]/35 bg-[#0a0806]/95 p-4"
+      className="rounded-lg border border-[var(--oro)]/35 bg-[var(--cd-noir-1)]/95 p-4"
     >
       <header className="mb-2.5">
         <p className="text-[11px] font-black uppercase tracking-[0.35em] text-[var(--oro-viejo)]">

@@ -84,7 +84,7 @@ export function MusicToggle({
         size={size === "sm" ? 22 : 26}
         className="relative"
         style={{
-          color: on ? "#f4d97a" : "rgba(244,217,122,0.5)",
+          color: on ? "var(--cd-gold-tab)" : "rgba(244,217,122,0.5)",
           filter: on ? "drop-shadow(0 0 5px rgba(255,180,80,0.5))" : undefined,
         }}
       />

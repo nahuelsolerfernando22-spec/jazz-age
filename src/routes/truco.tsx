@@ -1359,17 +1359,17 @@ function PaperColumn({
     <div className="flex-1 px-2.5 py-1.5 sm:px-3 sm:py-2">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
-          <span className="font-display text-[12px] sm:text-[13px] text-[#3a2418] tracking-wide">
+          <span className="font-display text-[12px] sm:text-[13px] text-[var(--cd-ink)] tracking-wide">
             {label}
           </span>
           {mano && (
-            <span className="px-1 py-0 text-[11px] uppercase tracking-[0.15em] rounded-sm bg-[#3a2418] text-[#f4e8cf] font-bold">
+            <span className="px-1 py-0 text-[11px] uppercase tracking-[0.15em] rounded-sm bg-[var(--cd-ink)] text-[#f4e8cf] font-bold">
               mano
             </span>
           )}
         </div>
         <span
-          className="font-numerals text-base sm:text-lg text-[#3a2418] transition-all"
+          className="font-numerals text-base sm:text-lg text-[var(--cd-ink)] transition-all"
           style={{
             textShadow: pulse ? "0 0 8px var(--brass)" : "none",
             transform: pulse ? "scale(1.15)" : "scale(1)",
@@ -1387,13 +1387,13 @@ function PaperColumn({
             score={malas}
             drawn={malasDrawn}
             cap={cap}
-            ink="#8b1e1e"
+            ink="var(--cd-red-deep)"
             pulse={pulse && score <= cap}
           />
         </div>
         {showBuenas && (
           <div>
-            <div className="hidden sm:block text-[11px] uppercase tracking-[0.25em] text-[#3a2418]/80 mb-0.5">
+            <div className="hidden sm:block text-[11px] uppercase tracking-[0.25em] text-[var(--cd-ink)]/80 mb-0.5">
               buenas
             </div>
             <PalitosRow
@@ -1448,7 +1448,7 @@ function ScoreBoard({
           className={`flex min-w-0 items-baseline gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}
         >
           <span
-            className="font-numerals text-[17px] leading-none text-[#2b1a10] tabular-nums transition-transform"
+            className="font-numerals text-[17px] leading-none text-[var(--cd-ink-deep)] tabular-nums transition-transform"
             style={{
               textShadow: pulse ? "0 0 6px var(--brass)" : "none",
               transform: pulse ? "scale(1.15)" : "scale(1)",
@@ -1456,11 +1456,11 @@ function ScoreBoard({
           >
             {score}
           </span>
-          <span className="font-display text-[11px] leading-none text-[#2b1a10]/85 whitespace-nowrap">
+          <span className="font-display text-[11px] leading-none text-[var(--cd-ink-deep)]/85 whitespace-nowrap">
             {label}
           </span>
           {mano && (
-            <span className="px-1 py-[1px] text-[11px] uppercase tracking-[0.12em] rounded-[2px] bg-[#3a2418] text-[#f4e8cf] font-bold leading-none">
+            <span className="px-1 py-[1px] text-[11px] uppercase tracking-[0.12em] rounded-[2px] bg-[var(--cd-ink)] text-[#f4e8cf] font-bold leading-none">
               mano
             </span>
           )}
@@ -1472,7 +1472,7 @@ function ScoreBoard({
             score={malas}
             drawn={malas}
             cap={chicoCap}
-            ink="#8b1e1e"
+            ink="var(--cd-red-deep)"
             pulse={pulse && score <= chicoCap}
           />
           {showBuenas && buenas > 0 && (
@@ -1490,7 +1490,7 @@ function ScoreBoard({
   };
   return (
     <div
-      className="relative rounded-[3px] border border-[#3a2418]/40 shadow-[0_2px_8px_rgba(0,0,0,0.45)] overflow-hidden"
+      className="relative rounded-[3px] border border-[var(--cd-ink)]/40 shadow-[0_2px_8px_rgba(0,0,0,0.45)] overflow-hidden"
       style={{ background: "linear-gradient(180deg, #f2e3c1 0%, #e6d1a2 100%)" }}
     >
       <div className="relative flex items-center gap-2 px-2 py-1.5">
@@ -1501,11 +1501,11 @@ function ScoreBoard({
           pulse={scorePulse?.you}
           align="left"
         />
-        <div className="flex flex-col items-center gap-0.5 shrink-0 px-1 border-x border-[#3a2418]/25">
-          <span className="font-display text-[11px] leading-none tracking-[0.15em] text-[#3a2418]/80">
+        <div className="flex flex-col items-center gap-0.5 shrink-0 px-1 border-x border-[var(--cd-ink)]/25">
+          <span className="font-display text-[11px] leading-none tracking-[0.15em] text-[var(--cd-ink)]/80">
             A{g.pointGoal}
           </span>
-          <span className="text-[11px] uppercase tracking-[0.15em] text-[#3a2418]/65 leading-none">
+          <span className="text-[11px] uppercase tracking-[0.15em] text-[var(--cd-ink)]/65 leading-none">
             {g.florEnabled ? "flor" : "s/flor"}
           </span>
         </div>
@@ -1520,7 +1520,7 @@ function ScoreBoard({
           type="button"
           aria-label="Abrir historial"
           onClick={() => window.dispatchEvent(new Event("truco:open-history"))}
-          className="shrink-0 grid h-7 w-7 place-items-center rounded-full border border-[#3a2418]/40 bg-[#3a2418]/10 text-[#2b1a10] active:brightness-125"
+          className="shrink-0 grid h-7 w-7 place-items-center rounded-full border border-[var(--cd-ink)]/40 bg-[var(--cd-ink)]/10 text-[var(--cd-ink-deep)] active:brightness-125"
           style={{ WebkitTapHighlightColor: "transparent" }}
         >
           {}
@@ -1538,9 +1538,9 @@ function ScoreBoard({
         </button>
       </div>
       {(g.hand.trucoLevel || stake) && (
-        <div className="relative flex items-center justify-between gap-2 px-2 py-0.5 text-[11px] uppercase tracking-[0.2em] text-[#3a2418]/85 border-t border-[#3a2418]/25 bg-[#e0c893]/60">
+        <div className="relative flex items-center justify-between gap-2 px-2 py-0.5 text-[11px] uppercase tracking-[0.2em] text-[var(--cd-ink)]/85 border-t border-[var(--cd-ink)]/25 bg-[#e0c893]/60">
           <span>{g.hand.trucoLevel ? cantoLabelUpper("truco", g.hand.trucoLevel) : ""}</span>
-          {stake && <span className="text-[#8b1e1e] font-bold">En juego: {stake} pts</span>}
+          {stake && <span className="text-[var(--cd-red-deep)] font-bold">En juego: {stake} pts</span>}
         </div>
       )}
     </div>

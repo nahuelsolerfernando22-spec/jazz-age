@@ -72,7 +72,7 @@ export function MobileSheet({
             tabIndex={-1}
           />
           <motion.div
-            className="relative flex w-full max-w-lg flex-col rounded-t-3xl border-t border-[var(--brass,#c9a84c)]/50 bg-[var(--verde-noche)]/98 shadow-[0_-24px_70px_rgba(0,0,0,0.85)] sm:mb-6 sm:rounded-3xl sm:border"
+            className="relative flex w-full max-w-lg flex-col rounded-t-3xl border-t border-[var(--brass,var(--cd-gold-mid))]/50 bg-[var(--verde-noche)]/98 shadow-[0_-24px_70px_rgba(0,0,0,0.85)] sm:mb-6 sm:rounded-3xl sm:border"
             style={{ maxHeight, paddingBottom: "env(safe-area-inset-bottom)" }}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -91,13 +91,13 @@ export function MobileSheet({
               <header className="flex shrink-0 items-start justify-between gap-3 border-b border-white/5 px-4 py-2">
                 <div className="min-w-0">
                   {eyebrow && (
-                    <div className="font-display text-[11px] uppercase tracking-[0.32em] text-[var(--brass,#c9a84c)]/70">
+                    <div className="font-display text-[11px] uppercase tracking-[0.32em] text-[var(--brass,var(--cd-gold-mid))]/70">
                       {eyebrow}
                     </div>
                   )}
                   {title && (
                     <h2
-                      className="mt-0.5 truncate text-lg text-[var(--brass,#c9a84c)] sm:text-xl"
+                      className="mt-0.5 truncate text-lg text-[var(--brass,var(--cd-gold-mid))] sm:text-xl"
                       style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}
                     >
                       {title}
@@ -108,7 +108,7 @@ export function MobileSheet({
                   type="button"
                   onClick={onClose}
                   aria-label="Cerrar"
-                  className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-[var(--brass,#c9a84c)]/45 bg-[var(--brass,#c9a84c)]/10 text-xl text-[var(--brass,#c9a84c)] active:scale-95 active:bg-[var(--brass,#c9a84c)]/25"
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-[var(--brass,var(--cd-gold-mid))]/45 bg-[var(--brass,var(--cd-gold-mid))]/10 text-xl text-[var(--brass,var(--cd-gold-mid))] active:scale-95 active:bg-[var(--brass,var(--cd-gold-mid))]/25"
                   style={{ touchAction: "manipulation" }}
                 >
                   ×

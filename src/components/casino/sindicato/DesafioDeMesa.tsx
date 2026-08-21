@@ -45,7 +45,7 @@ export function DesafioDeMesa({ barrio, territorio, onResuelto, onCerrar }: Prop
       <motion.div
         initial={{ scale: 0.92, y: 18 }}
         animate={{ scale: 1, y: 0 }}
-        className="w-[92vw] max-w-sm rounded-2xl border-[4px] border-black bg-[#0d0a06] p-6 shadow-[0_0_70px_rgba(0,0,0,0.9)] ring-1 ring-[var(--oro-viejo)]/25"
+        className="w-[92vw] max-w-sm rounded-2xl border-[4px] border-black bg-[var(--cd-noir-2)] p-6 shadow-[0_0_70px_rgba(0,0,0,0.9)] ring-1 ring-[var(--oro-viejo)]/25"
       >
         <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--oro-viejo)]">
           {def.juego} · {territorio}

@@ -47,7 +47,7 @@ export function RumoresPanel() {
   return (
     <section
       aria-labelledby="rumores-heading"
-      className="relative overflow-hidden rounded-lg border border-[var(--oro)]/35 bg-[#0a0806]/95 p-4 sm:p-5"
+      className="relative overflow-hidden rounded-lg border border-[var(--oro)]/35 bg-[var(--cd-noir-1)]/95 p-4 sm:p-5"
     >
       <header className="mb-3 flex items-end justify-between gap-3">
         <div className="min-w-0">

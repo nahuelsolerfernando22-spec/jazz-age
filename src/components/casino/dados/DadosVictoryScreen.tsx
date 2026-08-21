@@ -49,7 +49,7 @@ export function DadosVictoryScreen() {
               {reason ? REASON_LABEL[reason] : ""}
             </p>
             <h2
-              className={`text-center text-4xl ${result.won ? "text-[var(--oro-claro)]" : "text-[#e94b4b]"}`}
+              className={`text-center text-4xl ${result.won ? "text-[var(--oro-claro)]" : "text-[var(--cd-red-bright)]"}`}
               style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}
             >
               {result.won ? "¡Encargo cumplido!" : "Misión fallida"}
@@ -111,7 +111,7 @@ export function DadosVictoryScreen() {
                     ack();
                     startRun(result.levelId);
                   }}
-                  className="flex-1 rounded-full border border-[var(--carmin)] bg-[var(--carmin)]/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#e94b4b] hover:bg-[var(--carmin)]/50"
+                  className="flex-1 rounded-full border border-[var(--carmin)] bg-[var(--carmin)]/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--cd-red-bright)] hover:bg-[var(--carmin)]/50"
                 >
                   Reintentar
                 </button>

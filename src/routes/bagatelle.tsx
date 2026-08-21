@@ -3411,7 +3411,7 @@ function PinballPage() {
                         style={{
                           borderColor: armed ? "var(--brass-bright)" : "var(--brass)",
                           background: armed
-                            ? "linear-gradient(90deg,#d9a83a,#ffe28a)"
+                            ? "linear-gradient(90deg,#d9a83a,var(--cd-gold-glim))"
                             : "transparent",
                           opacity: armed ? 1 : 0.35,
                         }}
@@ -3574,7 +3574,7 @@ function PinballPage() {
                     style={{
                       width: `${Math.min(100, (missionProgress / mission.target) * 100)}%`,
                       background: missionDone
-                        ? "linear-gradient(90deg,#d9a83a,#ffe28a)"
+                        ? "linear-gradient(90deg,#d9a83a,var(--cd-gold-glim))"
                         : "linear-gradient(90deg,#6b2418,#a8332b)",
                     }}
                   />
@@ -3618,7 +3618,7 @@ function PinballPage() {
                   className="absolute inset-y-0 left-0 transition-[width] duration-200"
                   style={{
                     width: `${carga}%`,
-                    background: "linear-gradient(90deg,#7a3a1f,#d9a83a 55%,#ffe28a)",
+                    background: "linear-gradient(90deg,#7a3a1f,#d9a83a 55%,var(--cd-gold-glim))",
                     boxShadow:
                       carga >= CARGA_PLUMAS ? "0 0 12px rgba(255,210,120,0.85)" : undefined,
                   }}
@@ -3694,7 +3694,7 @@ function PinballPage() {
                         background:
                           litTimer < 3
                             ? "linear-gradient(90deg,#a8332b,#e0524a)"
-                            : "linear-gradient(90deg,#d9a83a,#ffe28a)",
+                            : "linear-gradient(90deg,#d9a83a,var(--cd-gold-glim))",
                       }}
                     />
                   </div>

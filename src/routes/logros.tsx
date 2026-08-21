@@ -338,7 +338,7 @@ function MissionsTab() {
                 <button
                   type="button"
                   onClick={() => claim(gid)}
-                  className="rounded-full border border-[var(--oro)] bg-[var(--oro)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#14100a]"
+                  className="rounded-full border border-[var(--oro)] bg-[var(--oro)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cd-noir-3)]"
                   aria-label={`Cobrar ${mission.favors} favores de la misión de ${game.name}`}
                 >
                   Cobrar
@@ -447,7 +447,7 @@ function AchievementCard({ a, onClaim }: { a: AchievementState; onClaim: () => v
           <button
             type="button"
             onClick={onClaim}
-            className="rounded-full border border-[var(--oro)] bg-[var(--oro)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#14100a]"
+            className="rounded-full border border-[var(--oro)] bg-[var(--oro)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cd-noir-3)]"
             aria-label={`Cobrar ${a.def.favors} favores del logro ${a.def.name}`}
           >
             Cobrar

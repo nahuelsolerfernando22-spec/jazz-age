@@ -150,7 +150,7 @@ function SinglePage() {
   return (
     <div
       data-hub-ready={ready ? "true" : undefined}
-      className="relative flex h-dvh flex-col overflow-hidden bg-[#050402] text-[var(--crema-clara)]"
+      className="relative flex h-dvh flex-col overflow-hidden bg-[var(--cd-noir-0)] text-[var(--crema-clara)]"
       style={{ fontFamily: "'Barlow', system-ui, sans-serif" }}
     >
       <WelcomeTutorial />
@@ -203,7 +203,7 @@ function SinglePage() {
           onClick={() => setRetosOpen(false)}
         >
           <div
-            className="max-h-[82dvh] overflow-y-auto border-t border-[var(--oro)]/40 bg-[#0a0806] px-3 pt-3"
+            className="max-h-[82dvh] overflow-y-auto border-t border-[var(--oro)]/40 bg-[var(--cd-noir-1)] px-3 pt-3"
             style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom, 0px))" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -353,7 +353,7 @@ function HeroTile({
               ) : null}
             </div>
             <span
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--oro)] px-6 py-3 text-[14px] font-bold uppercase tracking-[0.24em] text-[#14100a]"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--oro)] px-6 py-3 text-[14px] font-bold uppercase tracking-[0.24em] text-[var(--cd-noir-3)]"
               style={{ fontFamily: "'Bebas Neue', sans-serif", boxShadow: "var(--cd-gold-glow)" }}
             >
               Jugar <span aria-hidden>→</span>

@@ -386,7 +386,7 @@ function ReglasPage() {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <div className="min-h-dvh bg-[#0a0806] text-[var(--marfil)]">
+    <div className="min-h-dvh bg-[var(--cd-noir-1)] text-[var(--marfil)]">
       <div
         className="mx-auto max-w-3xl px-4 sm:px-6"
         style={{
@@ -416,7 +416,7 @@ function ReglasPage() {
             height={640}
             className="h-40 w-full object-cover sm:h-52"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0806] via-[#0a0806]/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--cd-noir-1)] via-[var(--cd-noir-1)]/55 to-transparent" />
           <div className="absolute inset-0 flex flex-col items-center justify-end pb-5 text-center">
             <p className="paria-eyebrow">— Manual clandestino —</p>
             <h1 className="paria-sign text-4xl sm:text-5xl">REGLAS</h1>

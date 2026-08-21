@@ -51,7 +51,7 @@ function PortadaPage() {
 
   return (
     <div
-      className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-[#050402] px-6 text-center"
+      className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-[var(--cd-noir-0)] px-6 text-center"
       style={{ fontFamily: "'Barlow', system-ui, sans-serif" }}
     >
       <NoirBackdrop variant="hub" />

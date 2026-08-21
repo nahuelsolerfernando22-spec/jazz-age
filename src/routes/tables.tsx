@@ -741,7 +741,7 @@ function TablesPage() {
               <span className="whitespace-nowrap text-[var(--oro)]">· {dealerScore}</span>
             )}
             {!showDealerHidden && dealerUp && (
-              <span className="whitespace-nowrap font-bold text-[#e8c987]">
+              <span className="whitespace-nowrap font-bold text-[var(--cd-gold-warm)]">
                 · visible {dealerUp.rank}
                 {dealerUp.suit}
               </span>
@@ -896,7 +896,7 @@ function TablesPage() {
               disabledKinds={phase !== "player" ? ["double-face", "second-chance"] : []}
             />
             <span className="ml-auto">
-              Apuesta · <span className="font-bold text-[#e8c987]">{bet}</span>
+              Apuesta · <span className="font-bold text-[var(--cd-gold-warm)]">{bet}</span>
             </span>
           </div>
           {phase === "bet" || phase === "settled" ? (
@@ -1047,7 +1047,7 @@ function EmptySlot({ hint }: { hint?: string }) {
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="flex h-20 w-14 items-center justify-center rounded-lg border border-[var(--oro)]/25 bg-[var(--verde-noche)]/45 text-[#e8c987]/35 shadow-inner sm:h-24 sm:w-16"
+            className="flex h-20 w-14 items-center justify-center rounded-lg border border-[var(--oro)]/25 bg-[var(--verde-noche)]/45 text-[var(--cd-gold-warm)]/35 shadow-inner sm:h-24 sm:w-16"
           >
             <span className="text-xl leading-none">♠</span>
           </div>

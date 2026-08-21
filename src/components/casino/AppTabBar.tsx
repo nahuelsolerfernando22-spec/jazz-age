@@ -120,7 +120,7 @@ export function AppTabBar() {
     <>
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-[200] bg-[#0a0806]"
+        className="fixed inset-x-0 bottom-0 z-[200] bg-[var(--cd-noir-1)]"
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           paddingLeft: "env(safe-area-inset-left, 0px)",
@@ -147,7 +147,7 @@ export function AppTabBar() {
                   aria-current={active ? "page" : undefined}
                   className={`relative mx-1 my-1 flex h-[62px] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${active ? "hud-plate" : ""}`}
                   style={{
-                    color: active ? "#f4d97a" : "rgba(236,235,230,0.78)",
+                    color: active ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.78)",
                     touchAction: "manipulation",
                     fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
                     fontSize: "0.5625rem",
@@ -168,8 +168,8 @@ export function AppTabBar() {
                       aria-label="Novedades en encargos"
                       className="absolute right-3 top-2 h-2 w-2 rounded-full"
                       style={{
-                        background: "#f4d97a",
-                        boxShadow: "0 0 0 2px #0a0806, 0 0 8px rgba(244,217,122,0.9)",
+                        background: "var(--cd-gold-tab)",
+                        boxShadow: "0 0 0 2px var(--cd-noir-1), 0 0 8px rgba(244,217,122,0.9)",
                       }}
                     />
                   ) : null}
@@ -186,7 +186,7 @@ export function AppTabBar() {
                     aria-expanded={gamesOpen}
                     className={`relative mx-1 my-1 flex h-[62px] w-[calc(100%-0.5rem)] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${gamesOpen ? "hud-plate" : ""}`}
                     style={{
-                      color: gamesOpen ? "#f4d97a" : "rgba(236,235,230,0.78)",
+                      color: gamesOpen ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.78)",
                       touchAction: "manipulation",
                       fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
                       fontSize: "0.5625rem",

@@ -83,7 +83,7 @@ function SingleLoaderImpl({
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(45deg, #c9a84c 0 1px, transparent 1px 22px), repeating-linear-gradient(-45deg, #c9a84c 0 1px, transparent 1px 22px)",
+            "repeating-linear-gradient(45deg, var(--cd-gold-mid) 0 1px, transparent 1px 22px), repeating-linear-gradient(-45deg, var(--cd-gold-mid) 0 1px, transparent 1px 22px)",
         }}
       />
 
@@ -126,9 +126,9 @@ function SingleLoaderImpl({
           >
             <defs>
               <linearGradient id="ring-brass" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#c9a84c" stopOpacity="0" />
-                <stop offset="55%" stopColor="#c9a84c" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#c9a84c" stopOpacity="1" />
+                <stop offset="0%" stopColor="var(--cd-gold-mid)" stopOpacity="0" />
+                <stop offset="55%" stopColor="var(--cd-gold-mid)" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="var(--cd-gold-mid)" stopOpacity="1" />
               </linearGradient>
             </defs>
             <circle
@@ -136,7 +136,7 @@ function SingleLoaderImpl({
               cy="50"
               r="44"
               fill="none"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeOpacity="0.22"
               strokeWidth="2"
             />
@@ -146,7 +146,7 @@ function SingleLoaderImpl({
               cy="50"
               r="37"
               fill="none"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeOpacity="0.35"
               strokeWidth="3"
               strokeDasharray="1.5 8.1"
@@ -185,7 +185,7 @@ function SingleLoaderImpl({
               </span>
             ) : (
               <svg viewBox="0 0 24 24" className="h-[55%] w-[55%]" aria-hidden>
-                <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="#c9a84c" />
+                <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="var(--cd-gold-mid)" />
               </svg>
             )}
           </div>

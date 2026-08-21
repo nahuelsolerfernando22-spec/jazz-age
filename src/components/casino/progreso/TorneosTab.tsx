@@ -121,7 +121,7 @@ export function TorneosTab() {
                 <span
                   aria-hidden
                   className={`mt-1 h-1.5 w-1.5 rounded-full ${
-                    c.state === "abierto" ? "bg-[#7bd88f]" : "bg-[var(--marfil)]/25"
+                    c.state === "abierto" ? "bg-[var(--cd-green-ok)]" : "bg-[var(--marfil)]/25"
                   }`}
                 />
               </button>
@@ -141,7 +141,7 @@ export function TorneosTab() {
           </div>
           <span
             className={`shrink-0 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.2em] ${
-              open ? "bg-[#7bd88f]/15 text-[#7bd88f]" : "bg-white/[0.06] text-[var(--marfil)]/65"
+              open ? "bg-[var(--cd-green-ok)]/15 text-[var(--cd-green-ok)]" : "bg-white/[0.06] text-[var(--marfil)]/65"
             }`}
           >
             {cell.state}
@@ -225,7 +225,7 @@ export function TorneosTab() {
             <Link
               to={meta.route}
               data-haptic="tap"
-              className="inline-flex min-h-11 items-center rounded-full bg-[var(--oro)] px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#14100a]"
+              className="inline-flex min-h-11 items-center rounded-full bg-[var(--oro)] px-5 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cd-noir-3)]"
             >
               Jugar
             </Link>

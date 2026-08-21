@@ -25,9 +25,8 @@ export function HuesosRules({ onClose }: { onClose: () => void }) {
       aria-modal="true"
       aria-label="Cómo se juega a Cinco Huesos"
     >
-      <button
-        type="button"
-        aria-label="Cerrar reglas"
+      <div
+        aria-hidden
         onClick={onClose}
         className="absolute inset-0 bg-[oklch(0.05_0.01_25)]/95"
       />

@@ -785,6 +785,15 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
   return { bajasAtacante, bajasDefensor, dadosA: a, dadosD: d };
 }
 
+/**
+ * Rondas de acomodo del T.E.G. original: en la primera se colocan 5 fichas y en
+ * la segunda 3, sin poder asaltar. Recién en la tercera se abre el fuego.
+ */
+export const RONDAS_SIN_ASALTO = 2;
+export function puedeAsaltar(roundNumber: number): boolean {
+  return roundNumber > RONDAS_SIN_ASALTO;
+}
+
 /** ¿Tres naipes forman un canje legal? */
 export function esTrioValido(cards: SyndicateCard[]): boolean {
   if (cards.length !== 3) return false;

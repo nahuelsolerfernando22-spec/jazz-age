@@ -21,6 +21,12 @@ import {
   type AiNivel,
 } from "@/lib/sindicato-ai";
 import { useCasino } from "@/store/casino";
+import {
+  evaluarObjetivo,
+  repartirObjetivos,
+  type Objetivo,
+  type ProgresoObjetivo,
+} from "@/lib/sindicato-objetivos";
 
 export type SpecialCardType = "bribe" | "informant" | "surprise" | "lockdown";
 
@@ -78,6 +84,19 @@ interface SyndicateState {
   aiNivel: AiNivel;
   setAiNivel: (n: AiNivel) => void;
   tradeCount: number;
+
+  /** Objetivo tapado de cada capo (id de jugador -> objetivo). */
+  objectives: Record<number, Objetivo>;
+  /** Objetivo común de la mesa: cantidad de sectores para ganar. */
+  comunObjetivo: number;
+  setComunObjetivo: (n: number) => void;
+  /** Ronda completa de la mesa (todos jugaron una vez). */
+  roundNumber: number;
+  /** T.E.G.: un solo naipe por turno, conquistes lo que conquistes. */
+  cardDrawnThisTurn: boolean;
+  /** Reagrupes usados en la fase de fortificación. */
+  fortifyMoves: number;
+  objectiveProgress: (playerId: number) => ProgresoObjetivo;
 
 
   startGame: (
@@ -175,6 +194,27 @@ export const useSyndicate = create<SyndicateState>()(
       tradeCount: 0,
       pendingDeployment: {},
       activeEffects: {},
+
+      objectives: {},
+      comunObjetivo: 20,
+      setComunObjetivo: (n) => set({ comunObjetivo: n }),
+      roundNumber: 1,
+      cardDrawnThisTurn: false,
+      fortifyMoves: 0,
+
+      objectiveProgress: (playerId) => {
+        const s = get();
+        return evaluarObjetivo(
+          s.objectives[playerId] ?? null,
+          {
+            conquests: s.conquests,
+            territories: s.activeTerritories,
+            eliminados: Object.fromEntries(s.players.map((p) => [p.id, p.eliminated])),
+            comun: s.comunObjetivo,
+          },
+          playerId,
+        );
+      },
 
       registerAssault: () => set((state) => ({ assaultsThisTurn: state.assaultsThisTurn + 1 })),
 
@@ -315,6 +355,8 @@ export const useSyndicate = create<SyndicateState>()(
             };
           });
 
+          const comun = Math.max(8, Math.ceil(activeTerrs.length * 0.6));
+
           return {
             players,
             conquests,
@@ -327,7 +369,16 @@ export const useSyndicate = create<SyndicateState>()(
             deck: [...INITIAL_DECK].sort(() => Math.random() - 0.5),
             hasMovedFortification: false,
             assaultsThisTurn: 0,
-
+            objectives: repartirObjetivos(
+              `${Date.now()}-${activeTerrs.length}`,
+              players.map((p) => p.id),
+              activeTerrs,
+              comun,
+            ),
+            comunObjetivo: comun,
+            roundNumber: 1,
+            cardDrawnThisTurn: false,
+            fortifyMoves: 0,
             tradeCount: 0,
             activeEffects: {},
           };
@@ -344,10 +395,16 @@ export const useSyndicate = create<SyndicateState>()(
             if (nextIndex === state.currentPlayerIndex) break;
           }
 
+          // Nueva ronda cuando la mesa vuelve a dar la vuelta.
+          const roundNumber =
+            nextIndex <= state.currentPlayerIndex ? state.roundNumber + 1 : state.roundNumber;
+
           const playerTerritories = Object.values(state.conquests).filter(
             (c) => c.ownerId === nextIndex,
           );
-          const terrCountBonus = Math.max(3, Math.floor(playerTerritories.length / 3));
+          // Refuerzos T.E.G.: 5 la primera ronda, 3 la segunda, después mitad de sectores.
+          const terrCountBonus =
+            roundNumber === 1 ? 5 : roundNumber === 2 ? 3 : Math.max(3, Math.floor(playerTerritories.length / 2));
           const faccion = faccionDe(state.players[nextIndex]?.faction);
 
           // --- TALISMANES y RUMORES ---
@@ -389,6 +446,10 @@ export const useSyndicate = create<SyndicateState>()(
             unassignedTroops: reinforcements,
             hasMovedFortification: false,
             assaultsThisTurn: 0,
+            roundNumber,
+            cardDrawnThisTurn: false,
+            fortifyMoves: 0,
+
 
             // Limpiar efectos caducados del jugador que empieza
             activeEffects: Object.fromEntries(
@@ -404,26 +465,38 @@ export const useSyndicate = create<SyndicateState>()(
           if (!from || !to || from.ownerId !== to.ownerId || from.troops <= amount) return state;
           if (state.turnPhase === "fortification" && state.hasMovedFortification) return state;
 
+          // Reagrupe T.E.G.: hasta 3 movimientos por fase de fortificación.
+          const fortifyMoves =
+            state.turnPhase === "fortification" ? state.fortifyMoves + 1 : state.fortifyMoves;
+
           return {
             conquests: {
               ...state.conquests,
               [fromId]: { ...from, troops: from.troops - amount },
               [toId]: { ...to, troops: to.troops + amount },
             },
+            fortifyMoves,
             hasMovedFortification:
-              state.turnPhase === "fortification" ? true : state.hasMovedFortification,
+              state.turnPhase === "fortification" ? fortifyMoves >= 3 : state.hasMovedFortification,
           };
         }),
 
       drawCard: (playerId) =>
         set((state) => {
           if (state.deck.length === 0) return state;
+          // Un solo naipe por turno, como manda la mesa.
+          if (playerId === state.currentPlayerIndex && state.cardDrawnThisTurn) return state;
           const newDeck = [...state.deck];
           const card = newDeck.pop()!;
           const newPlayers = state.players.map((p) =>
             p.id === playerId ? { ...p, cards: [...p.cards, card] } : p,
           );
-          return { deck: newDeck, players: newPlayers };
+          return {
+            deck: newDeck,
+            players: newPlayers,
+            cardDrawnThisTurn:
+              playerId === state.currentPlayerIndex ? true : state.cardDrawnThisTurn,
+          };
         }),
 
       tradeCards: (playerId, cardIds) =>
@@ -579,16 +652,34 @@ export const useSyndicate = create<SyndicateState>()(
       setSecretObjective: (objective) => set({ secretObjective: objective }),
       checkVictory: () => {
         const state = get();
-        const playerTerritories = Object.values(state.conquests).filter(
-          (c) => c.ownerId === state.currentPlayerIndex,
-        );
-        const meta =
-          state.secretObjective?.type === "conquer"
-            ? parseInt(state.secretObjective.target, 10) || 22
-            : 22;
-        if (playerTerritories.length >= meta) return state.players[state.currentPlayerIndex];
         const activePlayers = state.players.filter((p) => !p.eliminated);
         if (activePlayers.length === 1) return activePlayers[0];
+
+        const board = {
+          conquests: state.conquests,
+          territories: state.activeTerritories,
+          eliminados: Object.fromEntries(state.players.map((p) => [p.id, p.eliminated])),
+          comun: state.comunObjetivo,
+        };
+
+        // El que está en turno tiene prioridad; después se revisa el resto de la mesa.
+        const orden = [
+          ...activePlayers.filter((p) => p.id === state.currentPlayerIndex),
+          ...activePlayers.filter((p) => p.id !== state.currentPlayerIndex),
+        ];
+        for (const p of orden) {
+          const objetivo = state.objectives[p.id] ?? null;
+          if (objetivo?.kind === "destruir") {
+            const target = state.players.find((x) => x.id === objetivo.targetId);
+            const sinSectores =
+              !Object.values(state.conquests).some((c) => c.ownerId === objetivo.targetId);
+            if (target && (target.eliminated || sinSectores)) {
+              // Sólo cuenta si lo bajó él; si no, cae al objetivo común.
+              if (state.currentPlayerIndex === p.id && sinSectores) return p;
+            }
+          }
+          if (evaluarObjetivo(objetivo, board, p.id).cumplido) return p;
+        }
         return null;
       },
       resetGame: () => set({ gameStarted: false, winner: null }),

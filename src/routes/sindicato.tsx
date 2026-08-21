@@ -945,9 +945,23 @@ function SindicatoPage() {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
                       const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
-                      const medio = (w / 2) * esc + 6;
-                      const cx = Math.min(1000 - medio, Math.max(medio, center.x));
-                      const cy = Math.min(1000 - 12 * esc, Math.max(12 * esc, center.y - 34));
+                      // El cartucho se mantiene dentro del área jugable visible
+                      // (no solo del lienzo) en cualquier zoom y tamaño de pantalla.
+                      const medioX = (w / 2) * esc + 4;
+                      const medioY = (h / 2) * esc + 4;
+                      const limX0 = Math.max(0, lienzo.minX) + medioX;
+                      const limX1 = Math.min(MAP_WIDTH, lienzo.maxX) - medioX;
+                      const limY0 = Math.max(0, lienzo.minY) + medioY;
+                      const limY1 = Math.min(MAP_HEIGHT, lienzo.maxY) - medioY;
+                      const cx =
+                        limX1 > limX0
+                          ? Math.min(limX1, Math.max(limX0, center.x))
+                          : (limX0 + limX1) / 2;
+                      const cyRaw = center.y - 34 * esc;
+                      const cy =
+                        limY1 > limY0
+                          ? Math.min(limY1, Math.max(limY0, cyRaw))
+                          : (limY0 + limY1) / 2;
                       return (
                         <g
                           transform={`translate(${cx}, ${cy}) scale(${esc.toFixed(2)})`}

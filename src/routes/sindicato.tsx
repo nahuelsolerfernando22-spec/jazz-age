@@ -835,19 +835,22 @@ function SindicatoPage() {
                           : BARRIOS.find((b) => b.id === t.barrio)?.color || "#666",
                       }}
                       style={{
-                        fillOpacity: isSelected ? 0.95 : owner ? 0.86 : 0.46,
+                        fillOpacity: isSelected ? 0.6 : owner ? 0.46 : 0.16,
                       }}
                     />
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="url(#veta-marmol)"
+                      opacity={0.5}
                       className="pointer-events-none"
                     />
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill="url(#marmol-luz)"
+                      opacity={0.55}
                       className="pointer-events-none"
                     />
+
                     {/* Canto de latón: trazo oscuro exterior + filete dorado interior */}
                     <path
                       d={bordeIrregular(t.points, t.id)}

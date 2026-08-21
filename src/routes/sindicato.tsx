@@ -21,7 +21,12 @@ import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { faccionDe } from "@/lib/sindicato-facciones";
-import { PATRONES_TABLERO, patronDeFaccion } from "@/lib/sindicato-texturas";
+import {
+  PATRONES_TABLERO,
+  patronDeDueno,
+  patronDeFaccion,
+  varianteDeDueno,
+} from "@/lib/sindicato-texturas";
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";

@@ -6,11 +6,15 @@ import {
   CUP_ROUND_REWARDS,
   CUP_SWEEP_BONUS,
   CUP_TOTAL_ROUNDS,
+  CUP_BUYIN,
   CUP_GAME_BY_ID,
   ajustarGarra,
+  buildBracket,
+  resolveRound,
+  rivalAt,
+  type CupBracket,
   cupDayKey,
   cupRoundName,
-  sortearCuadro,
   type CupRival,
 } from "@/lib/cup";
 import { useCasino } from "@/store/casino";
@@ -21,6 +25,9 @@ export interface CupRun {
   gameId: string;
   seed: string;
   rivals: CupRival[];
+  /** Llave completa de 16, con los cruces de al lado. */
+  bracket: CupBracket;
+  buyin: number;
   /** Ronda abierta (0..3). */
   round: number;
   status: CupStatus;
@@ -113,18 +120,21 @@ export const useCup = create<CupState>()(
         const hoy = cupDayKey();
         const used = s.day === hoy ? s.entriesUsed : 0;
         if (used >= CUP_ENTRIES_PER_DAY) return false;
+        if (!useCasino.getState().spend(CUP_BUYIN)) return false;
 
         const seed = `${gameId}:${Date.now()}:${Math.floor(Math.random() * 1e9)}`;
         const rating = s.rating[gameId] ?? 0;
-        const rivals = sortearCuadro(seed).map((r, i) => ({
-          ...r,
-          garra: ajustarGarra(r.garra, rating, i),
-        }));
+        const bracket = buildBracket(seed, "Vos", rating, CUP_BUYIN);
+        const primero = rivalAt(bracket, 0);
         set({
           active: {
             gameId,
             seed,
-            rivals,
+            bracket,
+            buyin: CUP_BUYIN,
+            rivals: primero
+              ? [{ ...primero, garra: ajustarGarra(primero.garra, rating, 0) }]
+              : [],
             round: 0,
             status: "jugando",
             results: [],
@@ -150,14 +160,23 @@ export const useCup = create<CupState>()(
         if (ret >= CUP_RETRIES_PER_DAY) return false;
 
         const rating = s.rating[run.gameId] ?? 0;
+        // Se rebobina la ronda perdida: la llave vuelve al estado anterior.
+        const bracket: CupBracket = {
+          ...run.bracket,
+          winners: run.bracket.winners.slice(0, run.round),
+        };
+        const rival = rivalAt(bracket, run.round);
+        const rivals = [...run.rivals];
+        if (rival) {
+          rivals[run.round] = { ...rival, garra: ajustarGarra(rival.garra - 1, rating, run.round) };
+        }
         set({
           active: {
             ...run,
+            bracket,
+            rivals,
             status: "jugando",
             results: run.results.slice(0, -1),
-            rivals: run.rivals.map((r, i) =>
-              i === run.round ? { ...r, garra: ajustarGarra(r.garra - 1, rating, i) } : r,
-            ),
           },
           day: hoy,
           retriesUsed: ret + 1,
@@ -214,6 +233,7 @@ export const useCup = create<CupState>()(
         if (outcome === "loss") {
           const next: CupRun = {
             ...run,
+            bracket: resolveRound(run.bracket, run.round, false),
             status: "eliminado",
             results: [...run.results, "loss"],
           };
@@ -225,8 +245,19 @@ export const useCup = create<CupState>()(
         const round = run.round + 1;
         const campeon = round >= CUP_TOTAL_ROUNDS;
         const pago = premio.fichas + (campeon ? CUP_SWEEP_BONUS : 0);
+        const bracket = resolveRound(run.bracket, run.round, true);
+        const siguiente = campeon ? null : rivalAt(bracket, round);
+        const rivals = [...run.rivals];
+        if (siguiente) {
+          rivals[round] = {
+            ...siguiente,
+            garra: ajustarGarra(siguiente.garra, prevRating, round),
+          };
+        }
         const next: CupRun = {
           ...run,
+          bracket,
+          rivals,
           round: campeon ? run.round : round,
           status: campeon ? "campeon" : "jugando",
           results: [...run.results, "win"],
@@ -254,7 +285,7 @@ export const useCup = create<CupState>()(
     }),
     {
       name: "cuervo:cup",
-      version: 2,
+      version: 3,
       migrate: (state: unknown) => {
         const s = (state ?? {}) as Partial<CupState>;
         return {

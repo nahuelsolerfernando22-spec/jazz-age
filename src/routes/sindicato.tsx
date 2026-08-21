@@ -22,6 +22,7 @@ import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
+import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
 import {
   Shield,
@@ -406,8 +407,10 @@ function SindicatoPage() {
     if (!gameStarted) startGame(ola.rivales, undefined, ola.ventajaBot, ola.mapSeed);
   }, [enRun, gameStarted, startGame, ola]);
 
+  // La oleada fija el objetivo COMÚN de la mesa; el secreto lo reparte el mazo.
   useEffect(() => {
     const target = String(ola.objetivo);
+    useSyndicate.getState().setComunObjetivo(ola.objetivo);
     if (!secretObjective || secretObjective.target !== target) {
       setSecretObjective({
         type: "conquer",
@@ -887,6 +890,7 @@ function SindicatoPage() {
       </main>
 
       <RunOverlay />
+      <ObjetivoCard />
 
       {/* Estado de la noche roguelike */}
       <div className="fixed right-3 top-[172px] z-[80] flex max-w-[46vw] items-center gap-2 rounded-full border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-1.5 backdrop-blur-md">

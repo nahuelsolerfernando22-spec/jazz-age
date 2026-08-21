@@ -53,7 +53,9 @@ import {
 const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 1000;
 const INITIAL_SCALE = 1.0;
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.25;
+/** Margen de seguridad del encuadre: el tablero nunca roza el borde en Android. */
+const FIT_MARGIN = 0.9;
 const CONTENT_BOX_GEN = (territorios: Territorio[]) => {
   const xs = territorios.flatMap((t) => t.points.map((p) => p.x * 10));
   const ys = territorios.flatMap((t) => t.points.map((p) => p.y * 10));
@@ -61,7 +63,16 @@ const CONTENT_BOX_GEN = (territorios: Territorio[]) => {
     maxX = Math.max(...xs);
   const minY = Math.min(...ys),
     maxY = Math.max(...ys);
-  return { width: maxX - minX, height: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+  return {
+    width: maxX - minX,
+    height: maxY - minY,
+    cx: (minX + maxX) / 2,
+    cy: (minY + maxY) / 2,
+    minX,
+    maxX,
+    minY,
+    maxY,
+  };
 };
 
 const MAX_SCALE = 4.0;
@@ -352,6 +363,8 @@ function SindicatoPage() {
   });
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [altoContraste, setAltoContraste] = useState(false);
+  /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
+  const [previewOwner, setPreviewOwner] = useState<number | null>(null);
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);
@@ -363,6 +376,9 @@ function SindicatoPage() {
     () => activeTerritories.map((t) => t.id).join("|"),
     [activeTerritories],
   );
+
+  /** Límites reales del área jugable: usados para que ningún cartucho se salga. */
+  const lienzo = useMemo(() => CONTENT_BOX_GEN(activeTerritories), [activeTerritories]);
 
   const computeFit = useCallback(() => {
     // Espacio real reservado arriba (banner de turno + barra de control + fichas de barrio)
@@ -376,11 +392,9 @@ function SindicatoPage() {
     const contentBox = CONTENT_BOX_GEN(activeTerritories);
     const cw = contentBox.width + pad * 2;
     const ch = contentBox.height + pad * 2;
-    // El area jugable entera entra en pantalla; el fondo fijo del main evita bandas negras.
-    const base = Math.min(w / cw, h / ch);
-    const s = Math.max(MIN_SCALE, Math.min(MAX_SCALE, base));
-
-
+    // El area jugable entera entra en pantalla con margen: nunca roza el borde.
+    const base = Math.min(w / cw, h / ch) * FIT_MARGIN;
+    const s = Math.min(MAX_SCALE, base);
 
     setFitScale(s);
     const ox = (contentBox.cx - MAP_WIDTH / 2) * s;
@@ -850,6 +864,7 @@ function SindicatoPage() {
                     <path
                       d={bordeIrregular(t.points, t.id)}
                       fill={
+                        patronDeDueno(previewOwner) ??
                         (conquest ? patronDeDueno(conquest.ownerId) : null) ??
                         patronDeFaccion(owner?.faction)
                       }
@@ -936,9 +951,23 @@ function SindicatoPage() {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
                       const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
-                      const medio = (w / 2) * esc + 6;
-                      const cx = Math.min(1000 - medio, Math.max(medio, center.x));
-                      const cy = Math.min(1000 - 12 * esc, Math.max(12 * esc, center.y - 34));
+                      // El cartucho se mantiene dentro del área jugable visible
+                      // (no solo del lienzo) en cualquier zoom y tamaño de pantalla.
+                      const medioX = (w / 2) * esc + 4;
+                      const medioY = (h / 2) * esc + 4;
+                      const limX0 = Math.max(0, lienzo.minX) + medioX;
+                      const limX1 = Math.min(MAP_WIDTH, lienzo.maxX) - medioX;
+                      const limY0 = Math.max(0, lienzo.minY) + medioY;
+                      const limY1 = Math.min(MAP_HEIGHT, lienzo.maxY) - medioY;
+                      const cx =
+                        limX1 > limX0
+                          ? Math.min(limX1, Math.max(limX0, center.x))
+                          : (limX0 + limX1) / 2;
+                      const cyRaw = center.y - 34 * esc;
+                      const cy =
+                        limY1 > limY0
+                          ? Math.min(limY1, Math.max(limY0, cyRaw))
+                          : (limY0 + limY1) / 2;
                       return (
                         <g
                           transform={`translate(${cx}, ${cy}) scale(${esc.toFixed(2)})`}
@@ -1124,6 +1153,33 @@ function SindicatoPage() {
       >
         <Contrast size={18} />
       </button>
+
+      {/* Previsualizar el tablero con la estética de cada propietario */}
+      <div className="fixed right-3 top-[340px] z-[85] flex flex-col items-end gap-2">
+        <button
+          onClick={() => {
+            setPreviewOwner((v) => (v === null ? 0 : v + 1 >= players.length ? null : v + 1));
+            haptics("tap");
+          }}
+          aria-label="Previsualizar arte del tablero por propietario"
+          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
+            previewOwner !== null
+              ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+              : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
+          }`}
+        >
+          <MapIcon size={18} />
+        </button>
+        {previewOwner !== null && players[previewOwner] && (
+          <span className="rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
+            <span
+              className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
+              style={{ background: players[previewOwner].color }}
+            />
+            {players[previewOwner].name ?? `Banda ${previewOwner + 1}`}
+          </span>
+        )}
+      </div>
 
       {/* HUD de Efectos Activos y Talismanes */}
       <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">

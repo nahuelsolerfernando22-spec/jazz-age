@@ -232,7 +232,7 @@ export function buildStandings(
   jugador = "Vos",
 ): CupStanding[] {
   const base = hash(`standings:${gameId}`);
-  const filas: CupStanding[] = CASA_NOMBRES.map((nombre, i) => {
+  const filas: CupStanding[] = CASA_NOMBRES.map((nombre) => {
     const h = hash(`${gameId}:${nombre}:${base}`);
     const puntos = 40 + (h % 320);
     return { nombre, puntos, titulos: (h >>> 9) % 4, esVos: false };

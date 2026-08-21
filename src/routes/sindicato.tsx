@@ -21,7 +21,12 @@ import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { faccionDe } from "@/lib/sindicato-facciones";
-import { PATRONES_TABLERO, patronDeFaccion } from "@/lib/sindicato-texturas";
+import {
+  PATRONES_TABLERO,
+  patronDeDueno,
+  patronDeFaccion,
+  varianteDeDueno,
+} from "@/lib/sindicato-texturas";
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
@@ -761,6 +766,31 @@ function SindicatoPage() {
                     <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
                   </pattern>
                 ))}
+
+                {/* Variante de arte por propietario: mismo lenguaje en todos sus barrios */}
+                {players.map((p, i) => {
+                  const v = varianteDeDueno(i, p.faction, p.color);
+                  const tile = 220 * v.escala;
+                  return (
+                    <pattern
+                      key={v.id}
+                      id={v.id}
+                      width={tile}
+                      height={tile}
+                      patternUnits="userSpaceOnUse"
+                      patternTransform={`rotate(${v.rotacion})`}
+                    >
+                      <image
+                        href={v.href}
+                        width={tile}
+                        height={tile}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+                      <rect width={tile} height={tile} fill={v.color} opacity={v.tinte} />
+                    </pattern>
+                  );
+                })}
+
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
@@ -816,10 +846,14 @@ function SindicatoPage() {
                       }
                     }}
                   >
-                    {/* Sector: arte raster de la facción dueña + tinte de banda */}
+                    {/* Sector: arte raster propio del dueño (o de la facción si es neutral) */}
                     <path
                       d={bordeIrregular(t.points, t.id)}
-                      fill={patronDeFaccion(owner?.faction)}
+                      fill={
+                        (conquest ? patronDeDueno(conquest.ownerId) : null) ??
+                        patronDeFaccion(owner?.faction)
+                      }
+
                       fillOpacity={
                         altoContraste
                           ? isSelected
@@ -898,19 +932,24 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
                     {/* Cartucho déco con el nombre del sector */}
-                    <g
-                      transform={`translate(${center.x}, ${center.y - 34}) scale(${Math.min(2.2, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
-                      className="pointer-events-none"
-                    >
-                      {(() => {
-                        const w = Math.max(52, t.nombre.length * 6.6 + 18);
-                        const h = 17;
-                        return (
+                    {(() => {
+                      const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
+                      const w = Math.max(52, t.nombre.length * 6.6 + 18);
+                      const h = 17;
+                      const medio = (w / 2) * esc + 6;
+                      const cx = Math.min(1000 - medio, Math.max(medio, center.x));
+                      const cy = Math.min(1000 - 12 * esc, Math.max(12 * esc, center.y - 34));
+                      return (
+                        <g
+                          transform={`translate(${cx}, ${cy}) scale(${esc.toFixed(2)})`}
+                          className="pointer-events-none"
+                        >
                           <g>
                             <path
                               d={`M ${-w / 2 + 5} ${-h / 2} H ${w / 2 - 5} L ${w / 2} 0 L ${w / 2 - 5} ${h / 2} H ${-w / 2 + 5} L ${-w / 2} 0 Z`}
                               fill="#0b0806"
                               fillOpacity={altoContraste ? 1 : 0.9}
+
                               stroke="url(#tex-laton)"
                               strokeWidth={altoContraste ? 1.8 : 1.2}
                             />
@@ -925,9 +964,10 @@ function SindicatoPage() {
                               {t.nombre}
                             </text>
                           </g>
-                        );
-                      })()}
-                    </g>
+                        </g>
+                      );
+                    })()}
+
 
 
                     {(conquest || pending > 0) && (

@@ -1611,7 +1611,7 @@ function Table({
 
       {}
       <div
-        className="relative flex min-h-0 flex-1 flex-col rounded-sm border-2 border-[var(--brass)]/50 p-1.5 sm:p-3 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]"
+        className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border-2 border-[var(--brass)]/50 p-1.5 sm:p-3 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]"
 
         style={{
           background:
@@ -1679,9 +1679,10 @@ function Table({
           );
         })()}
         <div
-          className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:gap-3 items-stretch"
-          style={{ maxHeight: "min(56svh, 460px)", minHeight: "min(38svh, 300px)" }}
+          className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:gap-3 items-stretch overflow-hidden"
+          style={{ maxHeight: "min(56svh, 460px)" }}
         >
+
           {h.table.map((t, i) => {
             const winner = h.trickWinners[i];
             const isActive = i === h.trick && !h.handOver && winner == null;

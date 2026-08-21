@@ -64,7 +64,7 @@ export function LivesIndicator({
 
   if (compact && !ultra) {
     const critical = current <= 1;
-    return (
+    return wrap(
       <div
         className={`hud-plate ${critical ? "hud-plate-blood" : ""} inline-flex h-9 shrink-0 items-center gap-1 px-2.5 tabular-nums ${
           critical ? "text-red-300" : "text-[var(--oro-claro)]"
@@ -75,11 +75,11 @@ export function LivesIndicator({
           {current}
           <span className="opacity-50">/{MAX_LIVES}</span>
         </span>
-      </div>
+      </div>,
     );
   }
 
-  return (
+  return wrap(
     <div
       className="hud-plate inline-flex items-center gap-1.5 px-2 py-1"
     >
@@ -103,6 +103,6 @@ export function LivesIndicator({
           )}
         </>
       )}
-    </div>
+    </div>,
   );
 }

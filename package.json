@@ -38,7 +38,8 @@
     "build:apk:strict": "APK_STRICT=1 bun run build:apk",
     "e2e": "playwright test",
     "e2e:mahjong": "playwright test mahjong --project=chromium-android-375",
-    "qa:offline": "node scripts/offline-playthrough.mjs"
+    "qa:offline": "node scripts/offline-playthrough.mjs",
+    "apk:keystore": "node scripts/apk-keystore.mjs"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^8.0.1",

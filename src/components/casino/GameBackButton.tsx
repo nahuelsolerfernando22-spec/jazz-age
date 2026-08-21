@@ -193,7 +193,7 @@ export function GameBackButton() {
         {costsLife && (
           <span
             aria-hidden
-            className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-[#c9424c]/80 bg-[#160a0a] text-[#f7cccc]"
+            className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-[var(--cd-red)]/80 bg-[#160a0a] text-[#f7cccc]"
           >
             <Heart strokeWidth={2.5} fill="currentColor" style={{ width: 10, height: 10 }} />
           </span>
@@ -229,16 +229,16 @@ export function GameBackButton() {
                   animate={{ scale: 1, y: 0, opacity: 1 }}
                   exit={{ scale: 0.96, opacity: 0 }}
                   transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border bg-gradient-to-b px-6 py-8 shadow-[0_24px_60px_rgba(0,0,0,0.8)] ${costsLife ? "border-[#c9424c]/50 from-[#201212]/95 to-[#160a0a]/98" : "border-[var(--oro)]/45 from-[#14201a]/95 to-[var(--verde-noche)]/98"}`}
+                  className={`relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border bg-gradient-to-b px-6 py-8 shadow-[0_24px_60px_rgba(0,0,0,0.8)] ${costsLife ? "border-[var(--cd-red)]/50 from-[#201212]/95 to-[#160a0a]/98" : "border-[var(--oro)]/45 from-[#14201a]/95 to-[var(--verde-noche)]/98"}`}
                 >
                   <div
                     aria-hidden
-                    className={`grid h-20 w-20 place-items-center rounded-full border-2 ${costsLife ? "border-[#c9424c]/70 bg-[#160a0a] text-[#f7cccc]" : "border-[var(--oro)]/70 bg-[var(--verde-noche)] text-[var(--crema)]"}`}
+                    className={`grid h-20 w-20 place-items-center rounded-full border-2 ${costsLife ? "border-[var(--cd-red)]/70 bg-[#160a0a] text-[#f7cccc]" : "border-[var(--oro)]/70 bg-[var(--verde-noche)] text-[var(--crema)]"}`}
                   >
                     <AlertTriangle strokeWidth={2.4} style={{ width: 40, height: 40 }} />
                   </div>
                   <div
-                    className={`mt-5 font-display text-[11px] uppercase tracking-[0.42em] ${costsLife ? "text-[#c9424c]/90" : "text-[var(--oro)]/90"}`}
+                    className={`mt-5 font-display text-[11px] uppercase tracking-[0.42em] ${costsLife ? "text-[var(--cd-red)]/90" : "text-[var(--oro)]/90"}`}
                   >
                     ─ abandonar ─
                   </div>
@@ -277,7 +277,7 @@ export function GameBackButton() {
                     type="button"
                     onClick={leave}
                     autoFocus
-                    className={`mt-6 flex h-14 w-full items-center justify-center gap-3 rounded-full border-2 ${costsLife ? "border-[#c9424c]/80 bg-[#c9424c]/25" : "border-[var(--oro)]/80 bg-[var(--oro)]/20"} px-6 text-base font-semibold uppercase tracking-[0.22em] text-[var(--crema)] active:scale-[0.98]`}
+                    className={`mt-6 flex h-14 w-full items-center justify-center gap-3 rounded-full border-2 ${costsLife ? "border-[var(--cd-red)]/80 bg-[var(--cd-red)]/25" : "border-[var(--oro)]/80 bg-[var(--oro)]/20"} px-6 text-base font-semibold uppercase tracking-[0.22em] text-[var(--crema)] active:scale-[0.98]`}
                     style={{ touchAction: "manipulation" }}
                   >
                     <ArrowLeft strokeWidth={2.5} style={{ width: 18, height: 18 }} />

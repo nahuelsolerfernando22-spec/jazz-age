@@ -78,7 +78,7 @@ export function RecompensasCard() {
                 }}
                 className={`min-h-11 shrink-0 rounded-full px-4 text-[11px] font-bold uppercase tracking-[0.18em] ${
                   can
-                    ? "bg-[var(--oro)] text-[#14100a]"
+                    ? "bg-[var(--oro)] text-[var(--cd-noir-3)]"
                     : "border border-white/10 text-[var(--marfil)]/65"
                 }`}
               >
@@ -104,7 +104,7 @@ export function RecompensasCard() {
                 <span
                   className={
                     r.outcome === "promo"
-                      ? "text-[#7bd88f]"
+                      ? "text-[var(--cd-green-ok)]"
                       : r.outcome === "demote"
                         ? "text-[#e88b7b]"
                         : "text-[var(--marfil)]/80"

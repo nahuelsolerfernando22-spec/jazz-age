@@ -36,7 +36,7 @@ export function DailyEchoPanel() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-[#050402]/85 via-[#050402]/92 to-[#050402]"
+        className="absolute inset-0 bg-gradient-to-b from-[var(--cd-noir-0)]/85 via-[var(--cd-noir-0)]/92 to-[var(--cd-noir-0)]"
       />
 
       <div className="relative p-4 sm:p-5">

@@ -83,7 +83,7 @@ export function TurnBanner({
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
                       className="absolute inset-y-0 left-0"
-                      style={{ backgroundColor: done ? "#6b5a24" : "#f4d97a" }}
+                      style={{ backgroundColor: done ? "#6b5a24" : "var(--cd-gold-tab)" }}
                     />
                   )}
                 </div>

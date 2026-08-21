@@ -94,7 +94,7 @@ export function RunOverlay() {
                     toast.success(`${n.nombre} sumado al mazo.`);
                     seguir();
                   }}
-                  className="flex w-full items-start gap-3 rounded-xl border-2 border-[#3E7C8C]/60 bg-black/50 p-3 text-left active:scale-[0.98] transition-transform"
+                  className="flex w-full items-start gap-3 rounded-xl border-2 border-[var(--cd-teal)]/60 bg-black/50 p-3 text-left active:scale-[0.98] transition-transform"
                 >
                   <span className="text-2xl">{n.icono}</span>
                   <span className="min-w-0">

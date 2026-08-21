@@ -249,16 +249,16 @@ export function GamePauseButton() {
                     animate={{ scale: 1, y: 0, opacity: 1 }}
                     exit={{ scale: 0.96, opacity: 0 }}
                     transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-[#c9424c]/50 bg-gradient-to-b from-[#201212]/95 to-[#160a0a]/98 px-6 py-8 shadow-[0_24px_60px_rgba(0,0,0,0.8)]"
+                    className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-[var(--cd-red)]/50 bg-gradient-to-b from-[#201212]/95 to-[#160a0a]/98 px-6 py-8 shadow-[0_24px_60px_rgba(0,0,0,0.8)]"
                   >
                     <div
                       aria-hidden
-                      className="grid h-20 w-20 place-items-center rounded-full border-2 border-[#c9424c]/70 bg-[#160a0a] text-[#f7cccc] shadow-[0_6px_18px_rgba(0,0,0,0.55)]"
+                      className="grid h-20 w-20 place-items-center rounded-full border-2 border-[var(--cd-red)]/70 bg-[#160a0a] text-[#f7cccc] shadow-[0_6px_18px_rgba(0,0,0,0.55)]"
                     >
                       <AlertTriangle strokeWidth={2.4} style={{ width: 40, height: 40 }} />
                     </div>
 
-                    <div className="mt-5 font-display text-[11px] uppercase tracking-[0.42em] text-[#c9424c]/90">
+                    <div className="mt-5 font-display text-[11px] uppercase tracking-[0.42em] text-[var(--cd-red)]/90">
                       ─ abandonar ─
                     </div>
                     <h2 className="mt-2 font-script text-3xl leading-tight text-[var(--crema)]">
@@ -281,7 +281,7 @@ export function GamePauseButton() {
                       type="button"
                       onClick={finalizeLobby}
                       autoFocus
-                      className="mt-6 flex h-14 w-full items-center justify-center gap-3 rounded-full border-2 border-[#c9424c]/80 bg-[#c9424c]/25 px-6 text-base font-semibold uppercase tracking-[0.22em] text-[var(--crema)] shadow-[0_8px_22px_rgba(201,66,76,0.28)] active:scale-[0.98] active:bg-[#c9424c]/40"
+                      className="mt-6 flex h-14 w-full items-center justify-center gap-3 rounded-full border-2 border-[var(--cd-red)]/80 bg-[var(--cd-red)]/25 px-6 text-base font-semibold uppercase tracking-[0.22em] text-[var(--crema)] shadow-[0_8px_22px_rgba(201,66,76,0.28)] active:scale-[0.98] active:bg-[var(--cd-red)]/40"
                       style={{ touchAction: "manipulation" }}
                     >
                       <ArrowLeft strokeWidth={2.5} style={{ width: 18, height: 18 }} />

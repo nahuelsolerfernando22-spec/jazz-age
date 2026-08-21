@@ -39,7 +39,7 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               <stop offset="100%" stopColor="#120607" />
             </radialGradient>
           </defs>
-          <circle cx="22" cy="22" r="21" fill="url(#rlt-bg)" stroke="#c9a84c" strokeWidth="1" />
+          <circle cx="22" cy="22" r="21" fill="url(#rlt-bg)" stroke="var(--cd-gold-mid)" strokeWidth="1" />
           <g
             data-cuervo-spinner
             style={{ transformOrigin: "22px 22px", animation: "cuervoSpin 1.6s linear infinite" }}
@@ -51,12 +51,12 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
                 y="3"
                 width="2"
                 height="7"
-                fill={i % 2 === 0 ? "#c9a84c" : "#7a1e22"}
+                fill={i % 2 === 0 ? "var(--cd-gold-mid)" : "#7a1e22"}
                 transform={`rotate(${i * 45} 22 22)`}
               />
             ))}
           </g>
-          <circle cx="22" cy="22" r="3" fill="#c9a84c" />
+          <circle cx="22" cy="22" r="3" fill="var(--cd-gold-mid)" />
         </svg>
       )}
 
@@ -76,7 +76,7 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               height="32"
               rx="3"
               fill="#0f0708"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeWidth="1.2"
             />
             <rect
@@ -86,7 +86,7 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               height="26"
               rx="2"
               fill="none"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeWidth="0.6"
               opacity="0.7"
             />
@@ -96,7 +96,7 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               textAnchor="middle"
               fontFamily="Cinzel, Georgia, serif"
               fontSize="10"
-              fill="#c9a84c"
+              fill="var(--cd-gold-mid)"
             >
               CD
             </text>
@@ -113,13 +113,13 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               animation: "cuervoFlip 1.4s ease-in-out infinite",
             }}
           >
-            <circle cx="22" cy="22" r="18" fill="#1a0a0c" stroke="#c9a84c" strokeWidth="1.4" />
+            <circle cx="22" cy="22" r="18" fill="#1a0a0c" stroke="var(--cd-gold-mid)" strokeWidth="1.4" />
             <circle
               cx="22"
               cy="22"
               r="13"
               fill="none"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeWidth="0.5"
               opacity="0.6"
             />
@@ -129,7 +129,7 @@ export function ThematicSpinner({ variant = "roulette", size = 44, label, classN
               textAnchor="middle"
               fontFamily="Cinzel, Georgia, serif"
               fontSize="14"
-              fill="#c9a84c"
+              fill="var(--cd-gold-mid)"
             >
               C
             </text>

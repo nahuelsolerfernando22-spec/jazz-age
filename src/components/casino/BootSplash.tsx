@@ -101,7 +101,7 @@ export function BootSplash() {
           <div
             className="h-full w-1/3 rounded-full"
             style={{
-              background: "linear-gradient(90deg, transparent, #c9a84c, transparent)",
+              background: "linear-gradient(90deg, transparent, var(--cd-gold-mid), transparent)",
               animation: "boot-splash-sheen 1400ms ease-in-out infinite",
             }}
           />

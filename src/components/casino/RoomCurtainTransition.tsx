@@ -120,7 +120,7 @@ export function RoomCurtainTransition() {
             className="h-full rounded-full"
             style={{
               width: `${pct}%`,
-              background: "linear-gradient(90deg, #c9a84c 0%, #f5d497 55%, #c9a84c 100%)",
+              background: "linear-gradient(90deg, var(--cd-gold-mid) 0%, #f5d497 55%, var(--cd-gold-mid) 100%)",
               boxShadow: "0 0 8px rgba(245,212,151,0.55)",
               transition: "width 120ms cubic-bezier(0.4,0,0.2,1)",
             }}

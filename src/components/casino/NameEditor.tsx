@@ -47,7 +47,7 @@ export function NameEditor({ compact = false }: Props) {
         onClick={() => setOpen(true)}
         aria-label={`Cambiar nombre (actual: ${alias})`}
         title="Cambiar tu nombre"
-        className={`group flex shrink-0 items-center gap-1.5 rounded-full border border-[#2d5a3d]/60 bg-[#152520]/80 text-[var(--marfil)] transition hover:border-[var(--oro)] hover:text-[var(--oro)] ${
+        className={`group flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--cd-felt)]/60 bg-[#152520]/80 text-[var(--marfil)] transition hover:border-[var(--oro)] hover:text-[var(--oro)] ${
           compact ? "h-11 w-11 justify-center px-0 text-[13px]" : "h-11 min-w-[44px] px-4 text-xs"
         }`}
         style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.14em" }}
@@ -74,7 +74,7 @@ export function NameEditor({ compact = false }: Props) {
           }}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-[#2d5a3d]/70 bg-[#0f1c18] p-5 shadow-[0_30px_60px_-24px_rgba(0,0,0,0.9)]"
+            className="w-full max-w-sm rounded-2xl border border-[var(--cd-felt)]/70 bg-[#0f1c18] p-5 shadow-[0_30px_60px_-24px_rgba(0,0,0,0.9)]"
             style={{ fontFamily: "'Barlow', system-ui, sans-serif" }}
           >
             <div
@@ -101,7 +101,7 @@ export function NameEditor({ compact = false }: Props) {
                 if (e.key === "Escape") setOpen(false);
               }}
               placeholder="ej. El Cuervo"
-              className="mt-4 w-full rounded-lg border border-[#2d5a3d]/60 bg-[#152520] px-3 py-2.5 text-sm text-[var(--marfil)] placeholder:text-[var(--marfil)]/65 focus:border-[var(--oro)] focus:outline-none"
+              className="mt-4 w-full rounded-lg border border-[var(--cd-felt)]/60 bg-[#152520] px-3 py-2.5 text-sm text-[var(--marfil)] placeholder:text-[var(--marfil)]/65 focus:border-[var(--oro)] focus:outline-none"
             />
             <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--marfil)]/65">
               <span>

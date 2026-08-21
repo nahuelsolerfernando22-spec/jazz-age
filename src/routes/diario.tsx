@@ -68,7 +68,7 @@ function DiarioPage() {
           />
         </div>
         <header className="border-b-4 border-double border-[var(--tinta-parda)] pb-4">
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-[#5a3a1a]">
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-[var(--cd-wood)]">
             <Link
               to="/single"
               className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-[11px] hover:underline"
@@ -83,10 +83,10 @@ function DiarioPage() {
           >
             EL DIARIO DEL CUERVO
           </h1>
-          <p className="mt-1 text-center text-xs italic text-[#5a3a1a]">
+          <p className="mt-1 text-center text-xs italic text-[var(--cd-wood)]">
             Crónica nocturna del salón · edición del día
           </p>
-          <div className="mt-3 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] text-[#5a3a1a]">
+          <div className="mt-3 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] text-[var(--cd-wood)]">
             <span>{ctx.timeBand}</span>
             <span>·</span>
             <span>{ctx.season}</span>
@@ -110,7 +110,7 @@ function DiarioPage() {
                 decoding="async"
               />
               <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-[#5a3a1a]">
+                <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--cd-wood)]">
                   Anfitriona destacada
                 </p>
                 <h2
@@ -139,14 +139,14 @@ function DiarioPage() {
                 Notas de la noche
               </h2>
               {entries.length === 0 ? (
-                <div className="mt-6 flex flex-col items-center gap-3 rounded-sm border border-dashed border-[#5a3a1a]/40 px-4 py-10 text-center">
-                  <span aria-hidden className="text-3xl text-[#5a3a1a]/65">
+                <div className="mt-6 flex flex-col items-center gap-3 rounded-sm border border-dashed border-[var(--cd-wood)]/40 px-4 py-10 text-center">
+                  <span aria-hidden className="text-3xl text-[var(--cd-wood)]/65">
                     ✒︎
                   </span>
-                  <p className="text-sm italic text-[#5a3a1a]">
+                  <p className="text-sm italic text-[var(--cd-wood)]">
                     Todavía no hay historias que contar.
                   </p>
-                  <p className="text-xs text-[#5a3a1a]/80">
+                  <p className="text-xs text-[var(--cd-wood)]/80">
                     Sentate a alguna mesa y las anfitrionas empezarán a chusmear.
                   </p>
                   <Link
@@ -161,7 +161,7 @@ function DiarioPage() {
                   {entries.slice(0, 8).map((e) => (
                     <article
                       key={e.npcId}
-                      className="mb-5 break-inside-avoid border-l-2 border-[#5a3a1a]/40 pl-3"
+                      className="mb-5 break-inside-avoid border-l-2 border-[var(--cd-wood)]/40 pl-3"
                     >
                       <div className="flex items-center gap-2">
                         <img
@@ -192,7 +192,7 @@ function DiarioPage() {
         )}
 
         {}
-        <footer className="mt-8 border-t border-[var(--tinta-parda)]/25 pt-4 text-center text-[11px] uppercase tracking-[0.3em] text-[#5a3a1a]">
+        <footer className="mt-8 border-t border-[var(--tinta-parda)]/25 pt-4 text-center text-[11px] uppercase tracking-[0.3em] text-[var(--cd-wood)]">
           Impreso en el Cuervo Dorado · edición local
         </footer>
       </div>
@@ -215,7 +215,7 @@ function DiarioSkeleton() {
       </div>
       <div className="mt-6 space-y-4 columns-1 sm:columns-2 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="mb-5 break-inside-avoid border-l-2 border-[#5a3a1a]/25 pl-3">
+          <div key={i} className="mb-5 break-inside-avoid border-l-2 border-[var(--cd-wood)]/25 pl-3">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-full bg-[var(--tinta-parda)]/10" />
               <div className="h-4 w-40 rounded bg-[var(--tinta-parda)]/15" />

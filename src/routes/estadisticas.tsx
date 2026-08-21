@@ -188,7 +188,7 @@ function EstadisticasPage() {
           <h2 className="mb-3 font-display text-[11px] uppercase tracking-[0.4em] text-[var(--oro)]">
             Mesas con oponente
           </h2>
-          <div className="overflow-x-auto overflow-y-hidden rounded-md border border-[#2d5a3d]/40 bg-[#101c19]">
+          <div className="overflow-x-auto overflow-y-hidden rounded-md border border-[var(--cd-felt)]/40 bg-[#101c19]">
             <StatsTable rows={nemesisRows} showNet />
           </div>
           <p className="mt-2 text-[11px] text-[var(--marfil)]/65">
@@ -201,7 +201,7 @@ function EstadisticasPage() {
           <h2 className="mb-3 font-display text-[11px] uppercase tracking-[0.4em] text-[var(--oro)]">
             Juegos de puntaje
           </h2>
-          <div className="overflow-x-auto overflow-y-hidden rounded-md border border-[#2d5a3d]/40 bg-[#101c19]">
+          <div className="overflow-x-auto overflow-y-hidden rounded-md border border-[var(--cd-felt)]/40 bg-[#101c19]">
             <table className="w-full min-w-[420px] text-sm">
               <thead className="bg-black/30 text-[11px] uppercase tracking-[0.25em] text-[var(--marfil)]/80">
                 <tr>
@@ -212,7 +212,7 @@ function EstadisticasPage() {
               </thead>
               <tbody>
                 {scoreRows.map((r) => (
-                  <tr key={r.id} className="border-t border-[#2d5a3d]/25 hover:bg-white/[0.02]">
+                  <tr key={r.id} className="border-t border-[var(--cd-felt)]/25 hover:bg-white/[0.02]">
                     <td className="px-3 py-2">
                       <Link
                         to={r.to}
@@ -252,7 +252,7 @@ function BigStat({
         ? "text-rose-300"
         : "text-[var(--marfil)]";
   return (
-    <div className="rounded-md border border-[#2d5a3d]/40 bg-[#101c19] px-4 py-3">
+    <div className="rounded-md border border-[var(--cd-felt)]/40 bg-[#101c19] px-4 py-3">
       <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--marfil)]/65">{label}</p>
       <p
         className={`mt-1 text-2xl tabular-nums ${color}`}
@@ -280,7 +280,7 @@ function StatsTable({ rows, showNet }: { rows: Row[]; showNet?: boolean }) {
       </thead>
       <tbody>
         {rows.map((r) => (
-          <tr key={r.id} className="border-t border-[#2d5a3d]/25 hover:bg-white/[0.02]">
+          <tr key={r.id} className="border-t border-[var(--cd-felt)]/25 hover:bg-white/[0.02]">
             <td className="px-3 py-2">
               <Link
                 to={r.to}

@@ -41,9 +41,9 @@ export function NoirBackdrop({ variant = "hub" }: NoirBackdropProps) {
         style={{
           backgroundImage: [
             ...halos,
-            "linear-gradient(180deg, #1c1108 0%, #14100a 40%, #0a0705 100%)",
+            "linear-gradient(180deg, #1c1108 0%, var(--cd-noir-3) 40%, #0a0705 100%)",
           ].join(", "),
-          backgroundColor: "#14100a",
+          backgroundColor: "var(--cd-noir-3)",
         }}
       />
       {}

@@ -314,7 +314,7 @@ function Legajo({ fila }: { fila: Fila }) {
           <div className="font-display text-[11px] uppercase tracking-[0.28em] text-[var(--crema)]/80">
             {fila.game.title}
           </div>
-          <h2 className="mt-1 font-display text-2xl uppercase leading-tight tracking-[0.1em] text-[#fff5d0]">
+          <h2 className="mt-1 font-display text-2xl uppercase leading-tight tracking-[0.1em] text-[var(--cd-gold-pale)]">
             {level.title}
           </h2>
           <p className="mt-1 font-script text-base text-[var(--crema)]/90">{level.subtitle}</p>
@@ -324,7 +324,7 @@ function Legajo({ fila }: { fila: Fila }) {
           </blockquote>
 
           <div className="mt-4 border-t border-[var(--tinta)]/35 pt-3">
-            <div className="font-display text-[11px] uppercase tracking-[0.3em] text-[#e8c987]/80">
+            <div className="font-display text-[11px] uppercase tracking-[0.3em] text-[var(--cd-gold-warm)]/80">
               Objetivo
             </div>
             <div className="font-numerals text-base text-[var(--crema-clara)]">
@@ -334,7 +334,7 @@ function Legajo({ fila }: { fila: Fila }) {
 
           {level.modifierLabels.length ? (
             <div className="mt-3">
-              <div className="font-display text-[11px] uppercase tracking-[0.3em] text-[#e8c987]/80">
+              <div className="font-display text-[11px] uppercase tracking-[0.3em] text-[var(--cd-gold-warm)]/80">
                 Condiciones
               </div>
               <div className="mt-1 flex flex-wrap gap-1.5">
@@ -358,8 +358,8 @@ function Legajo({ fila }: { fila: Fila }) {
                   key={st}
                   className="rounded-sm border border-[var(--tinta)]/45 bg-black/30 p-2 shadow-[inset_0_1px_0_rgba(255,225,170,0.08)]"
                 >
-                  <div className="font-display text-sm text-[#e8c987]">{"★".repeat(st)}</div>
-                  <div className="font-numerals text-base text-[#fff5d0]">
+                  <div className="font-display text-sm text-[var(--cd-gold-warm)]">{"★".repeat(st)}</div>
+                  <div className="font-numerals text-base text-[var(--cd-gold-pale)]">
                     {level.reward[k].toLocaleString("es-AR")}¢
                   </div>
                 </div>
@@ -398,11 +398,11 @@ function Archivo({ filas }: { filas: Fila[] }) {
               }`}
               style={{ transform: `rotate(${i % 2 === 0 ? -0.2 : 0.2}deg)` }}
             >
-              <span className="font-numerals text-base text-[#e8c987]/80">
+              <span className="font-numerals text-base text-[var(--cd-gold-warm)]/80">
                 {(i + 1).toString().padStart(2, "0")}
               </span>
               <div className="min-w-0">
-                <div className="truncate font-display text-[15px] uppercase tracking-[0.08em] text-[#fff5d0]">
+                <div className="truncate font-display text-[15px] uppercase tracking-[0.08em] text-[var(--cd-gold-pale)]">
                   {f.game.title}
                 </div>
                 <div className="truncate font-display text-[11px] uppercase tracking-[0.22em] text-[var(--marfil)]/65">
@@ -415,7 +415,7 @@ function Archivo({ filas }: { filas: Fila[] }) {
                     f.active
                       ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
                       : done
-                        ? "border-[var(--oro)]/50 bg-black/30 text-[#fff5d0]"
+                        ? "border-[var(--oro)]/50 bg-black/30 text-[var(--cd-gold-pale)]"
                         : "border-[var(--tinta)]/45 bg-black/30 text-[var(--crema)]/80"
                   }`}
                 >

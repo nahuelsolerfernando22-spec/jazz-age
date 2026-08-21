@@ -20,10 +20,17 @@ export function HapticListener() {
     const handler = (ev: PointerEvent) => {
       const target = ev.target;
       if (!(target instanceof Element)) return;
-      const el = target.closest<HTMLElement>("[data-haptic]");
+      // 1) Elemento con intención háptica explícita.
+      // 2) Fallback global: cualquier control interactivo vibra con "tap",
+      //    así ningún botón de mesa queda mudo. Se puede desactivar por
+      //    elemento con data-haptic="none".
+      const el = target.closest<HTMLElement>(
+        '[data-haptic], button, [role="button"], a[href], input[type="checkbox"], input[type="radio"]',
+      );
       if (!el) return;
       if (el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") return;
       const raw = el.dataset.haptic ?? "tap";
+      if (raw === "none") return;
       haptic(isHapticKind(raw) ? raw : "tap");
     };
 

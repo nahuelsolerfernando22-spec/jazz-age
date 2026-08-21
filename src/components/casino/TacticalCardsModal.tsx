@@ -46,7 +46,7 @@ export const TacticalCardsModal = ({
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[120] bg-black/95 flex items-center justify-center p-4 backdrop-blur-xl"
     >
-      <div className="paria-card max-w-lg w-full p-6 border-4 border-[var(--oro)] bg-[#0d0a06] relative shadow-[0_0_100px_rgba(0,0,0,1)]">
+      <div className="paria-card max-w-lg w-full p-6 border-4 border-[var(--oro)] bg-[var(--cd-noir-2)] relative shadow-[0_0_100px_rgba(0,0,0,1)]">
         <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[var(--oro)] text-black px-8 py-2 font-bebas text-2xl rotate-[-2deg] border-[3px] border-black shadow-[4px_4px_0_#000] whitespace-nowrap">
           NAIPES DEL SINDICATO
         </div>

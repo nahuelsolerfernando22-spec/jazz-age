@@ -235,7 +235,7 @@ function DiceRoller({
       <div className="flex items-center justify-center gap-4">
         <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[var(--oro)]/50 to-transparent" />
         <div className="w-12 h-12 border-2 border-[var(--oro)] rounded-full flex items-center justify-center rotate-45 bg-black shadow-[0_0_20px_rgba(201,168,76,0.5)]">
-          <span className="font-serif italic font-bold text-xl text-[var(--oro)] -rotate-45 drop-shadow-[0_0_5px_#c9a84c]">
+          <span className="font-serif italic font-bold text-xl text-[var(--oro)] -rotate-45 drop-shadow-[0_0_5px_var(--cd-gold-mid)]">
             VS
           </span>
         </div>
@@ -588,7 +588,7 @@ function SindicatoPage() {
 
 
   return (
-    <div className="fixed inset-0 w-screen h-dvh min-h-dvh bg-[#050402] text-[var(--crema-clara)] flex flex-col font-body select-none overflow-hidden overscroll-none">
+    <div className="fixed inset-0 w-screen h-dvh min-h-dvh bg-[var(--cd-noir-0)] text-[var(--crema-clara)] flex flex-col font-body select-none overflow-hidden overscroll-none">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -601,7 +601,7 @@ function SindicatoPage() {
 
       <main
         ref={containerRef}
-        className="fixed inset-0 z-0 w-screen h-dvh touch-none bg-[#0d0a06] overflow-hidden"
+        className="fixed inset-0 z-0 w-screen h-dvh touch-none bg-[var(--cd-noir-2)] overflow-hidden"
         onPointerDown={(e) => {
           if ((e.target as Element).closest("g.pointer-events-auto")) return;
           if (e.button !== 0) return;
@@ -650,7 +650,7 @@ function SindicatoPage() {
           }}
           transition={{ type: "spring", damping: 30, stiffness: 150 }}
         >
-          <div className="absolute inset-0 w-full h-full bg-[#050402]">
+          <div className="absolute inset-0 w-full h-full bg-[var(--cd-noir-0)]">
             <div
               className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden"
               style={{
@@ -794,7 +794,7 @@ function SindicatoPage() {
                           <circle r="17" fill="#08060c" />
                           <circle
                             r="14"
-                            fill={owner?.color || "#c9a84c"}
+                            fill={owner?.color || "var(--cd-gold-mid)"}
                             stroke="#fff8e0"
                             strokeWidth="1.5"
                             filter="url(#bakelite-relief)"
@@ -1070,7 +1070,7 @@ function SindicatoPage() {
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="w-[90vw] max-w-sm bg-[#0d0a06] border-[4px] border-black p-8 relative shadow-[0_0_80px_rgba(153,27,27,0.6)] rounded-xl"
+              className="w-[90vw] max-w-sm bg-[var(--cd-noir-2)] border-[4px] border-black p-8 relative shadow-[0_0_80px_rgba(153,27,27,0.6)] rounded-xl"
             >
               <div className="text-center mb-8">
                 <h2 className="font-serif italic font-bold text-4xl text-red-100 uppercase italic tracking-tighter drop-shadow-[0_4px_0_#000]">
@@ -1147,7 +1147,7 @@ function SindicatoPage() {
 
       <TurnBanner
         playerName={currentPlayer?.name ?? "Sindicato"}
-        playerColor={currentPlayer?.color ?? "#c9a84c"}
+        playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
         factionId={currentPlayer?.faction}
         isBot={!!currentPlayer?.isBot}
         phase={turnPhase}
@@ -1169,7 +1169,7 @@ function SindicatoPage() {
         territories={activeTerritories}
         conquests={conquests}
         myPlayerId={0}
-        myColor={players[0]?.color ?? "#c9a84c"}
+        myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
       />
 
       <ActionDock

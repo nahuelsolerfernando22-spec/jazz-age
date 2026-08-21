@@ -168,7 +168,7 @@ export function LigasTab() {
                 }}
                 className={`min-h-11 shrink-0 rounded-full border px-4 text-[11px] uppercase tracking-[0.18em] ${
                   active
-                    ? "border-[var(--oro)] bg-[var(--oro)] text-[#14100a]"
+                    ? "border-[var(--oro)] bg-[var(--oro)] text-[var(--cd-noir-3)]"
                     : "border-white/15 bg-white/[0.03] text-[var(--marfil)]/80"
                 }`}
               >

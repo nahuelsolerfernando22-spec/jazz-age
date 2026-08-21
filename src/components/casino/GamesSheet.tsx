@@ -237,7 +237,7 @@ export function GamesSheet({ open, onClose }: Props) {
                   searchRef.current?.focus();
                 }}
                 aria-label="Borrar búsqueda"
-                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[var(--marfil)]/80 hover:text-[var(--oro-claro)] focus-visible:ring-2 focus-visible:ring-[var(--oro-palido)]"
+                className="cd-hit-44 absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[var(--marfil)]/80 hover:text-[var(--oro-claro)] focus-visible:ring-2 focus-visible:ring-[var(--oro-palido)]"
               >
                 ×
               </button>
@@ -400,7 +400,7 @@ function GameTile({
       ) : null}
       <span
         aria-hidden
-        className="relative inline-flex items-center justify-center rounded-[2px] border border-[var(--oro)]/55 bg-[#0d0a06]/75 p-1 text-[#e6c67a] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+        className="relative inline-flex items-center justify-center rounded-[2px] border border-[var(--oro)]/55 bg-[var(--cd-noir-2)]/75 p-1 text-[#e6c67a] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
         style={{ width: compact ? 26 : 30, height: compact ? 26 : 30 }}
       >
         <GameIcon id={game.id} size={compact ? 18 : 22} />

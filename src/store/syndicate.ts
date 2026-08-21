@@ -258,7 +258,7 @@ export const useSyndicate = create<SyndicateState>()(
             activeTerrs = generateSubMap(mapSeed, 20).territorios;
           }
 
-          const colors = ["#c9a84c", "#A83A3A", "#3E7C8C", "#6B7A3A", "#5B4B8A"];
+          const colors = ["var(--cd-gold-mid)", "#A83A3A", "var(--cd-teal)", "#6B7A3A", "#5B4B8A"];
           const finalColors = userColor
             ? [userColor, ...colors.filter((c) => c !== userColor)]
             : colors;

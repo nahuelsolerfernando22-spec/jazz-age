@@ -125,7 +125,7 @@ export function SingleHostessCorner({
 
   const portraitFocus = avatarFocus(hostess.npcId);
   const focusRing =
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oro-claro)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#14100a]";
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oro-claro)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cd-noir-3)]";
 
   return (
     <div
@@ -201,7 +201,7 @@ export function SingleHostessCorner({
               cy="18"
               r="16"
               fill="none"
-              stroke="#c9a84c"
+              stroke="var(--cd-gold-mid)"
               strokeWidth="2"
               strokeDasharray={`${(affinity / 100) * 100.53} 100.53`}
               strokeLinecap="round"

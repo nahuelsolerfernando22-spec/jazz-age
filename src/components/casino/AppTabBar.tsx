@@ -80,6 +80,63 @@ const TABS: Tab[] = [
   },
 ];
 
+/* Superficie táctil única para todas las pestañas: 64px de alto (por encima
+   del mínimo de 48dp de Android) y estados activos con placa de latón. */
+const tabClass = (active: boolean) =>
+  `relative mx-1 my-1 flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[10px] uppercase transition-[color,transform,background] duration-200 active:scale-[0.96] ${
+    active ? "hud-plate" : ""
+  }`;
+
+const tabStyle = (active: boolean): React.CSSProperties => ({
+  color: active ? "var(--cd-gold-tab)" : "rgba(236,235,230,0.72)",
+  touchAction: "manipulation",
+  WebkitTapHighlightColor: "transparent",
+  fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
+  fontSize: "0.5625rem",
+  letterSpacing: "0.26em",
+  textShadow: active ? "0 0 10px rgba(244,217,122,0.35)" : "0 1px 0 rgba(0,0,0,0.75)",
+});
+
+function TabInner({
+  active,
+  icon,
+  label,
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-3 top-0 h-[2px] rounded-full transition-opacity duration-300"
+        style={{
+          opacity: active ? 1 : 0,
+          background:
+            "linear-gradient(90deg, transparent 0%, var(--cd-gold-tab) 50%, transparent 100%)",
+          boxShadow: "0 0 10px rgba(244,217,122,0.7)",
+        }}
+      />
+      <span
+        className="grid place-items-center transition-transform duration-200"
+        style={{
+          width: 34,
+          height: 34,
+          transform: active ? "translateY(-1px) scale(1.06)" : "none",
+          filter: active
+            ? "drop-shadow(0 2px 6px rgba(244,217,122,0.45))"
+            : "grayscale(0.25) opacity(0.9)",
+        }}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <span>{label}</span>
+    </>
+  );
+}
+
 export function AppTabBar() {
   const location = useLocation();
   const path = location.pathname;
@@ -120,7 +177,7 @@ export function AppTabBar() {
     <>
       <nav
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-[200] bg-[#0a0806]"
+        className="fixed inset-x-0 bottom-0 z-[200] bg-[var(--cd-noir-1)]"
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           paddingLeft: "env(safe-area-inset-left, 0px)",
@@ -145,31 +202,17 @@ export function AppTabBar() {
                   to={t.to}
                   data-haptic="tap"
                   aria-current={active ? "page" : undefined}
-                  className={`relative mx-1 my-1 flex h-[62px] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${active ? "hud-plate" : ""}`}
-                  style={{
-                    color: active ? "#f4d97a" : "rgba(236,235,230,0.78)",
-                    touchAction: "manipulation",
-                    fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
-                    fontSize: "0.5625rem",
-                    letterSpacing: "0.26em",
-                    textShadow: "0 1px 0 rgba(0,0,0,0.75)",
-                  }}
+                  className={tabClass(active)}
+                  style={tabStyle(active)}
                 >
-                  <span
-                    className="grid place-items-center"
-                    style={{ width: 34, height: 34 }}
-                    aria-hidden
-                  >
-                    {t.icon}
-                  </span>
-                  <span>{t.label}</span>
+                  <TabInner active={active} icon={t.icon} label={t.label} />
                   {showBadge ? (
                     <span
                       aria-label="Novedades en encargos"
-                      className="absolute right-3 top-2 h-2 w-2 rounded-full"
+                      className="absolute right-3 top-2 h-2 w-2 animate-pulse rounded-full"
                       style={{
-                        background: "#f4d97a",
-                        boxShadow: "0 0 0 2px #0a0806, 0 0 8px rgba(244,217,122,0.9)",
+                        background: "var(--cd-gold-tab)",
+                        boxShadow: "0 0 0 2px var(--cd-noir-1), 0 0 8px rgba(244,217,122,0.9)",
                       }}
                     />
                   ) : null}
@@ -181,27 +224,14 @@ export function AppTabBar() {
                 <li key="__games" className="flex-1">
                   <button
                     type="button"
+                    data-haptic="tap"
                     onClick={() => setGamesOpen(true)}
                     aria-label="Ver todos los juegos"
                     aria-expanded={gamesOpen}
-                    className={`relative mx-1 my-1 flex h-[62px] w-[calc(100%-0.5rem)] flex-col items-center justify-center gap-1 text-[11px] uppercase transition-colors active:scale-[0.97] ${gamesOpen ? "hud-plate" : ""}`}
-                    style={{
-                      color: gamesOpen ? "#f4d97a" : "rgba(236,235,230,0.78)",
-                      touchAction: "manipulation",
-                      fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
-                      fontSize: "0.5625rem",
-                      letterSpacing: "0.26em",
-                      textShadow: "0 1px 0 rgba(0,0,0,0.75)",
-                    }}
+                    className={`${tabClass(gamesOpen)} w-[calc(100%-0.5rem)]`}
+                    style={tabStyle(gamesOpen)}
                   >
-                    <span
-                      className="grid place-items-center"
-                      style={{ width: 34, height: 34 }}
-                      aria-hidden
-                    >
-                      <IconGrid />
-                    </span>
-                    <span>Juegos</span>
+                    <TabInner active={gamesOpen} icon={<IconGrid />} label="Juegos" />
                   </button>
                 </li>
               );

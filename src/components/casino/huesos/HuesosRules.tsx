@@ -35,12 +35,56 @@ export function HuesosRules({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="relative max-h-[86vh] w-full max-w-md overflow-y-auto rounded-t-md border border-[var(--brass)]/45 bg-[var(--noir)] p-5 shadow-deep sm:rounded-md"
+        className="relative flex max-h-[86svh] w-full max-w-md flex-col overflow-hidden rounded-t-md border border-[var(--brass)]/45 shadow-deep sm:rounded-md"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% -10%, oklch(0.26 0.06 40 / 0.85) 0%, transparent 60%), linear-gradient(180deg, oklch(0.13 0.02 35) 0%, var(--noir) 45%, oklch(0.09 0.015 30) 100%)",
+        }}
       >
-        <div className="gen-label text-[var(--brass)]/90">cómo se juega</div>
-        <h2 className="gen-display mt-1 text-2xl text-[var(--brass-bright)]">Cinco Huesos</h2>
+        {/* Cenefa déco superior */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[3px]"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, var(--brass) 18%, var(--brass-bright) 50%, var(--brass) 82%, transparent)",
+            opacity: 0.85,
+          }}
+        />
+        {/* Rayos déco de fondo */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            background:
+              "repeating-conic-gradient(from 0deg at 50% 0%, var(--brass-bright) 0deg 3deg, transparent 3deg 12deg)",
+            maskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 62%)",
+            WebkitMaskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 62%)",
+          }}
+        />
 
-        <ol className="mt-4 space-y-3">
+        {/* Encabezado fijo con cierre siempre a mano */}
+        <div className="relative z-[1] flex items-start gap-3 border-b border-[var(--brass)]/20 px-5 pb-3 pt-4 backdrop-blur-[2px]">
+          <div className="min-w-0 flex-1">
+            <div className="gen-label text-[var(--brass)]/90">cómo se juega</div>
+            <h2 className="gen-display mt-1 text-2xl leading-none text-[var(--brass-bright)]">
+              Cinco Huesos
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label="Cerrar reglas"
+            onClick={onClose}
+            className="cd-hit-44 -mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--brass)]/45 text-[var(--brass)] active:bg-[var(--mahogany)]/40"
+          >
+            <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor">
+              <path d="M5 5 L15 15 M15 5 L5 15" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="relative z-[1] min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-3">
+        <ol className="space-y-3">
           {[
             "Se reparten seis contratos boca arriba. Los dos compiten por cerrarlos: el que llega primero se lo lleva.",
             "En tu turno tirás los cinco dados. Tenés tres tiros: podés apartar los que te sirven y volver a tirar el resto.",

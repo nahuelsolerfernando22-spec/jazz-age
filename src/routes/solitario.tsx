@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameRoomShell } from "@/components/casino/GameRoomShell";
+import { useHaptics } from "@/hooks/use-haptics";
 
 import { useCampaignBridge, bumpCampaignEvent } from "@/hooks/use-campaign-bridge";
 import { BoardFit } from "@/components/casino/BoardFit";
@@ -302,13 +303,13 @@ function SolitarioPage() {
     } catch {}
   }, [reduced]);
 
-  type DragOverKey = string | null;
-  const [dragSrc] = useState<SourceLocation | null>(null);
-  const [dragOverKey] = useState<DragOverKey>(null);
+  // Ayuda de lectura: con una carta elegida, marcamos en verde los destinos
+  // legales. Antes esto dependía de un drag que nunca se activaba en táctil.
   const canDropOn = useCallback(
-    (t: TargetLocation): boolean => (dragSrc ? tryMove(game, dragSrc, t) !== null : false),
-    [dragSrc, game],
+    (t: TargetLocation): boolean => (selected ? tryMove(game, selected, t) !== null : false),
+    [selected, game],
   );
+
 
   const baseLine = useMemo(
     () =>
@@ -720,7 +721,7 @@ function SolitarioPage() {
               <div
                 // En móvil el ancho de carta se deriva del viewport para que las
                 // 7 columnas del tableau entren completas sin recortar la última.
-                className="relative rounded-[20px] border-4 border-[oklch(0.35_0.04_60)] p-2 shadow-deep sm:rounded-[24px] sm:p-5 [--soli-w:calc((100vw-2.75rem-6*0.375rem)/7)] [--soli-h:calc(var(--soli-w)/0.7)] sm:[--soli-h:148px] sm:[--soli-w:calc(var(--soli-h)*0.7)] lg:[--soli-h:160px] [--soli-o:calc(var(--soli-h)*0.24)]"
+                className="relative rounded-[20px] border-4 border-[oklch(0.35_0.04_60)] p-2 shadow-deep sm:rounded-[24px] sm:p-5 [--soli-w:calc((100vw-2.75rem-6*0.375rem)/7)] [--soli-h:calc(var(--soli-w)/0.7)] sm:[--soli-h:148px] sm:[--soli-w:calc(var(--soli-h)*0.7)] lg:[--soli-h:160px] [--soli-o:calc(var(--soli-h)*0.26)] [--soli-od:calc(var(--soli-h)*0.13)]"
                 style={{
                   background:
                     "radial-gradient(ellipse at center, oklch(0.32 0.10 145) 0%, oklch(0.16 0.06 145) 85%)",
@@ -798,9 +799,7 @@ function SolitarioPage() {
                       const top = stack[stack.length - 1] ?? null;
                       const isSel = selected?.kind === "foundation" && selected.suit === s;
                       const red = SUIT_COLOR[s] === "red";
-                      const dropKey = `F:${s}`;
-                      const isDropOk = dragSrc ? canDropOn({ kind: "foundation", suit: s }) : false;
-                      const isDropHover = dragOverKey === dropKey && isDropOk;
+                      const isDropOk = canDropOn({ kind: "foundation", suit: s });
                       return (
                         <button
                           key={s}
@@ -812,15 +811,14 @@ function SolitarioPage() {
                               handleClick({ kind: "foundation", suit: s }, true);
                             }
                           }}
-                          className={`relative transition-transform rounded-md ${
+                          className={`relative rounded-md transition-transform ${
                             closingSuit === s
                               ? "ring-4 ring-[oklch(0.88_0.19_90/0.95)] animate-pulse"
-                              : isDropHover
-                                ? "ring-2 ring-[oklch(0.82_0.18_140/0.9)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
-                                : isDropOk
-                                  ? "ring-1 ring-[oklch(0.75_0.14_140/0.55)]"
-                                  : ""
+                              : isDropOk
+                                ? "animate-pulse ring-2 ring-[oklch(0.82_0.18_140/0.85)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
+                                : ""
                           }`}
+
                           aria-label={`Pila de ${s}`}
                         >
                           {top ? (
@@ -842,24 +840,29 @@ function SolitarioPage() {
                     const isEmpty = col.length === 0;
                     const isSelTarget = selected != null && !isSameTarget(selected, ci);
                     const topIdx = col.length - 1;
-                    const dropKey = `T:${ci}`;
-                    const isDropOk = dragSrc ? canDropOn({ kind: "tableau", col: ci }) : false;
-                    const isDropHover = dragOverKey === dropKey && isDropOk;
+                    const isDropOk = canDropOn({ kind: "tableau", col: ci });
+                    // Abanico asimétrico: los dorsos se apilan compactos y las
+                    // cartas dadas vuelta respiran, para leer la columna de un vistazo.
+                    let down = 0;
+                    let up = 0;
+                    const tops = col.map((card) => {
+                      const top = `calc(${down} * var(--soli-od) + ${up} * var(--soli-o))`;
+                      if (card.faceUp) up += 1;
+                      else down += 1;
+                      return top;
+                    });
+                    const colHeight = isEmpty
+                      ? "var(--soli-h)"
+                      : `calc(var(--soli-h) + ${Math.max(0, down - (col[topIdx]?.faceUp ? 0 : 1))} * var(--soli-od) + ${Math.max(0, up - (col[topIdx]?.faceUp ? 1 : 0))} * var(--soli-o))`;
                     return (
                       <div
                         key={ci}
                         className={`relative rounded-md ${
-                          isDropHover
-                            ? "ring-2 ring-[oklch(0.82_0.18_140/0.9)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
-                            : isDropOk
-                              ? "ring-1 ring-[oklch(0.75_0.14_140/0.5)]"
-                              : ""
+                          isDropOk
+                            ? "ring-2 ring-[oklch(0.82_0.18_140/0.85)] ring-offset-2 ring-offset-[oklch(0.16_0.06_145)]"
+                            : ""
                         }`}
-                        style={{
-                          height: isEmpty
-                            ? "var(--soli-h)"
-                            : `calc(var(--soli-h) + ${topIdx} * var(--soli-o))`,
-                        }}
+                        style={{ height: colHeight }}
                       >
                         {isEmpty ? (
                           <button
@@ -880,11 +883,7 @@ function SolitarioPage() {
                             const isHint =
                               hint?.kind === "tableau" && hint.col === ci && ri === topIdx;
                             return (
-                              <div
-                                key={card.id}
-                                className="absolute left-0"
-                                style={{ top: `calc(${ri} * var(--soli-o))` }}
-                              >
+                              <div key={card.id} className="absolute left-0" style={{ top: tops[ri] }}>
                                 {card.faceUp ? (
                                   <ClickableCard
                                     card={card}
@@ -909,6 +908,7 @@ function SolitarioPage() {
                             );
                           })
                         )}
+
                         {!isEmpty && selected && isSelTarget && (
                           <button
                             type="button"
@@ -983,6 +983,35 @@ function SolitarioPage() {
                   </BrassButton>
                 </div>
               </div>
+
+              {/* En móvil el riel lateral no existe: los objetivos del día viven
+                  acá abajo, donde antes había un hueco muerto de mesa. */}
+              <div className="mt-3 rounded-md border border-[var(--brass)]/25 bg-[var(--noir)]/85 p-3 backdrop-blur-sm lg:hidden">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="font-display text-[11px] uppercase tracking-[0.35em] text-[var(--brass)]/90">
+                    objetivos del día
+                  </div>
+                  <div className="font-display text-[10px] uppercase tracking-[0.25em] text-[var(--smoke)]">
+                    {isDaily ? "reto del día" : "salón libre"}
+                  </div>
+                </div>
+                <SolitarioObjectivesList
+                  objectives={dailyObjectivesList}
+                  claimedIds={claimedObjectiveIds}
+                  compact
+                />
+                <div className="mt-2">
+                  <BrassButton
+                    onClick={replayDaily}
+                    variant={isDaily ? "primary" : "ghost"}
+                    size="sm"
+                  >
+                    {isDaily ? "Reto del día activo" : "Volver al reto del día"}
+                  </BrassButton>
+                </div>
+              </div>
+
+
 
               <AnimatePresence>
                 {game.won && (
@@ -1228,8 +1257,10 @@ function ClickableCard({
   onClick: () => void;
   onDoubleClick: () => void;
 }) {
+  const haptic = useHaptics();
   const pressTimer = useRef<number | null>(null);
   const longPressed = useRef(false);
+  const lastTapAt = useRef(0);
   const clearTimer = () => {
     if (pressTimer.current !== null) {
       window.clearTimeout(pressTimer.current);
@@ -1244,6 +1275,16 @@ function ClickableCard({
           longPressed.current = false;
           return;
         }
+        // Doble toque rápido = mandar a las pilas, como en cualquier solitario móvil.
+        const now = Date.now();
+        if (now - lastTapAt.current < 300) {
+          lastTapAt.current = 0;
+          haptic("success");
+          onDoubleClick();
+          return;
+        }
+        lastTapAt.current = now;
+        haptic("card");
         onClick();
       }}
       onPointerDown={() => {
@@ -1251,6 +1292,7 @@ function ClickableCard({
         clearTimer();
         pressTimer.current = window.setTimeout(() => {
           longPressed.current = true;
+          haptic("success");
           onDoubleClick();
         }, 420);
       }}
@@ -1259,8 +1301,9 @@ function ClickableCard({
       onPointerCancel={clearTimer}
       style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       className="block rounded-md active:brightness-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brass-bright)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.16_0.06_145)]"
-      aria-label={`${RANK_LABEL[card.rank]} de ${card.suit} — mantené presionado para enviar a las pilas`}
+      aria-label={`${RANK_LABEL[card.rank]} de ${card.suit} — doble toque o mantené presionado para enviar a las pilas`}
       aria-pressed={selected}
+
     >
       <CardFace card={card} selected={selected} hint={hint} reduced={reduced} />
     </button>

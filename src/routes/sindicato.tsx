@@ -414,7 +414,7 @@ function SindicatoPage() {
     setFitScale(s);
     const ox = (contentBox.cx - MAP_WIDTH / 2) * s;
     const oy = (contentBox.cy - MAP_HEIGHT / 2) * s;
-    setTransform({ x: -ox, y: -oy + (HEADER - NAVBAR) / 2, scale: s });
+    setTransform({ x: -ox - GUTTER / 2, y: -oy + (HEADER - NAVBAR) / 2, scale: s });
   }, [activeTerritories, hudH]);
 
   useEffect(() => {

@@ -76,6 +76,7 @@ const TABS: Tab[] = [
       p.startsWith("/ajustes") ||
       p.startsWith("/diario") ||
       p.startsWith("/logros") ||
+      p.startsWith("/torneo") ||
       p.startsWith("/estadisticas") ||
       p.startsWith("/dificultad"),
   },

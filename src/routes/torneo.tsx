@@ -18,6 +18,7 @@ import {
   rivalAt,
   cupRoundName,
   cupSchedule,
+  cupDivision,
   garraLabel,
 } from "@/lib/cup";
 import { useCup } from "@/store/cup";
@@ -150,10 +151,18 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
   const abandon = useCup((s) => s.abandon);
   const retry = useCup((s) => s.retry);
   const cupos = useCup((s) => s.cupos)();
+  const reserved = useCup((s) => s.reserved);
+  const reserve = useCup((s) => s.reserve);
+  const cancelReserve = useCup((s) => s.cancelReserve);
   const navigate = useNavigate();
   const agenda = useMemo(() => cupSchedule(Date.now(), 3), []);
 
   const enCurso = Boolean(active && active.status === "jugando");
+  const onEntrar = (gameId: string) => {
+    if (!start(gameId)) {
+      void import("sonner").then(({ toast }) => toast.error("No pudiste entrar: revisá cupo y fichas."));
+    }
+  };
 
   return (
     <>
@@ -185,6 +194,33 @@ function MesasTab({ hydrated }: { hydrated: boolean }) {
               {CUP_GAME_BY_ID[agenda[0].gameId]?.nombre} · en {cupCountdown(agenda[0].at)}
             </p>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {hydrated && reserved ? (
+            <>
+              <p className="flex-1 text-xs text-[var(--crema)]/70">
+                Tenés lugar guardado en {CUP_GAME_BY_ID[reserved.gameId]?.nombre} — abre en{" "}
+                {cupCountdown(reserved.at)}.
+              </p>
+              {Date.now() >= reserved.at ? (
+                <button type="button" className={btn} onClick={() => onEntrar(reserved.gameId)}>
+                  Entrar
+                </button>
+              ) : (
+                <button type="button" className={btn} onClick={cancelReserve}>
+                  Soltar lugar
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              type="button"
+              className={btn}
+              onClick={() => reserve(agenda[0].gameId, agenda[0].at)}
+            >
+              Reservar lugar
+            </button>
+          )}
         </div>
         <ul className="mt-3 space-y-1 text-xs text-[var(--crema)]/60">
           {agenda.slice(1).map((s) => (
@@ -381,12 +417,31 @@ function CuadroActivo({
       ) : null}
 
       {terminado ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <p className="flex-1 text-sm text-[var(--crema)]/80">
-            {active.status === "campeon"
-              ? `Campeón de ${juego?.nombre}. La casa te pagó ¢${active.purse}.`
-              : `Te dejaron afuera. La bolsa quedó en ¢${active.purse}.`}
-          </p>
+        <div className="mt-4">
+          <div className="rounded-sm border border-[var(--oro)]/35 bg-black/45 p-3">
+            <p className="font-display text-[11px] uppercase tracking-[0.26em] text-[var(--oro)]/80">
+              {active.status === "campeon" ? "Premiación" : "Fin del cuadro"}
+            </p>
+            <p className="mt-1 text-sm text-[var(--crema)]/80">
+              {active.status === "campeon"
+                ? `Campeón de ${juego?.nombre}. La casa te pagó ¢${active.purse}.`
+                : `Te dejaron afuera en ${cupRoundName(active.round)}. La bolsa quedó en ¢${active.purse}.`}
+            </p>
+            <ul className="mt-2 space-y-0.5 text-[11px] text-[var(--crema)]/60">
+              {active.results.map((r, i) => (
+                <li key={i}>
+                  {CUP_ROUNDS[i].corto} · {active.rivals[i]?.nombre ?? "—"} —{" "}
+                  {r === "win" ? "ganada" : "perdida"}
+                </li>
+              ))}
+              <li>
+                Entrada ¢{active.buyin} · saldo neto ¢{active.purse - active.buyin} ·{" "}
+                {active.puntos} pts de temporada
+              </li>
+              {active.trofeos.length ? <li>Vitrina: {active.trofeos.join(" · ")}</li> : null}
+            </ul>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
           {active.status === "eliminado" ? (
             <button
               type="button"
@@ -400,6 +455,7 @@ function CuadroActivo({
           <button type="button" onClick={onCerrar} className={btn}>
             Cerrar cuadro
           </button>
+          </div>
         </div>
       ) : (
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -471,8 +527,39 @@ function PosicionesTab({
     [mesa, sc?.puntos, sc?.titulos, hydrated],
   );
 
+  const totalPuntos = hydrated
+    ? Object.values(scores).reduce((a, b) => a + b.puntos, 0)
+    : 0;
+  const div = cupDivision(totalPuntos);
+
   return (
     <section>
+      <div className={`${card} mb-3`}>
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-display text-[11px] uppercase tracking-[0.28em] text-[var(--oro)]/80">
+            Temporada
+          </h2>
+          <span className="font-display text-[12px] tracking-[0.14em] text-[var(--oro)]">
+            {div.actual.nombre}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-[var(--crema)]/65">
+          {totalPuntos} pts en total
+          {div.siguiente
+            ? ` · faltan ${Math.max(0, div.siguiente.desde - totalPuntos)} para ${div.siguiente.nombre}`
+            : " · estás en lo más alto del salón"}
+        </p>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--oro)]/10">
+          <div
+            className="h-full rounded-full bg-[var(--oro)]/70"
+            style={{
+              width: div.siguiente
+                ? `${Math.min(100, Math.round(((totalPuntos - div.actual.desde) / (div.siguiente.desde - div.actual.desde)) * 100))}%`
+                : "100%",
+            }}
+          />
+        </div>
+      </div>
       <MesaPicker mesa={mesa} setMesa={setMesa} />
       <ol className={`${card} divide-y divide-[var(--oro)]/10 p-0`}>
         {filas.map((f, i) => (

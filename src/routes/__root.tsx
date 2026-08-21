@@ -491,6 +491,7 @@ function RootComponent() {
       {mounted && <EncargoResultToaster />}
       {mounted && <EncargoRunBanner />}
       {mounted && <CupRunBanner />}
+      {mounted && <PrimeraNoche />}
       {mounted && <SessionStreakListener />}
       {mounted && !isNativeApp && !inGame && <OfflineReadyIndicator />}
       {mounted && !isNativeApp && !inGame && <PwaPrompts />}

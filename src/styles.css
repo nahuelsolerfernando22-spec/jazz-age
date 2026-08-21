@@ -2224,19 +2224,19 @@ iframe[src*="ovable.app"] {
 }
 
 .safe-pt {
-  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-top: max(var(--sa-top), 0px);
 }
 .safe-pb {
-  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  padding-bottom: max(var(--sa-bottom), 0px);
 }
 .safe-px {
-  padding-left: max(env(safe-area-inset-left), 0px);
-  padding-right: max(env(safe-area-inset-right), 0px);
+  padding-left: max(var(--sa-left), 0px);
+  padding-right: max(var(--sa-right), 0px);
 }
 
-@supports (top: env(safe-area-inset-top)) {
+@supports (top: var(--sa-top)) {
   .hud-safe-top {
-    top: max(env(safe-area-inset-top), 0px);
+    top: max(var(--sa-top), 0px);
   }
 }
 
@@ -2283,18 +2283,18 @@ body {
 /* Safe-area base: aplica insets del sistema (notch, barra de gestos, curvatura)
    a nivel body para que ninguna pantalla quede tapada por el chrome de Android. */
 body {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: var(--sa-top);
+  padding-bottom: var(--sa-bottom);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
   background: var(--noir, #0a0806);
   box-sizing: border-box;
 }
 
 /* Escapes controlados para elementos que deben ir a bleed (fondos, overlays fixed) */
 .safe-bleed {
-  margin-left: calc(-1 * env(safe-area-inset-left, 0px));
-  margin-right: calc(-1 * env(safe-area-inset-right, 0px));
+  margin-left: calc(-1 * var(--sa-left));
+  margin-right: calc(-1 * var(--sa-right));
 }
 
 /* Zona de swipe/scroll: cuando un contenedor tiene cartas o HUDs muy próximos,
@@ -2316,7 +2316,7 @@ body {
 
 @media (pointer: coarse) {
   .cuervo-game-root {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    padding-bottom: calc(var(--sa-bottom) + 12px) !important;
   }
 }
 
@@ -2358,7 +2358,7 @@ img, svg, video, canvas {
   --app-tabbar-h: 0px;
 }
 body[data-tabbar="1"] {
-  --app-tabbar-h: calc(56px + env(safe-area-inset-bottom, 0px));
+  --app-tabbar-h: calc(56px + var(--sa-bottom));
 }
 body[data-tabbar="1"] #cuervo-content {
   padding-bottom: var(--app-tabbar-h);
@@ -2985,11 +2985,11 @@ html[data-interacting] [data-decorative] {
   overscroll-behavior-y: auto;
   -webkit-tap-highlight-color: transparent;
   touch-action: pan-y;
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
   /* Reserva la franja inferior donde viven los flotantes (hostess corner,
      climate badge, spectator pill) para que no invadan el scroll. */
-  padding-bottom: calc(env(safe-area-inset-bottom) + 96px * var(--hud-scale, 1));
+  padding-bottom: calc(var(--sa-bottom) + 96px * var(--hud-scale, 1));
 }
 
 .cuervo-scroll-y {
@@ -3414,8 +3414,8 @@ main[data-game="chinchon"] {
   
   main,
   .cuervo-game-root {
-    padding-left: max(env(safe-area-inset-left), 0.5rem);
-    padding-right: max(env(safe-area-inset-right), 0.5rem);
+    padding-left: max(var(--sa-left), 0.5rem);
+    padding-right: max(var(--sa-right), 0.5rem);
   }
 }
 
@@ -3453,33 +3453,33 @@ main[data-game="chinchon"] {
 }
 
 body {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
 }
 main {
-  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  padding-bottom: max(var(--sa-bottom), 0px);
 }
 .safe-top {
-  padding-top: max(env(safe-area-inset-top), 0.5rem);
+  padding-top: max(var(--sa-top), 0.5rem);
 }
 .safe-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  padding-bottom: max(var(--sa-bottom), 0.5rem);
 }
 .safe-x {
-  padding-left: max(env(safe-area-inset-left), 0.75rem);
-  padding-right: max(env(safe-area-inset-right), 0.75rem);
+  padding-left: max(var(--sa-left), 0.75rem);
+  padding-right: max(var(--sa-right), 0.75rem);
 }
 
 :where(header, nav)[data-fixed="true"],
 .fixed-top-bar {
-  padding-top: max(env(safe-area-inset-top), 0.5rem);
-  padding-left: max(env(safe-area-inset-left), 0.5rem);
-  padding-right: max(env(safe-area-inset-right), 0.5rem);
+  padding-top: max(var(--sa-top), 0.5rem);
+  padding-left: max(var(--sa-left), 0.5rem);
+  padding-right: max(var(--sa-right), 0.5rem);
 }
 .fixed-bottom-bar {
-  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
-  padding-left: max(env(safe-area-inset-left), 0.5rem);
-  padding-right: max(env(safe-area-inset-right), 0.5rem);
+  padding-bottom: max(var(--sa-bottom), 0.5rem);
+  padding-left: max(var(--sa-left), 0.5rem);
+  padding-right: max(var(--sa-right), 0.5rem);
 }
 
 
@@ -3507,24 +3507,24 @@ main {
 
   /* Safe areas */
   .safe-x {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-left: var(--sa-left);
+    padding-right: var(--sa-right);
   }
-  .safe-t { padding-top: env(safe-area-inset-top); }
-  .safe-b { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-t { padding-top: var(--sa-top); }
+  .safe-b { padding-bottom: var(--sa-bottom); }
   .safe-all {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: var(--sa-left);
+    padding-right: var(--sa-right);
+    padding-top: var(--sa-top);
+    padding-bottom: var(--sa-bottom);
   }
 
   /* Thumb-zone genérica */
   .thumb-zone {
     position: fixed;
-    left: env(safe-area-inset-left);
-    right: env(safe-area-inset-right);
-    bottom: env(safe-area-inset-bottom);
+    left: var(--sa-left);
+    right: var(--sa-right);
+    bottom: var(--sa-bottom);
     z-index: 40;
   }
 
@@ -3535,9 +3535,9 @@ main {
     right: 0;
     bottom: 0;
     z-index: 60;
-    padding: calc(8px * var(--hud-scale, 1)) max(env(safe-area-inset-right), 12px)
-      calc(env(safe-area-inset-bottom) + 8px * var(--hud-scale, 1))
-      max(env(safe-area-inset-left), 12px);
+    padding: calc(8px * var(--hud-scale, 1)) max(var(--sa-right), 12px)
+      calc(var(--sa-bottom) + 8px * var(--hud-scale, 1))
+      max(var(--sa-left), 12px);
     background: linear-gradient(
       to top,
       rgba(6, 12, 10, 0.92) 0%,
@@ -3551,7 +3551,7 @@ main {
 
   /* Reservar espacio inferior para que el HUD no tape el contenido */
   .game-hud-spacer {
-    height: calc(76px * var(--hud-scale, 1) + env(safe-area-inset-bottom));
+    height: calc(76px * var(--hud-scale, 1) + var(--sa-bottom));
   }
 
   /* Reordenar botones grandes para diestros/zurdos */
@@ -3729,9 +3729,9 @@ html, body { overscroll-behavior-y: none; }
 .cd-thumb-zone {
   position: sticky;
   bottom: 0;
-  padding-left: max(env(safe-area-inset-left), 12px);
-  padding-right: max(env(safe-area-inset-right), 12px);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  padding-left: max(var(--sa-left), 12px);
+  padding-right: max(var(--sa-right), 12px);
+  padding-bottom: calc(var(--sa-bottom) + 12px);
   padding-top: 10px;
   background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.95) 100%);
 }
@@ -3755,10 +3755,10 @@ html, body { overscroll-behavior-y: none; }
    Activado por data-one-hand="1" en <html> desde el store de settings.
    ========================================================================= */
 :root {
-  --cd-safe-top: env(safe-area-inset-top, 0px);
-  --cd-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --cd-safe-left: env(safe-area-inset-left, 0px);
-  --cd-safe-right: env(safe-area-inset-right, 0px);
+  --cd-safe-top: var(--sa-top);
+  --cd-safe-bottom: var(--sa-bottom);
+  --cd-safe-left: var(--sa-left);
+  --cd-safe-right: var(--sa-right);
   --cd-onehand-shift: 0px;
   /* Calibración del usuario (0..100). Se persiste desde ajustes. */
   --cd-thumb-reach: 50;
@@ -3873,7 +3873,7 @@ html[data-handed="left"] .cd-thumb-zone {
 @media (max-width: 639px) {
   body[data-hostess-strip="1"] {
     --hostess-h: clamp(60px, 7.5vh + 0.4vw, 78px);
-    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 8px);
+    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + var(--sa-top) + 8px);
   }
   body[data-hostess-strip="1"]:not([data-clean-game="1"]) .cuervo-game-root,
   body[data-hostess-strip="1"][data-clean-game="1"] #cuervo-content {
@@ -3888,7 +3888,7 @@ html[data-handed="left"] .cd-thumb-zone {
 @media (min-width: 640px) {
   body[data-hostess-strip="1"] {
     --hostess-h: clamp(56px, 5.8vh + 0.4vw, 68px);
-    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 12px);
+    --cd-content-offset: calc(var(--hud-h) + var(--hostess-h) + var(--sa-top) + 12px);
   }
   body[data-hostess-strip="1"]:not([data-clean-game="1"]) .cuervo-game-root,
   body[data-hostess-strip="1"][data-clean-game="1"] #cuervo-content {
@@ -3945,10 +3945,10 @@ html[data-handed="left"] .cd-thumb-zone {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding-top: max(env(safe-area-inset-top, 0px), 8px);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
-  padding-left: max(env(safe-area-inset-left, 0px), 12px);
-  padding-right: max(env(safe-area-inset-right, 0px), 12px);
+  padding-top: max(var(--sa-top), 8px);
+  padding-bottom: calc(var(--sa-bottom) + 88px);
+  padding-left: max(var(--sa-left), 12px);
+  padding-right: max(var(--sa-right), 12px);
   gap: 14px;
 }
 .cd-game-main {
@@ -4345,7 +4345,7 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
     height: calc(100svh - var(--cd-content-offset, 0px)) !important;
     max-height: calc(100svh - var(--cd-content-offset, 0px)) !important;
     overflow-y: hidden;
-    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-bottom: var(--sa-bottom) !important;
   }
 
   .cuervo-scene-fit [data-fit-box="1"] {
@@ -4393,9 +4393,9 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
 /* Safe-area consistente en cualquier elemento anclado a los bordes. */
 .cd-thumb-zone,
 .cd-game-actions {
-  padding-left: max(env(safe-area-inset-left, 0px), 12px);
-  padding-right: max(env(safe-area-inset-right, 0px), 12px);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  padding-left: max(var(--sa-left), 12px);
+  padding-right: max(var(--sa-right), 12px);
+  padding-bottom: calc(var(--sa-bottom) + 12px);
 }
 
 .cd-fab-floating,
@@ -4408,7 +4408,7 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
    inset lateral en móviles con pantalla curva / gestos. */
 .cd-fab-floating[class*="right-0"],
 .cd-edge-fab {
-  margin-right: env(safe-area-inset-right, 0px);
+  margin-right: var(--sa-right);
 }
 
 /* Controles sueltos con etiqueta accesible (iconos del HUD, fichas, cerrar):
@@ -4438,7 +4438,7 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
        de la mesa en horizontal. */
     --hostess-h: clamp(46px, 11vh, 54px);
     --cd-content-offset: calc(
-      var(--hud-h) + var(--hostess-h) + env(safe-area-inset-top, 0px) + 18px
+      var(--hud-h) + var(--hostess-h) + var(--sa-top) + 18px
     );
   }
   body[data-short="1"] [data-hostess-strip-portrait] {
@@ -4450,9 +4450,9 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
     max-height: calc(100svh - var(--cd-content-offset, 0px)) !important;
     overflow-y: hidden;
     /* En horizontal los gestos y notch van a los laterales. */
-    padding-left: env(safe-area-inset-left) !important;
-    padding-right: env(safe-area-inset-right) !important;
-    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-left: var(--sa-left) !important;
+    padding-right: var(--sa-right) !important;
+    padding-bottom: var(--sa-bottom) !important;
   }
 
   .cuervo-scene-fit [data-fit-box="1"] {
@@ -4464,8 +4464,8 @@ html[data-a11y="1"] .cd-skill-btn:disabled { opacity: 1; }
   .cd-game-actions,
   .cd-thumb-zone {
     flex-wrap: nowrap;
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-left: max(0.5rem, var(--sa-left));
+    padding-right: max(0.5rem, var(--sa-right));
   }
 }
 
@@ -4871,7 +4871,7 @@ button:not(:disabled):active,
 }
 /* Zócalo de acción fijo al pulgar: respeta la barra de gestos de Android. */
 .gen-dock {
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  padding-bottom: max(0.5rem, var(--sa-bottom));
   background: linear-gradient(
     180deg,
     oklch(0.07 0.012 45 / 0.94) 0%,
@@ -5525,18 +5525,18 @@ body {
 }
 
 @utility safe-paddings {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-top: var(--sa-top);
+  padding-bottom: var(--sa-bottom);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
 }
 
 @utility safe-pb {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--sa-bottom);
 }
 
 @utility safe-pt {
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--sa-top);
 }
 
 /* Paleta base del salón: tokens fijos usados en clases utilitarias.
@@ -5581,13 +5581,13 @@ body {
 /* 2. Zona segura inferior: la barra de gestos de Android se come los últimos
       píxeles. Ninguna acción vive ahí. */
 .cuervo-safe-bottom {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding-bottom: calc(var(--sa-bottom) + 16px);
 }
 
 /* 3. Nada crítico en los 80px superiores: reservamos la franja del reloj y la
       barra de estado para información, no para botones de acción. */
 .cuervo-top-reserve {
-  margin-top: calc(max(env(safe-area-inset-top, 0px), 12px) + 80px);
+  margin-top: calc(max(var(--sa-top), 12px) + 80px);
 }
 
 /* 4. Legibilidad al sol y con brillo bajo: sombra dura detrás del texto en vez
@@ -5732,12 +5732,12 @@ a[href] {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: max(16px, env(safe-area-inset-left, 0px));
+  width: max(16px, var(--sa-left));
   z-index: 40;
   pointer-events: none;
 }
 [data-pannable]::before { left: 0; }
-[data-pannable]::after { right: 0; width: max(16px, env(safe-area-inset-right, 0px)); }
+[data-pannable]::after { right: 0; width: max(16px, var(--sa-right)); }
 
 /* 4) Safe-area universal: notch, barra de gestos y modo horizontal. */
 :root {
@@ -5746,7 +5746,7 @@ a[href] {
   --sa-left: env(safe-area-inset-left, 0px);
   --sa-right: env(safe-area-inset-right, 0px);
   /* Colchón de la barra de gestos de Android en horizontal. */
-  --gesture-bar: max(env(safe-area-inset-bottom, 0px), 8px);
+  --gesture-bar: max(var(--sa-bottom), 8px);
 }
 .safe-x { padding-left: var(--sa-left); padding-right: var(--sa-right); }
 .safe-y { padding-top: var(--sa-top); padding-bottom: var(--sa-bottom); }

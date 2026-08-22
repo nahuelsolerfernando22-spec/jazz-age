@@ -476,10 +476,15 @@ export const useSyndicate = create<SyndicateState>()(
 
       nextTurn: () =>
         set((state) => {
-          // T.E.G.: en las dos primeras rondas sólo se colocan fichas, nadie asalta.
+          const reglas = normalizarReglas(state.reglas);
+          // Acomodo: en las primeras rondas sólo se colocan fichas, nadie asalta.
           if (state.turnPhase === "deployment")
-            return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
-          if (state.turnPhase === "attack") return { turnPhase: "fortification" };
+            return {
+              turnPhase: puedeAsaltar(state.roundNumber, reglas.rondasSinAsalto)
+                ? ("attack" as const)
+                : ("fortification" as const),
+            };
+          if (state.turnPhase === "attack") return { turnPhase: "fortification" as const };
 
           // El turno sigue el orden que salió del sorteo de dados.
           const orden =
@@ -504,9 +509,9 @@ export const useSyndicate = create<SyndicateState>()(
           const playerTerritories = Object.values(state.conquests).filter(
             (c) => c.ownerId === nextIndex,
           );
-          // Refuerzos T.E.G.: 5 la primera ronda, 3 la segunda, después mitad de sectores.
-          const terrCountBonus =
-            roundNumber === 1 ? 5 : roundNumber === 2 ? 3 : Math.max(3, Math.floor(playerTerritories.length / 2));
+          // Refuerzos según la variante: acomodo fijo y después reparto por sectores.
+          const terrCountBonus = fichasDeRonda(reglas, roundNumber, playerTerritories.length);
+
           const faccion = faccionDe(state.players[nextIndex]?.faction);
 
           // --- TALISMANES y RUMORES ---

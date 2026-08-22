@@ -676,6 +676,18 @@ function SindicatoPage() {
     return () => clearTimeout(t);
   }, [aviso]);
 
+  // Sacudón corto del tablero al tomar un sector (sobrio, sin marear).
+  useEffect(() => {
+    if (!sacudon) return;
+    const el = containerRef.current;
+    if (!el) return;
+    el.classList.remove("sindicato-sacudon");
+    void el.offsetWidth;
+    el.classList.add("sindicato-sacudon");
+    const t = setTimeout(() => el.classList.remove("sindicato-sacudon"), 360);
+    return () => clearTimeout(t);
+  }, [sacudon]);
+
   /** Texto guía: siempre dice el próximo paso concreto. */
   const guia = useMemo(() => {
     if (currentPlayer?.isBot) return "Juega el rival…";

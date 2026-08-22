@@ -1702,6 +1702,20 @@ function SindicatoPage() {
         </AnimatePresence>
       </div>
 
+      {/* Placa de turno noir y cartel de conquista. */}
+      {currentPlayer && !winner ? (
+        <PlacaDeTurno
+          playerIndex={currentPlayerIndex}
+          name={currentPlayer.name ?? "Sindicato"}
+          color={currentPlayer.color ?? "var(--cd-gold-mid)"}
+          factionId={currentPlayer.faction}
+          isBot={!!currentPlayer.isBot}
+          round={roundNumber}
+          canAssault={puedeAsaltar(roundNumber)}
+        />
+      ) : null}
+      <ConquistaFlash aviso={aviso} />
+
 
       <ActionDock
         phase={turnPhase}

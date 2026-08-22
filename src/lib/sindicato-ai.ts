@@ -20,6 +20,8 @@
  */
 
 import type { Territorio, BarrioId } from "@/lib/sindicato-data";
+import { RASGO_POR_ID, type MapaRasgos } from "@/lib/sindicato-rasgos";
+import type { FactionId } from "@/lib/sindicato-facciones";
 
 export interface AiConquest {
   id: string;
@@ -31,6 +33,12 @@ export interface AiBoard {
   botId: number;
   conquests: Record<string, AiConquest>;
   territories: Territorio[];
+  /** Marcas de sector de la noche (fortín, cuartel, túnel...). */
+  rasgos?: MapaRasgos;
+  /** Quién va ganando la mesa: se le pega con más ganas. */
+  liderId?: number | null;
+  /** Rencor acumulado: cuánto lo castigó cada rival. */
+  rencor?: Record<number, number>;
 }
 
 export type AiNivel = "matón" | "capo" | "consejero";
@@ -42,13 +50,46 @@ export interface NivelTuning {
   maxAsaltos: number;
   /** Cuánto pesa completar o romper un barrio. */
   barrio: number;
+  /** Cuánto pesa devolver golpes al que lo atacó. */
+  rencor: number;
+  /** Cuánto pesa frenar al que va ganando. */
+  lider: number;
+  /** Cuánto pesan los rasgos del sector (fortín, cuartel, contrabando...). */
+  rasgo: number;
 }
 
 export const NIVEL_TUNING: Record<AiNivel, NivelTuning> = {
-  matón: { minOdds: 0.55, maxAsaltos: 2, barrio: 0.5 },
-  capo: { minOdds: 0.45, maxAsaltos: 4, barrio: 1 },
-  consejero: { minOdds: 0.38, maxAsaltos: 6, barrio: 1.6 },
+  matón: { minOdds: 0.55, maxAsaltos: 2, barrio: 0.5, rencor: 0.6, lider: 0.4, rasgo: 0.5 },
+  capo: { minOdds: 0.45, maxAsaltos: 4, barrio: 1, rencor: 1, lider: 1, rasgo: 1 },
+  consejero: { minOdds: 0.38, maxAsaltos: 6, barrio: 1.6, rencor: 1.2, lider: 1.6, rasgo: 1.4 },
 };
+
+/**
+ * Cada facción juega distinto: los Escarlata se tiran de cabeza, la Cofradía
+ * calcula, el Muelle protege lo que rinde. Se aplica encima del nivel.
+ */
+export const PERSONALIDAD: Record<FactionId, Partial<NivelTuning> & { mote: string }> = {
+  cuervo: { mote: "Metódico" },
+  escarlata: { mote: "Sanguinario", minOdds: -0.08, maxAsaltos: 2, rencor: 1.8, lider: 0.6 },
+  muelle: { mote: "Comerciante", minOdds: 0.05, rasgo: 1.8, barrio: 1.2 },
+  olivo: { mote: "Oportunista", lider: 1.8, rencor: 0.6 },
+  cofradia: { mote: "Ajedrecista", minOdds: 0.03, maxAsaltos: 1, barrio: 1.6, rasgo: 1.3 },
+};
+
+/** Mezcla el nivel elegido con la mano de la facción. */
+export function tuningDe(nivel: AiNivel, faction?: FactionId): NivelTuning {
+  const base = NIVEL_TUNING[nivel] ?? NIVEL_TUNING.capo;
+  const p = faction ? PERSONALIDAD[faction] : undefined;
+  if (!p) return base;
+  return {
+    minOdds: Math.min(0.85, Math.max(0.2, base.minOdds + (p.minOdds ?? 0))),
+    maxAsaltos: Math.max(1, base.maxAsaltos + (p.maxAsaltos ?? 0)),
+    barrio: base.barrio * (p.barrio ?? 1),
+    rencor: base.rencor * (p.rencor ?? 1),
+    lider: base.lider * (p.lider ?? 1),
+    rasgo: base.rasgo * (p.rasgo ?? 1),
+  };
+}
 
 /* ------------------------------------------------------------------ */
 /* Probabilidad de asalto                                              */
@@ -194,6 +235,9 @@ export function valorSector(b: AiBoard, id: string, tuning = NIVEL_TUNING.capo):
   }
   // Los cruces (muchos vecinos) mandan más que los rincones.
   v += vecinosDe(b, id).length * 0.25;
+  // Un cuartel o un fortín valen más que un baldío.
+  const rasgo = b.rasgos?.[id];
+  if (rasgo) v += RASGO_POR_ID[rasgo].valorIA * (tuning.rasgo ?? 1);
   return v;
 }
 
@@ -273,9 +317,16 @@ export function mejorAsalto(
       const def = b.conquests[n];
       if (!def || def.ownerId === b.botId) continue;
       if (!puedeAtacar(c.id, n)) continue;
-      const odds = probTomar(c.troops, def.troops);
+      // Un fortín aguanta como si tuviera una tropa más; una ruina, una menos.
+      const rasgoDef = b.rasgos?.[n];
+      const modDef = rasgoDef ? RASGO_POR_ID[rasgoDef].defensa : 0;
+      const odds = probTomar(c.troops, Math.max(1, def.troops + modDef));
       if (odds < tuning.minOdds) continue;
-      const valor = valorSector(b, n, tuning);
+      let valor = valorSector(b, n, tuning);
+      // Al que va ganando se le pega con más ganas, y al que lo lastimó también.
+      if (b.liderId != null && def.ownerId === b.liderId) valor += 1.6 * (tuning.lider ?? 1);
+      const deuda = b.rencor?.[def.ownerId] ?? 0;
+      if (deuda > 0) valor += Math.min(3, deuda * 0.6) * (tuning.rencor ?? 1);
       // Si al irme dejo el origen expuesto, castigo la jugada.
       const expuesto = Math.max(0, amenaza(b, c.id) - 1) * 0.15;
       const score = odds * valor - expuesto;

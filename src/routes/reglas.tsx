@@ -397,12 +397,6 @@ function ReglasPage() {
         {/* Barra superior con retorno */}
         <div className="mb-4 flex items-center justify-between gap-3">
           <p className="paria-eyebrow">El Cuervo Dorado</p>
-          <Link
-            to="/ajustes"
-            className="paria-tab inline-flex min-h-11 shrink-0 items-center px-4 py-2 text-[12px]"
-          >
-            Volver
-          </Link>
         </div>
 
         {/* Cartel pintado sobre foto pegada al muro */}

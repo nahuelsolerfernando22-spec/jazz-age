@@ -210,13 +210,6 @@ function Oficina({ rankName, level }: { rankName: string; level: number }) {
             "linear-gradient(180deg, oklch(0.06 0.02 24 / 0.55) 0%, transparent 30%, oklch(0.06 0.02 24 / 0.75) 72%, oklch(0.05 0.02 24 / 0.98) 100%)",
         }}
       />
-      <Link
-        to="/"
-        aria-label="Salir de la oficina"
-        className="cd-tap-safe absolute left-3 top-3 z-20 inline-flex items-center justify-center rounded-full border border-[var(--oro)]/40 bg-[var(--tinta)]/70 px-4 font-display text-[11px] uppercase tracking-[0.3em] text-[var(--oro)] backdrop-blur"
-      >
-        Salir
-      </Link>
 
       <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-center sm:p-5">
         <div className="font-display text-[11px] uppercase tracking-[0.45em] text-[var(--oro)]/85">

@@ -60,13 +60,6 @@ function ProgresoPage() {
         style={{ paddingTop: "max(var(--sa-top), 0.5rem)" }}
       >
         <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-3 pb-1">
-          <Link
-            to="/single"
-            data-haptic="tap"
-            className="inline-flex min-h-11 items-center rounded-full px-3 text-[11px] uppercase tracking-[0.22em] text-[var(--marfil)] font-bold"
-          >
-            ‹ Volver
-          </Link>
           <h1
             className="flex-1 truncate text-center text-xl uppercase tracking-[0.12em] text-[var(--crema)]"
             style={{ fontFamily: "'Bebas Neue', sans-serif" }}

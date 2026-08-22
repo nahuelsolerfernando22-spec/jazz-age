@@ -115,13 +115,6 @@ function LogrosPage() {
               >
                 <span aria-hidden>🪶</span> {favors.toLocaleString("es-AR")}
               </span>
-              <Link
-                to="/single"
-                className="cuervo-tap-target inline-flex items-center justify-center gap-1 rounded-sm border border-[var(--oro)]/40 px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-[var(--oro)] transition hover:bg-[var(--oro)]/10 active:scale-[0.97] active:bg-[var(--oro)]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oro-claro)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-                aria-label="Volver al salón principal"
-              >
-                <span aria-hidden>← </span>Salón
-              </Link>
             </div>
           </div>
         </header>

@@ -128,14 +128,6 @@ function TorneoPage() {
           <HistorialTab hydrated={hydrated} />
         )}
 
-        <div className="mt-8">
-          <Link
-            to="/single"
-            className="font-display text-[11px] uppercase tracking-[0.24em] text-[var(--crema)]/60 underline-offset-4 hover:underline"
-          >
-            ← Volver al salón
-          </Link>
-        </div>
       </div>
     </main>
   );

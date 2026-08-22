@@ -2124,7 +2124,7 @@ function CardSlot({
 
   return (
     <div
-      className={`relative h-full w-auto max-w-full min-h-[64px] aspect-[7/10] rounded-[7px] border transition-all ${
+      className={`relative h-auto max-h-full w-full max-w-full min-h-[64px] aspect-[7/10] rounded-[7px] border transition-all ${
         highlight
           ? "border-[var(--brass)]/80 shadow-[0_0_16px_rgba(212,175,86,0.35)]"
           : winner

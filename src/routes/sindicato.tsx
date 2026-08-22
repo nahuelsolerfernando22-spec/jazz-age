@@ -1528,39 +1528,8 @@ function SindicatoPage() {
       </div>
 
 
-      {/* Efectos activos: una sola fila discreta, sin tapar el tablero. */}
-      {(() => {
-        const efectos = Object.entries(activeEffects)
-          .filter(([key, e]) => !key.startsWith("talisman-") && e.ownerId === currentPlayerIndex)
-          .map(([key, e]) =>
-            e.type === "bribe"
-              ? "Soborno"
-              : e.type === "informant"
-                ? "Informante"
-                : e.type === "lockdown"
-                  ? "Toque de queda"
-                  : "Golpe sorpresa",
-          );
-        const etiquetas = [...runTalismanes.map((t: string) => t.replaceAll("-", " ")), ...efectos];
-        if (etiquetas.length === 0) return null;
-        return (
-          <div className="pointer-events-none fixed bottom-[176px] left-2 right-2 z-[60] flex gap-1.5 overflow-hidden">
-            {etiquetas.slice(0, 3).map((label) => (
-              <span
-                key={label}
-                className="truncate rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-sm"
-              >
-                {label}
-              </span>
-            ))}
-            {etiquetas.length > 3 ? (
-              <span className="shrink-0 rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black text-[var(--oro-palido)]">
-                +{etiquetas.length - 3}
-              </span>
-            ) : null}
-          </div>
-        );
-      })()}
+      {/* Los efectos y talismanes viven en el panel de info: el tablero queda limpio. */}
+
 
 
       <AnimatePresence>

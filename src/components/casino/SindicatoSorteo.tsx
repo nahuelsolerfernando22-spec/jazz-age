@@ -132,7 +132,7 @@ export function SindicatoSorteo({
                   {v.nombre}
                 </span>
                 <span className="block text-[9px] leading-tight text-[var(--oro)]/60">
-                  {v.resumen}
+                  {v.desc}
                 </span>
               </button>
             ))}
@@ -185,7 +185,7 @@ export function SindicatoSorteo({
           </button>
           <button
             type="button"
-            onClick={() => dados && onStart({ color, turnOrder: orden, dados })}
+            onClick={() => dados && onStart({ color, turnOrder: orden, dados, reglas })}
             disabled={!dados || tirando}
             className="h-12 flex-1 rounded-lg bg-[var(--oro)] text-sm font-bold text-[#12100c] active:scale-95 disabled:opacity-40"
           >

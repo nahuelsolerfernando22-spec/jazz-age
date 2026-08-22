@@ -7,9 +7,12 @@ import {
   NOCHE_MESAS,
   NOCHE_PAGO_MESA,
   NOCHE_PREMIO,
+  NOCHE_PREMIO_JEFE,
+  NOCHE_TOTAL,
   TALISMANES,
-  bonoDeTalismanes,
+  eventoDeNoche,
   ofertaTalismanes,
+  pagoDeMesa,
 } from "@/lib/la-noche";
 import { useHaptics } from "@/hooks/use-haptics";
 import bgNoche from "@/assets/app-bg-speakeasy.webp";
@@ -18,16 +21,16 @@ export const Route = createFileRoute("/la-noche")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "La Noche — corrida roguelike de cinco mesas · El Cuervo Dorado" },
+      { title: "La Noche — corrida roguelike hasta la mesa del Dueño · El Cuervo Dorado" },
       {
         name: "description",
         content:
-          "La Noche encadena cinco mesas distintas del Cuervo Dorado en una sola corrida, con talismanes que se acumulan entre juego y juego.",
+          "La Noche encadena cinco mesas del Cuervo Dorado, eventos de pasillo con riesgo y recompensa, talismanes acumulables y un cierre contra el Dueño de la casa.",
       },
-      { property: "og:title", content: "La Noche — corrida roguelike de cinco mesas" },
+      { property: "og:title", content: "La Noche — corrida roguelike hasta la mesa del Dueño" },
       {
         property: "og:description",
-        content: "Cinco mesas, una semilla, talismanes acumulables. Todo offline.",
+        content: "Cinco mesas, eventos de pasillo, talismanes acumulables y la mesa del Dueño. Todo offline.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -45,26 +48,31 @@ function LaNochePage() {
     () => (noche.fase === "talisman" ? ofertaTalismanes(noche.seed, noche.paso, noche.talismanes) : []),
     [noche.fase, noche.seed, noche.paso, noche.talismanes],
   );
+  const evento = useMemo(
+    () => (noche.fase === "evento" ? eventoDeNoche(noche.seed, noche.paso) : null),
+    [noche.fase, noche.seed, noche.paso],
+  );
 
   const mesaActual = noche.mesas[noche.paso];
-  const bono = bonoDeTalismanes(noche.talismanes);
+  const pago = pagoDeMesa(noche.talismanes, !!mesaActual?.jefe);
 
   return (
-    <GameRoomShell bg={bgNoche} room="la-noche" title="La Noche" subtitle="Corrida de cinco mesas">
+    <GameRoomShell bg={bgNoche} room="la-noche" title="La Noche" subtitle="Cinco mesas y el Dueño">
       <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-3 pb-28 pt-2">
         {noche.fase === "idle" && (
           <Panel>
-            <Titulo>Una sola noche, cinco mesas</Titulo>
+            <Titulo>Una sola noche, seis mesas</Titulo>
             <p className="mt-2 font-serif text-[14px] leading-relaxed text-[var(--cd-text-main)]">
-              La casa arma un recorrido distinto cada vez: cinco mesas en fila, sin repetir. Entre
-              mesa y mesa elegís un talismán, y los talismanes se acumulan hasta el final. Ganás{" "}
-              {NOCHE_PAGO_MESA} fichas por mesa (más el bono de tus talismanes) y {NOCHE_PREMIO} si
-              cerrás la noche con al menos tres mesas ganadas.
+              La casa arma un recorrido distinto cada vez: {NOCHE_MESAS} mesas en fila y, al final, la
+              mesa del Dueño, que paga triple. Entre mesa y mesa cruzás un pasillo con su propio
+              enredo —prestamistas, apuestas laterales, coimas— y después elegís un talismán. Ganás{" "}
+              {NOCHE_PAGO_MESA} fichas por mesa más lo que sumen tus talismanes, {NOCHE_PREMIO} por
+              cerrar con tres mesas y {NOCHE_PREMIO_JEFE} si le ganás al Dueño.
             </p>
             {noche.ultima && (
               <p className="mt-3 font-display text-[11px] uppercase tracking-[0.16em] text-[var(--cd-text-muted)]">
-                Última noche: {noche.ultima.ganadas}/{NOCHE_MESAS} mesas · {noche.ultima.fichas}{" "}
-                fichas · mejor racha {noche.mejorRacha}
+                Última noche: {noche.ultima.ganadas}/{NOCHE_TOTAL} mesas · {noche.ultima.fichas} fichas
+                · mejor racha {noche.mejorRacha} · Dueños caídos {noche.jefesCaidos}
               </p>
             )}
             <div className="mt-4">
@@ -85,8 +93,9 @@ function LaNochePage() {
         {noche.fase === "mesa" && mesaActual && (
           <>
             <Panel>
+              {noche.aviso && <Aviso texto={noche.aviso} />}
               <Titulo>
-                Mesa {noche.paso + 1} de {NOCHE_MESAS}
+                {mesaActual.jefe ? "Mesa final" : `Mesa ${noche.paso + 1} de ${NOCHE_TOTAL}`}
               </Titulo>
               <p className="mt-1 font-display text-[15px] uppercase tracking-[0.14em] text-[var(--cd-gold-bright)]">
                 {mesaActual.label}
@@ -95,7 +104,7 @@ function LaNochePage() {
                 {mesaActual.pedido}
               </p>
               <p className="mt-2 font-display text-[11px] uppercase tracking-[0.16em] text-[var(--cd-text-muted)]">
-                Pago si ganás: {NOCHE_PAGO_MESA + bono} fichas
+                Pago si ganás: {pago} fichas{mesaActual.jefe ? " · triple del Dueño" : ""}
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 <BrassButton
@@ -118,14 +127,52 @@ function LaNochePage() {
           </>
         )}
 
+        {noche.fase === "evento" && evento && (
+          <>
+            <Panel>
+              {noche.aviso && <Aviso texto={noche.aviso} />}
+              <Titulo>Pasillo</Titulo>
+              <p className="mt-1 font-display text-[15px] uppercase tracking-[0.14em] text-[var(--cd-gold-bright)]">
+                {evento.titulo}
+              </p>
+              <p className="mt-1 font-serif text-[13.5px] leading-relaxed text-[var(--cd-text-main)]">
+                {evento.texto}
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {evento.opciones.map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => {
+                      haptic("chip");
+                      noche.elegirOpcion(o);
+                    }}
+                    className="cd-press min-h-11 rounded-sm border px-3 py-2.5 text-left"
+                    style={{ borderColor: "var(--cd-gold-mid)", background: "oklch(0.18 0.03 60 / 0.7)" }}
+                  >
+                    <span className="block font-display text-[13px] uppercase tracking-[0.14em] text-[var(--cd-gold-bright)]">
+                      {o.label}
+                    </span>
+                    <span className="block font-serif text-[12.5px] text-[var(--cd-text-muted)]">
+                      {o.detalle}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </Panel>
+            <Recorrido />
+          </>
+        )}
+
         {noche.fase === "talisman" && (
           <>
             <Panel>
+              {noche.aviso && <Aviso texto={noche.aviso} />}
               <Titulo>Elegí un talismán</Titulo>
               <p className="mt-1 font-serif text-[13.5px] text-[var(--cd-text-main)]">
-                Te queda{noche.paso === NOCHE_MESAS - 1 ? "" : "n"} {NOCHE_MESAS - noche.paso} mesa
-                {noche.paso === NOCHE_MESAS - 1 ? "" : "s"}. Lo que agarres ahora te acompaña hasta el
-                final.
+                Te queda{NOCHE_TOTAL - noche.paso === 1 ? "" : "n"} {NOCHE_TOTAL - noche.paso} mesa
+                {NOCHE_TOTAL - noche.paso === 1 ? "" : "s"}, contando la del Dueño. Lo que agarres
+                ahora te acompaña hasta el final.
               </p>
               <div className="mt-3 flex flex-col gap-2">
                 {oferta.map((t) => (
@@ -153,16 +200,23 @@ function LaNochePage() {
               </div>
             </Panel>
             <Recorrido />
+            <Mano />
           </>
         )}
 
         {noche.fase === "final" && noche.ultima && (
           <Panel>
-            <Titulo>{noche.ultima.completada ? "Noche cerrada" : "Te echaron temprano"}</Titulo>
+            <Titulo>
+              {noche.ultima.jefeCaido
+                ? "Le ganaste al Dueño"
+                : noche.ultima.ganadas >= 3
+                  ? "Noche cerrada"
+                  : "Te echaron temprano"}
+            </Titulo>
             <p className="mt-2 font-serif text-[14px] leading-relaxed text-[var(--cd-text-main)]">
-              {noche.ultima.ganadas} de {NOCHE_MESAS} mesas ganadas. Te llevás {noche.ultima.fichas}{" "}
+              {noche.ultima.ganadas} de {NOCHE_TOTAL} mesas ganadas. Te llevás {noche.ultima.fichas}{" "}
               fichas
-              {noche.ultima.completada ? `, premio de la casa incluido` : ""}.
+              {noche.ultima.jefeCaido ? ", con el premio del Dueño incluido" : ""}.
             </p>
             <div className="mt-4">
               <BrassButton variant="primary" block onClick={() => noche.ackFinal()}>
@@ -175,6 +229,18 @@ function LaNochePage() {
     </GameRoomShell>
   );
 }
+
+function Aviso({ texto }: { texto: string }) {
+  return (
+    <p
+      className="mb-2 rounded-sm border px-2.5 py-1.5 font-serif text-[12.5px] text-[var(--cd-text-main)]"
+      style={{ borderColor: "var(--cd-gold-mid)", background: "oklch(0.22 0.04 60 / 0.6)" }}
+    >
+      {texto}
+    </p>
+  );
+}
+
 
 function Recorrido() {
   const { mesas, paso } = useLaNoche();

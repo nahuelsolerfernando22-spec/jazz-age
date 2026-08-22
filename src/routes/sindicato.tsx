@@ -26,6 +26,7 @@ import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
 import { TroopMover } from "@/components/casino/sindicato/TroopMover";
 import { ConquistaFlash, type ConquistaAviso } from "@/components/casino/sindicato/ConquistaFlash";
+import { PrimerosPasos } from "@/components/casino/sindicato/PrimerosPasos";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import {
   PATRONES_TABLERO,
@@ -1814,6 +1815,11 @@ function SindicatoPage() {
         />
       ) : null}
       <ConquistaFlash aviso={aviso} />
+
+      <PrimerosPasos
+        phase={turnPhase}
+        activo={gameStarted && !winner && !currentPlayer?.isBot}
+      />
 
       <ActionDock
         phase={turnPhase}

@@ -738,18 +738,30 @@ function SindicatoPage() {
           (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
 
         // Moneda Doblada: +25 fichas por sector conquistado
+        let fichas = 0;
         if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
           useCasino.getState().addChips(25);
+          fichas = 25;
         }
 
         haptics("heavy");
-        toast.success(
-          naipeNuevo
-            ? "¡Sector bajo control! Carta táctica recibida."
-            : "¡Sector bajo control! Con tres canjes hechos, hacen falta dos sectores para el naipe.",
-        );
         setIsCombatOpen(false);
         setLastConflictId(selectedId);
+
+        if (currentPlayerIndex === 0) {
+          // Golpe propio: cartel de conquista, racha y un sacudón corto del tablero.
+          rachaRef.current += 1;
+          const nombre =
+            activeTerritories.find((t) => t.id === selectedId)?.nombre ?? "Sector sin nombre";
+          setAviso({
+            key: Date.now(),
+            sector: nombre,
+            racha: rachaRef.current,
+            fichas: fichas || undefined,
+            naipe: naipeNuevo,
+          });
+          setSacudon((n) => n + 1);
+        }
       } else {
         updateTroops(selectedId, -bajasDefensor);
         toast.error(

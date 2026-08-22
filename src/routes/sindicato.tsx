@@ -1202,44 +1202,39 @@ function SindicatoPage() {
       </div>
 
 
-      {/* HUD de Efectos Activos y Talismanes */}
-      <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">
-        {runTalismanes.map((tId: string) => (
-          <motion.div
-            key={tId}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="bg-black/90 border border-[var(--oro)]/40 px-2 py-1 rounded-md flex items-center gap-2 shadow-lg backdrop-blur-sm"
-          >
-            <span className="truncate text-[11px] font-black text-[var(--oro-palido)] uppercase tracking-tight">
-              {tId.replaceAll("-", " ")}
-            </span>
-          </motion.div>
-        ))}
-        {Object.entries(activeEffects)
-          .filter(([key]) => !key.startsWith("talisman-"))
-          .map(
-            ([key, effect]) =>
-              effect.ownerId === currentPlayerIndex && (
-                <motion.div
-                  key={key}
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  className="bg-black/85 border-2 border-[var(--oro)] px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md"
-                >
-                  <span className="truncate text-[11px] font-black text-[var(--oro)] uppercase tracking-widest">
-                    {effect.type === "bribe"
-                      ? "Soborno activo"
-                      : effect.type === "informant"
-                        ? "Informante activo"
-                        : effect.type === "lockdown"
-                          ? "Toque de queda"
-                          : "Golpe sorpresa"}
-                  </span>
-                </motion.div>
-              ),
-          )}
-      </div>
+      {/* Efectos activos: una sola fila discreta, sin tapar el tablero. */}
+      {(() => {
+        const efectos = Object.entries(activeEffects)
+          .filter(([key, e]) => !key.startsWith("talisman-") && e.ownerId === currentPlayerIndex)
+          .map(([key, e]) =>
+            e.type === "bribe"
+              ? "Soborno"
+              : e.type === "informant"
+                ? "Informante"
+                : e.type === "lockdown"
+                  ? "Toque de queda"
+                  : "Golpe sorpresa",
+          );
+        const etiquetas = [...runTalismanes.map((t: string) => t.replaceAll("-", " ")), ...efectos];
+        if (etiquetas.length === 0) return null;
+        return (
+          <div className="pointer-events-none fixed bottom-[176px] left-2 right-2 z-[60] flex gap-1.5 overflow-hidden">
+            {etiquetas.slice(0, 3).map((label) => (
+              <span
+                key={label}
+                className="truncate rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-sm"
+              >
+                {label}
+              </span>
+            ))}
+            {etiquetas.length > 3 ? (
+              <span className="shrink-0 rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black text-[var(--oro-palido)]">
+                +{etiquetas.length - 3}
+              </span>
+            ) : null}
+          </div>
+        );
+      })()}
 
 
       <AnimatePresence>

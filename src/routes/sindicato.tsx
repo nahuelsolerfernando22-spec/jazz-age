@@ -798,6 +798,52 @@ function SindicatoPage() {
     }
   }, [runTalismanesList]);
 
+  /** Cierra la conquista una vez que el jugador eligió cuántas fichas ocupan el sector. */
+  const finalizarConquista = useCallback(
+    (origen: string, destino: string, mueve: number) => {
+      updateTroops(origen, -mueve);
+      conquerTerritory(destino, mueve, currentPlayerIndex);
+      const naipesAntes = useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0;
+      drawCard(currentPlayerIndex);
+      const naipeNuevo =
+        (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
+
+      // Moneda Doblada: +25 fichas por sector conquistado
+      let fichas = 0;
+      if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
+        useCasino.getState().addChips(25);
+        fichas = 25;
+      }
+
+      haptics("heavy");
+      setIsCombatOpen(false);
+      setLastConflictId(destino);
+
+      if (currentPlayerIndex === 0) {
+        rachaRef.current += 1;
+        const nombre =
+          activeTerritories.find((t) => t.id === destino)?.nombre ?? "Sector sin nombre";
+        setAviso({
+          key: Date.now(),
+          sector: nombre,
+          racha: rachaRef.current,
+          fichas: fichas || undefined,
+          naipe: naipeNuevo,
+        });
+        setSacudon((n) => n + 1);
+      }
+    },
+    [
+      currentPlayerIndex,
+      updateTroops,
+      conquerTerritory,
+      drawCard,
+      haptics,
+      runTalismanesList,
+      activeTerritories,
+    ],
+  );
+
   const onDiceResult = useCallback(
     (aLoss: number, dLoss: number) => {
       setRolling(false);
@@ -816,40 +862,21 @@ function SindicatoPage() {
       const defensorRestante = defensor.troops - bajasDefensor;
 
       if (defensorRestante <= 0) {
-        const disponibles = atacante.troops - bajasAtacante - 1;
-        const mueve = Math.max(1, Math.min(disponibles, dadosAtaque));
-        updateTroops(attackerId, -mueve);
-        conquerTerritory(selectedId, mueve, currentPlayerIndex);
-        const naipesAntes = useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0;
-        drawCard(currentPlayerIndex);
-        const naipeNuevo =
-          (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
-
-        // Moneda Doblada: +25 fichas por sector conquistado
-        let fichas = 0;
-        if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
-          useCasino.getState().addChips(25);
-          fichas = 25;
-        }
-
-        haptics("heavy");
-        setIsCombatOpen(false);
-        setLastConflictId(selectedId);
-
-        if (currentPlayerIndex === 0) {
-          // Golpe propio: cartel de conquista, racha y un sacudón corto del tablero.
-          rachaRef.current += 1;
-          const nombre =
-            activeTerritories.find((t) => t.id === selectedId)?.nombre ?? "Sector sin nombre";
-          setAviso({
-            key: Date.now(),
-            sector: nombre,
-            racha: rachaRef.current,
-            fichas: fichas || undefined,
-            naipe: naipeNuevo,
+        const disponibles = Math.max(1, atacante.troops - bajasAtacante - 1);
+        const minimo = Math.max(1, Math.min(disponibles, dadosAtaque));
+        // El jugador decide con cuántas fichas ocupa la plaza tomada.
+        if (disponibles > minimo) {
+          setIsCombatOpen(false);
+          setOcupacion({
+            origen: attackerId,
+            destino: selectedId,
+            min: minimo,
+            max: disponibles,
           });
-          setSacudon((n) => n + 1);
+          haptics("heavy");
+          return;
         }
+        finalizarConquista(attackerId, selectedId, minimo);
       } else {
         updateTroops(selectedId, -bajasDefensor);
         toast.error(
@@ -865,14 +892,13 @@ function SindicatoPage() {
     [
       selectedId,
       attackerId,
-      currentPlayerIndex,
       updateTroops,
-      conquerTerritory,
-      drawCard,
       haptics,
       conquests,
-      runTalismanesList,
+      reglasMesa.maxDadosAtaque,
+      finalizarConquista,
     ],
+
   );
   const handleRefit = useCallback(() => {
     computeFit();

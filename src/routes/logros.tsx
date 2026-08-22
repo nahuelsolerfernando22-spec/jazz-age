@@ -127,7 +127,7 @@ function LogrosPage() {
         </header>
 
         <nav
-          className="mb-6 -mx-1 flex flex-wrap gap-1.5"
+          className="mb-6 flex flex-wrap gap-1.5"
           role="tablist"
           aria-label="Secciones del Libro de Cuentas"
         >

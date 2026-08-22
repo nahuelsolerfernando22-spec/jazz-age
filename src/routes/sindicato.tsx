@@ -664,6 +664,12 @@ function SindicatoPage() {
     return new Set(t.vecinos.filter((v) => st.canAttack(attackFrom, v)));
   }, [turnPhase, attackFrom, activeTerritories, conquests]);
 
+  const nombreSector = useCallback(
+    (id: string) => activeTerritories.find((t) => t.id === id)?.nombre ?? id,
+    [activeTerritories],
+  );
+
+
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
     if (!selectedId || !isMine) return [];

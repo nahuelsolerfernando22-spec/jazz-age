@@ -111,7 +111,7 @@ export function generateSubMap(seed: string, targetCount: number): ProceduralMap
 
   const territorios: Territorio[] = TERRITORIOS.filter((t) => final.has(t.id)).map((t) => ({
     ...t,
-    vecinos: t.vecinos.filter((v) => final.has(v)),
+    vecinos: (VECINOS_POR_ID[t.id] ?? []).filter((v) => final.has(v)),
   }));
 
   return { territorios, seed, variante };

@@ -10,9 +10,20 @@ export interface ProceduralMap {
   variante: VarianteMapa;
 }
 
-const VECINOS_POR_ID: Record<string, string[]> = Object.fromEntries(
-  TERRITORIOS.map((t) => [t.id, t.vecinos]),
-);
+/** Vecindad simétrica: en los datos hay lindes cargadas de un solo lado. */
+const VECINOS_POR_ID: Record<string, string[]> = (() => {
+  const m: Record<string, Set<string>> = Object.fromEntries(
+    TERRITORIOS.map((t) => [t.id, new Set<string>()]),
+  );
+  for (const t of TERRITORIOS) {
+    for (const v of t.vecinos) {
+      if (!m[v]) continue;
+      m[t.id].add(v);
+      m[v].add(t.id);
+    }
+  }
+  return Object.fromEntries(Object.entries(m).map(([k, s]) => [k, [...s]]));
+})();
 
 /** Componente conexa más grande dentro de un conjunto de sectores. */
 function mayorComponente(ids: Set<string>): Set<string> {

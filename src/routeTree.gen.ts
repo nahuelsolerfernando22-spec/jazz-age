@@ -21,6 +21,7 @@ import { Route as DificultadRouteImport } from './routes/dificultad'
 import { Route as EncargosRouteImport } from './routes/encargos'
 import { Route as EscobaRouteImport } from './routes/escoba'
 import { Route as EstadisticasRouteImport } from './routes/estadisticas'
+import { Route as LaNocheRouteImport } from './routes/la-noche'
 import { Route as LogrosRouteImport } from './routes/logros'
 import { Route as MahjongRouteImport } from './routes/mahjong'
 import { Route as PokerRouteImport } from './routes/poker'
@@ -94,6 +95,11 @@ const EscobaRoute = EscobaRouteImport.update({
 const EstadisticasRoute = EstadisticasRouteImport.update({
   id: '/estadisticas',
   path: '/estadisticas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaNocheRoute = LaNocheRouteImport.update({
+  id: '/la-noche',
+  path: '/la-noche',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogrosRoute = LogrosRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/encargos': typeof EncargosRoute
   '/escoba': typeof EscobaRoute
   '/estadisticas': typeof EstadisticasRoute
+  '/la-noche': typeof LaNocheRoute
   '/logros': typeof LogrosRoute
   '/mahjong': typeof MahjongRoute
   '/poker': typeof PokerRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/encargos': typeof EncargosRoute
   '/escoba': typeof EscobaRoute
   '/estadisticas': typeof EstadisticasRoute
+  '/la-noche': typeof LaNocheRoute
   '/logros': typeof LogrosRoute
   '/mahjong': typeof MahjongRoute
   '/poker': typeof PokerRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/encargos': typeof EncargosRoute
   '/escoba': typeof EscobaRoute
   '/estadisticas': typeof EstadisticasRoute
+  '/la-noche': typeof LaNocheRoute
   '/logros': typeof LogrosRoute
   '/mahjong': typeof MahjongRoute
   '/poker': typeof PokerRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/encargos'
     | '/escoba'
     | '/estadisticas'
+    | '/la-noche'
     | '/logros'
     | '/mahjong'
     | '/poker'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/encargos'
     | '/escoba'
     | '/estadisticas'
+    | '/la-noche'
     | '/logros'
     | '/mahjong'
     | '/poker'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/encargos'
     | '/escoba'
     | '/estadisticas'
+    | '/la-noche'
     | '/logros'
     | '/mahjong'
     | '/poker'
@@ -352,6 +364,7 @@ export interface RootRouteChildren {
   EncargosRoute: typeof EncargosRoute
   EscobaRoute: typeof EscobaRoute
   EstadisticasRoute: typeof EstadisticasRoute
+  LaNocheRoute: typeof LaNocheRoute
   LogrosRoute: typeof LogrosRoute
   MahjongRoute: typeof MahjongRoute
   PokerRoute: typeof PokerRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/estadisticas'
       fullPath: '/estadisticas'
       preLoaderRoute: typeof EstadisticasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/la-noche': {
+      id: '/la-noche'
+      path: '/la-noche'
+      fullPath: '/la-noche'
+      preLoaderRoute: typeof LaNocheRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logros': {
@@ -568,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   EncargosRoute: EncargosRoute,
   EscobaRoute: EscobaRoute,
   EstadisticasRoute: EstadisticasRoute,
+  LaNocheRoute: LaNocheRoute,
   LogrosRoute: LogrosRoute,
   MahjongRoute: MahjongRoute,
   PokerRoute: PokerRoute,

@@ -144,6 +144,32 @@ function TrucoParejasPage() {
     if (last) setFlash(last);
   }, [g]);
 
+  // Cierre de partida: se engancha al resto de la casa (némesis, progreso,
+  // liga, encargos, torneo y La Noche) igual que las demás mesas.
+  const reportedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!g?.winner) return;
+    const key = `${g.scores.nos}-${g.scores.ellos}`;
+    if (reportedRef.current === key) return;
+    reportedRef.current = key;
+
+    const won = g.winner === "nos";
+    const spread = Math.abs(g.scores.nos - g.scores.ellos);
+
+    reportSingleScore("truco-parejas", g.scores.nos * 10 + (won ? 100 : 0));
+    void import("@/lib/nemesis").then(({ reportGameOutcome }) => {
+      reportGameOutcome("truco-parejas", won ? "win" : "loss");
+    });
+    void import("@/store/league-progress").then(({ awardLeaguePoints }) => {
+      const pts = won ? 80 + spread * 4 : Math.max(0, 20 - spread);
+      if (pts > 0) awardLeaguePoints("truco-parejas", pts);
+    });
+    void import("@/lib/daily-tournament").then(({ submitTourneyScore, activeTourneyGame }) => {
+      if (activeTourneyGame() !== "truco-parejas") return;
+      void submitTourneyScore("truco-parejas", won ? 150 + spread * 15 : Math.max(0, spread * 3));
+    });
+  }, [g]);
+
   const myTurn = !!g && canPlay4(g, "you");
   const pending = g?.hand.pending ?? null;
   const mustRespond = !!pending && TEAM_OF["you"] !== pending.byTeam;

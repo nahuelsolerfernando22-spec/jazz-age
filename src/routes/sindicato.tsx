@@ -25,6 +25,7 @@ import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
+import { TroopMover } from "@/components/casino/sindicato/TroopMover";
 import {
   ConquistaFlash,
   type ConquistaAviso,

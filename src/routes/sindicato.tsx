@@ -454,10 +454,17 @@ function SindicatoPage() {
     if (runStatus === "idle") startRun();
   }, [runStatus, startRun]);
 
-  useEffect(() => {
-    if (!enRun) return;
-    if (!gameStarted) startGame(ola.rivales, undefined, ola.ventajaBot, ola.mapSeed, ola.sectores);
-  }, [enRun, gameStarted, startGame, ola]);
+  // La mesa arranca recién cuando el jugador elige color y sortea el orden.
+  const empezarConSorteo = useCallback(
+    (r: SorteoResultado) => {
+      startGame(ola.rivales, r.color, ola.ventajaBot, ola.mapSeed, ola.sectores, {
+        turnOrder: r.turnOrder,
+        dados: r.dados,
+      });
+    },
+    [startGame, ola],
+  );
+
 
   // La oleada fija el objetivo COMÚN de la mesa; el secreto lo reparte el mazo.
   useEffect(() => {

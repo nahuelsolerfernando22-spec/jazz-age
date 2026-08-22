@@ -1,5 +1,6 @@
 import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
 import { normalizarReglas } from "@/lib/sindicato-variantes";
+import { sugerirDespliegue } from "@/lib/sindicato-ai";
 import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
@@ -371,6 +372,41 @@ function SindicatoPage() {
   );
 
   const haptics = useHaptics();
+
+  /**
+   * Consejo de despliegue: el mismo cerebro de los capos, en modo consejero,
+   * reparte las fichas del jugador según riesgo, rasgos y frentes abiertos.
+   */
+  const pedirConsejo = useCallback(() => {
+    const pozo = useSyndicate.getState().unassignedTroops;
+    if (pozo <= 0) return;
+    const st = useSyndicate.getState();
+    const pasos = sugerirDespliegue(
+      {
+        botId: 0,
+        conquests: st.conquests,
+        territories: st.activeTerritories,
+        rasgos: st.sectorRasgos,
+      },
+      pozo,
+    );
+    if (!pasos.length) {
+      toast.info("No hay frente claro: repartí donde quieras.");
+      return;
+    }
+    haptics("tap");
+    const texto = pasos
+      .slice(0, 3)
+      .map(
+        (paso) =>
+          `${st.activeTerritories.find((t) => t.id === paso.id)?.nombre ?? paso.id}: ${paso.troops}`,
+      )
+      .join(" · ");
+    toast.info(`Consejo del contador — ${texto}`, {
+      description: pasos[0]?.motivo,
+    });
+  }, [haptics]);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** Sector propio elegido como cabecera del asalto (paso 1 de 2). */
   const [attackFrom, setAttackFrom] = useState<string | null>(null);
@@ -1579,6 +1615,14 @@ function SindicatoPage() {
                           ? `ASIGNAR REFUERZO (${unassignedTroops})`
                           : "SIN REFUERZOS"}
                       </span>
+                    </button>
+                  )}
+                  {turnPhase === "deployment" && unassignedTroops > 0 && (
+                    <button
+                      onClick={pedirConsejo}
+                      className="col-span-2 min-h-[44px] rounded-lg border-2 border-[var(--oro)]/50 bg-black/50 px-3 font-bebas text-base uppercase tracking-wide text-[var(--oro)] touch-manipulation active:scale-95"
+                    >
+                      Pedir consejo al contador
                     </button>
                   )}
                 </>

@@ -107,6 +107,12 @@ export const useMahjongRun = create<MahjongRunState>()(
 
       endRun: () => set({ active: false }),
     }),
-    { name: "cuervo-dorado:mahjong:run:v2" },
+    {
+      name: "cuervo-dorado:mahjong:run:v2",
+      onRehydrateStorage: () => (state) => {
+        // Al retomar una vigilia guardada se restaura su trazado espejado.
+        if (state?.active && state.seed) setLayoutVariant(state.seed);
+      },
+    },
   ),
 );

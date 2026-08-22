@@ -292,7 +292,7 @@ function MahjongPage() {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
       }
       if (!useMahjongRun.getState().active) useMahjongRun.getState().startRun();
-      game.newGame();
+      game.newGame(useMahjongRun.getState().currentLevelId);
       setHasStarted(true);
     });
 
@@ -303,7 +303,8 @@ function MahjongPage() {
       } else if (mahjongEcon.hostess) {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
       }
-      game.newGame(nextLevelId(game.difficulty));
+      const runApi = useMahjongRun.getState();
+      game.newGame(runApi.active ? runApi.currentLevelId : nextLevelId(game.difficulty));
       setHasStarted(true);
     });
 

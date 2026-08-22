@@ -2268,17 +2268,25 @@ iframe[src*="ovable.app"] {
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
   overscroll-behavior-y: contain;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
-  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   -webkit-text-size-adjust: 100%;
   -webkit-user-select: none;
   user-select: none;
 }
+
+html {
+  overflow-y: auto;
+}
+
+body {
+  overflow-y: visible;
+}
+
 
 /* Safe-area base: aplica insets del sistema (notch, barra de gestos, curvatura)
    a nivel body para que ninguna pantalla quede tapada por el chrome de Android. */

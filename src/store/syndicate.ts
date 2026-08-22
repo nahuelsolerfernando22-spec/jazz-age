@@ -229,6 +229,9 @@ export const useSyndicate = create<SyndicateState>()(
       assaultsThisTurn: 0,
       aiNivel: "capo",
       setAiNivel: (aiNivel) => set({ aiNivel }),
+      reglas: VARIANTE_CLASICA,
+      setReglas: (reglas) => set({ reglas: normalizarReglas(reglas) }),
+
       sectorRasgos: {},
       mapaVariante: null,
       tuneles: [],

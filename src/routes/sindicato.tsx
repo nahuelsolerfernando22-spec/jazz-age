@@ -1618,15 +1618,8 @@ function SindicatoPage() {
                           <button
                             key={vId}
                             onClick={() => {
-                              const cantidad = Math.max(
-                                1,
-                                Math.floor((conquests[selectedId!]?.troops || 1) / 2),
-                              );
-                              moveTroops(selectedId!, vId, cantidad);
-                              haptics("heavy");
-                              toast.success(
-                                `${cantidad} tropas a ${activeTerritories.find((t) => t.id === vId)?.nombre ?? "vecino"}`,
-                              );
+                              setReagrupe({ origen: selectedId!, destino: vId });
+                              haptics("tap");
                             }}
                             disabled={
                               hasMovedFortification || (conquests[selectedId!]?.troops || 1) <= 1

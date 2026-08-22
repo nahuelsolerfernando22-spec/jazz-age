@@ -38,6 +38,11 @@ import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
 import {
+  SindicatoSorteo,
+  type SorteoResultado,
+} from "@/components/casino/SindicatoSorteo";
+
+import {
   Shield,
   Sword,
   Target,

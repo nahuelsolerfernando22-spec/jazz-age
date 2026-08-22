@@ -38,6 +38,22 @@ const GAME_ROUTES = new Set([
   "/torneo",
 ]);
 
+// Pantallas secundarias (no son mesas): salida directa al vestíbulo, sin
+// confirmación ni costo de vidas.
+const SECONDARY_ROUTES = new Set([
+  "/single",
+  "/encargos",
+  "/camerinos",
+  "/logros",
+  "/progreso",
+  "/estadisticas",
+  "/diario",
+  "/reglas",
+  "/ajustes",
+  "/dificultad",
+  "/privacidad",
+]);
+
 export function GameBackButton() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,7 +70,8 @@ export function GameBackButton() {
   const requestRef = useRef<() => void>(() => {});
 
   const first = "/" + (location.pathname.split("/")[1] ?? "");
-  const active = GAME_ROUTES.has(first);
+  const secondary = SECONDARY_ROUTES.has(first);
+  const active = GAME_ROUTES.has(first) || secondary;
 
   useEffect(() => {
     if (!active && confirming) setConfirming(false);
@@ -136,10 +153,10 @@ export function GameBackButton() {
 
   // Sólo cuesta vida si la mesa está bloqueada (partida en juego con apuesta /
   // encargo activo), ya empezó y no sos socio.
-  const costsLife = locked && started && !member;
+  const costsLife = !secondary && locked && started && !member;
   // Cualquier partida ya empezada pide confirmación: aunque no cueste vida,
   // salir borra el progreso de la mano/tablero en curso.
-  const needsConfirm = started;
+  const needsConfirm = !secondary && started;
 
   const request = () => {
     haptic("select");
@@ -154,6 +171,10 @@ export function GameBackButton() {
 
   const leave = () => {
     setConfirming(false);
+    if (secondary) {
+      navigate({ to: "/" });
+      return;
+    }
     leaveGameToLobby((opts) => navigate(opts));
   };
 

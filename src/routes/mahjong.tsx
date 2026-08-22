@@ -331,6 +331,13 @@ function MahjongPage() {
       } else if (mahjongEcon.hostess) {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
       }
+      // Toda partida es una vigilia roguelike: si no hay run abierta se sortea
+      // el recorrido de la noche y se reparte el tablero de su primer piso.
+      const api = useMahjongRun.getState();
+      if (!api.active) {
+        api.startRun();
+        game.newGame(useMahjongRun.getState().currentLevelId);
+      }
       setHasStarted(true);
       match.begin();
     });

@@ -481,6 +481,8 @@ export const useSyndicate = create<SyndicateState>()(
             conquestsThisTurn: 0,
             lastConqueredId: null,
             tradeCount: 0,
+            ultimoCanje: null,
+
             activeEffects: {},
           };
         }),

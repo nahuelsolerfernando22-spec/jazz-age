@@ -360,8 +360,10 @@ export const useSyndicate = create<SyndicateState>()(
 
       setPhase: (phase) => set({ turnPhase: phase }),
 
-      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize, sorteo) =>
-        set(() => {
+      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize, sorteo, reglasIn) =>
+        set((prev) => {
+          const reglas = normalizarReglas(reglasIn ?? prev.reglas);
+
           // Determinar territorios activos
           let activeTerrs = TERRITORIOS;
           let rasgos: MapaRasgos = {};

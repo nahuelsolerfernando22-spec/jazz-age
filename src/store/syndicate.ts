@@ -108,6 +108,7 @@ interface SyndicateState {
     userColor?: string,
     botBonusTroops?: number,
     mapSeed?: string,
+    mapSize?: number,
   ) => void;
   conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
   updateTroops: (id: string, delta: number) => void;
@@ -312,13 +313,14 @@ export const useSyndicate = create<SyndicateState>()(
 
       setPhase: (phase) => set({ turnPhase: phase }),
 
-      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed) =>
+      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize) =>
         set(() => {
           // Determinar territorios activos
           let activeTerrs = TERRITORIOS;
           if (mapSeed) {
-            // Ajustar tamaño según dificultad/piso si quisiéramos, por ahora fijo en 20 para nodos cortos
-            activeTerrs = generateSubMap(mapSeed, 20).territorios;
+            // El tamaño del mapa crece con la oleada de la noche.
+            const target = Math.max(10, Math.min(TERRITORIOS.length, mapSize ?? 20));
+            activeTerrs = generateSubMap(mapSeed, target).territorios;
           }
 
           const colors = ["var(--cd-gold-mid)", "#A83A3A", "var(--cd-teal)", "#6B7A3A", "#5B4B8A"];

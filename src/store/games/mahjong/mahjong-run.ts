@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { drawMahjongPresagio, type MahjongPresagio } from "@/lib/games/mahjong/mahjong-presagios";
-import { LEVELS } from "@/lib/games/mahjong/mahjong-levels";
+import { LEVELS, runRouteIds, setLayoutVariant } from "@/lib/games/mahjong/mahjong-levels";
 
 export interface MahjongRelic {
   id: string;
@@ -15,6 +15,8 @@ interface MahjongRunState {
   floor: number;
   maxFloor: number;
   currentLevelId: string;
+  /** Recorrido sorteado de esta vigilia (un tablero por piso). */
+  route: string[];
   relics: MahjongRelic[];
   presagios: MahjongPresagio[];
   hp: number;
@@ -40,6 +42,7 @@ export const useMahjongRun = create<MahjongRunState>()(
       floor: 1,
       maxFloor: 10,
       currentLevelId: LEVELS[0].id,
+      route: [],
       relics: [],
       presagios: [],
       hp: 3,
@@ -48,26 +51,32 @@ export const useMahjongRun = create<MahjongRunState>()(
       seed: "",
       graciaUsada: false,
 
-      startRun: (seed) =>
+      startRun: (seed) => {
+        const s0 = seed || Math.random().toString(36).substring(7);
+        const route = runRouteIds(s0, 10);
+        setLayoutVariant(s0);
         set({
           active: true,
           floor: 1,
-          currentLevelId: LEVELS[0].id,
+          route,
+          currentLevelId: route[0] ?? LEVELS[0].id,
           relics: [],
           presagios: [drawMahjongPresagio()],
           hp: 3,
           maxHp: 3,
           xp: 0,
           graciaUsada: false,
-          seed: seed || Math.random().toString(36).substring(7),
-        }),
+          seed: s0,
+        });
+      },
 
       nextFloor: () =>
         set((s) => {
-          const nextIdx = Math.min(LEVELS.length - 1, s.floor);
+          const nextId =
+            s.route[s.floor] ?? LEVELS[Math.min(LEVELS.length - 1, s.floor)].id;
           return {
             floor: s.floor + 1,
-            currentLevelId: LEVELS[nextIdx].id,
+            currentLevelId: nextId,
             presagios: [...s.presagios, drawMahjongPresagio()],
           };
         }),

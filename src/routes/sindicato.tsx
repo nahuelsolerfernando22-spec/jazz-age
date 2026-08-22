@@ -45,8 +45,6 @@ import {
   Minimize2,
   X,
   Plus,
-  Minus,
-  Map as MapIcon,
 } from "lucide-react";
 
 // --- Visual Constants ---
@@ -369,7 +367,6 @@ function SindicatoPage() {
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [altoContraste, setAltoContraste] = useState(false);
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
-  const [previewOwner, setPreviewOwner] = useState<number | null>(null);
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);

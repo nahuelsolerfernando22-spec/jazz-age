@@ -8,8 +8,24 @@
  */
 
 import { BARRIOS, type BarrioId, type Territorio } from "@/lib/sindicato-data";
+import {
+  CATALOGO_MISIONES,
+  adaptarMision,
+  textoMision,
+  type MisionParcial,
+} from "@/lib/sindicato-misiones";
 
 export type Objetivo =
+  | {
+      /** Tarjeta del catálogo fijo, ya recortada al mapa de esta noche. */
+      kind: "mision";
+      id: string;
+      titulo: string;
+      desc: string;
+      completos: BarrioId[];
+      parciales: MisionParcial[];
+      total: number;
+    }
   | { kind: "barrios"; id: string; titulo: string; desc: string; barrios: BarrioId[] }
   | {
       kind: "barrios-mas";

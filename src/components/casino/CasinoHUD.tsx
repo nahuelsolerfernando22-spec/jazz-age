@@ -1,5 +1,5 @@
-import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { ClipboardList, Map as MapIcon, DoorOpen } from "lucide-react";
+import { useLocation, useRouter } from "@tanstack/react-router";
+import { ClipboardList, Map as MapIcon } from "lucide-react";
 import { useCasino, rankFromXp } from "@/store/casino";
 import { useLives } from "@/store/lives";
 import { useGameLock } from "@/store/gameLock";
@@ -31,7 +31,6 @@ import iconDespacho from "@/assets/_placeholder.webp";
 import hudChipIcon from "@/assets/_placeholder.webp";
 import hudFeatherIcon from "@/assets/_placeholder.webp";
 import hudEmberIcon from "@/assets/_placeholder.webp";
-import { exitToMainMenu } from "@/lib/exit-to-menu";
 import { useGameMode } from "@/store/game-mode";
 import { useNemesis } from "@/store/nemesis";
 import { SINGLE_GAMES } from "@/lib/single-games";

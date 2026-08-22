@@ -141,7 +141,9 @@ interface SyndicateState {
     mapSeed?: string,
     mapSize?: number,
     sorteo?: { turnOrder: number[]; dados: Record<number, number> },
+    reglas?: ReglasVariante,
   ) => void;
+
 
   conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
   updateTroops: (id: string, delta: number) => void;

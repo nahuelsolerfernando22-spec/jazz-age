@@ -12,6 +12,7 @@ import {
   ofertaTalismanes,
 } from "@/lib/la-noche";
 import { useHaptics } from "@/hooks/use-haptics";
+import bgNoche from "@/assets/app-bg-speakeasy.webp";
 
 export const Route = createFileRoute("/la-noche")({
   ssr: false,
@@ -49,7 +50,7 @@ function LaNochePage() {
   const bono = bonoDeTalismanes(noche.talismanes);
 
   return (
-    <GameRoomShell bg={undefined} room="hub" title="La Noche" subtitle="Corrida de cinco mesas">
+    <GameRoomShell bg={bgNoche} room="la-noche" title="La Noche" subtitle="Corrida de cinco mesas">
       <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-3 pb-28 pt-2">
         {noche.fase === "idle" && (
           <Panel>

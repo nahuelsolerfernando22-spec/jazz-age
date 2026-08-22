@@ -6,6 +6,7 @@ import { useDailyEcho } from "@/store/daily-echo";
 import { installEncargoTracker } from "@/lib/encargo-tracker";
 import { SINGLE_GAMES } from "@/lib/single-games";
 import { track } from "@/lib/analytics";
+import { reportNocheResult } from "@/store/la-noche";
 
 let installed = false;
 
@@ -29,6 +30,7 @@ export function installPlayTracker() {
         useGameStreaks.getState().trackPlay(id, { won: dWins > 0 });
         useDailyMissions.getState().tick(id, { plays: dPlays, wins: Math.max(0, dWins) });
         useDailyEcho.getState().tick(id, { plays: dPlays, wins: Math.max(0, dWins) });
+        reportNocheResult(id, dWins > 0);
         track("game_finish", { gameId: id, plays: dPlays, wins: Math.max(0, dWins) });
       }
     }
@@ -49,6 +51,7 @@ export function installPlayTracker() {
           useDailyMissions.getState().tick(id, { plays: dPlays, wins: dPlays });
           useDailyEcho.getState().tick(id, { plays: dPlays, wins: dPlays });
         }
+        reportNocheResult(id, (after.best ?? 0) > (before.best ?? 0));
         track("game_finish", { gameId: id, plays: dPlays, score: after.best ?? 0 });
       }
     }

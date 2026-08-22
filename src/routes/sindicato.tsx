@@ -25,10 +25,7 @@ import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
 import { TroopMover } from "@/components/casino/sindicato/TroopMover";
-import {
-  ConquistaFlash,
-  type ConquistaAviso,
-} from "@/components/casino/sindicato/ConquistaFlash";
+import { ConquistaFlash, type ConquistaAviso } from "@/components/casino/sindicato/ConquistaFlash";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import {
   PATRONES_TABLERO,
@@ -39,10 +36,7 @@ import {
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
-import {
-  SindicatoSorteo,
-  type SorteoResultado,
-} from "@/components/casino/SindicatoSorteo";
+import { SindicatoSorteo, type SorteoResultado } from "@/components/casino/SindicatoSorteo";
 
 import {
   Shield,
@@ -127,7 +121,6 @@ function bordeIrregular(points: Point[], semilla: string) {
   return `${d} Z`;
 }
 
-
 function DiceRoller({
   rolling,
   onResult,
@@ -175,7 +168,6 @@ function DiceRoller({
         const isFirstAttack =
           useSyndicate.getState().assaultsThisTurn === 0 &&
           attackerTalismanes.includes("whisky-reserva");
-
 
         // Dado Cargado: Descarta el peor dado una vez (simulamos re-roll si hay un 1)
         if (attackerTalismanes.includes("dado-cargado")) {
@@ -345,7 +337,6 @@ function SindicatoPage() {
     hasMovedFortification,
     sectorRasgos,
     reglas,
-
   } = useSyndicate();
 
   /** Reglamento de la mesa elegido en el sorteo (con respaldo clásico). */
@@ -492,8 +483,6 @@ function SindicatoPage() {
     return () => window.removeEventListener("resize", computeFit);
   }, [territoriesKey, computeFit]);
 
-
-
   const runStatus = useSyndicateRun((s) => s.status);
   const runSeed = useSyndicateRun((s) => s.seed);
   const runOla = useSyndicateRun((s) => s.ola);
@@ -521,11 +510,9 @@ function SindicatoPage() {
         { turnOrder: r.turnOrder, dados: r.dados },
         r.reglas,
       );
-
     },
     [startGame, ola],
   );
-
 
   // La oleada fija el objetivo COMÚN de la mesa; el secreto lo reparte el mazo.
   useEffect(() => {
@@ -629,7 +616,6 @@ function SindicatoPage() {
     return out;
   }, [activeTerritories, centros]);
 
-
   // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;
@@ -667,7 +653,6 @@ function SindicatoPage() {
     [activeTerritories],
   );
 
-
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
     if (!selectedId || !isMine) return [];
@@ -675,7 +660,6 @@ function SindicatoPage() {
     if (!territory) return [];
     return territory.vecinos.filter((v) => conquests[v]?.ownerId === currentPlayerIndex);
   }, [selectedId, isMine, activeTerritories, conquests, currentPlayerIndex]);
-
 
   const handleSiege = useCallback(() => {
     const activeBribe = Object.values(useSyndicate.getState().activeEffects).find(
@@ -782,7 +766,8 @@ function SindicatoPage() {
         ? "Ahora tocá un sector enemigo marcado en rojo"
         : "Ese sector no tiene vecinos enemigos: elegí otro";
     }
-    if (turnPhase === "fortification") return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
+    if (turnPhase === "fortification")
+      return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
     return "";
   }, [
     currentPlayer?.isBot,
@@ -912,13 +897,11 @@ function SindicatoPage() {
       reglasMesa.maxDadosAtaque,
       finalizarConquista,
     ],
-
   );
   const handleRefit = useCallback(() => {
     computeFit();
     haptics("tap");
   }, [computeFit, haptics]);
-
 
   return (
     <div className="fixed inset-0 w-screen h-dvh min-h-dvh bg-[var(--cd-noir-0)] text-[var(--crema-clara)] flex flex-col font-body select-none overflow-hidden overscroll-none">
@@ -1055,7 +1038,12 @@ function SindicatoPage() {
                     height="220"
                     patternUnits="userSpaceOnUse"
                   >
-                    <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
+                    <image
+                      href={p.href}
+                      width="220"
+                      height="220"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
                   </pattern>
                 ))}
 
@@ -1082,7 +1070,6 @@ function SindicatoPage() {
                     </pattern>
                   );
                 })}
-
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
@@ -1102,7 +1089,6 @@ function SindicatoPage() {
                 ))}
               </g>
 
-
               {activeTerritories.map((t) => {
                 const conquest = conquests[t.id];
                 const pending = pendingDeployment[t.id] || 0;
@@ -1111,8 +1097,7 @@ function SindicatoPage() {
                 const isMine = conquest?.ownerId === currentPlayerIndex;
                 const esOrigen = attackFrom === t.id;
                 const esObjetivo = objetivosValidos.has(t.id);
-                const puedeRecibir =
-                  turnPhase === "deployment" && isMine && unassignedTroops > 0;
+                const puedeRecibir = turnPhase === "deployment" && isMine && unassignedTroops > 0;
                 const d = bordeIrregular(t.points, t.id);
                 const canSeeTroops =
                   isMine ||
@@ -1202,13 +1187,7 @@ function SindicatoPage() {
                       stroke="url(#tex-laton)"
                       initial={false}
                       animate={{
-                        strokeWidth: altoContraste
-                          ? isSelected
-                            ? 5
-                            : 3.4
-                          : isSelected
-                            ? 3.4
-                            : 2,
+                        strokeWidth: altoContraste ? (isSelected ? 5 : 3.4) : isSelected ? 3.4 : 2,
                         strokeOpacity: isSelected ? 1 : isMine ? 0.95 : 0.7,
                       }}
                       strokeLinejoin="round"
@@ -1304,8 +1283,6 @@ function SindicatoPage() {
                       </path>
                     )}
 
-
-
                     {/* Cartucho déco: sólo en los sectores que importan ahora,
                         para que el tablero no sea un muro de nombres. */}
                     {(() => {
@@ -1379,13 +1356,10 @@ function SindicatoPage() {
                       );
                     })()}
 
-
-
                     {(conquest || pending > 0) && (
                       <g
                         transform={`translate(${center.x}, ${center.y}) scale(${Math.min(1.8, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       >
-
                         {/* Ficha de latón troquelada con la guarnición */}
                         <motion.g
                           initial={{ scale: 0.8, opacity: 0 }}
@@ -1395,11 +1369,7 @@ function SindicatoPage() {
                           <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
                           <circle r="16" fill="url(#tex-laton)" fillOpacity="0.95" />
-                          <circle
-                            r="14.5"
-                            fill="url(#tex-laton)"
-                            filter="url(#bakelite-relief)"
-                          />
+                          <circle r="14.5" fill="url(#tex-laton)" filter="url(#bakelite-relief)" />
                           <circle
                             r="11.5"
                             fill="none"
@@ -1428,7 +1398,6 @@ function SindicatoPage() {
                             {canSeeTroops ? (conquest?.troops || 0) + pending : "?"}
                           </text>
                         </motion.g>
-
                       </g>
                     )}
                   </g>
@@ -1490,7 +1459,6 @@ function SindicatoPage() {
                 })()}
             </svg>
           </div>
-
         </motion.div>
       </main>
 
@@ -1500,12 +1468,8 @@ function SindicatoPage() {
         <SindicatoSorteo playerCount={ola.rivales} onStart={empezarConSorteo} />
       )}
 
-
       {/* Controles flotantes: siempre por debajo del HUD medido */}
-      <div
-        className="fixed right-3 z-[85] flex flex-col items-end gap-2"
-        style={{ top: hudH + 8 }}
-      >
+      <div className="fixed right-3 z-[85] flex flex-col items-end gap-2" style={{ top: hudH + 8 }}>
         <button
           onClick={handleRefit}
           aria-label="Reencuadrar mapa"
@@ -1532,10 +1496,7 @@ function SindicatoPage() {
         </button>
       </div>
 
-
       {/* Los efectos y talismanes viven en el panel de info: el tablero queda limpio. */}
-
-
 
       <AnimatePresence>
         {selectedId && selectedTerritory && (
@@ -1647,10 +1608,10 @@ function SindicatoPage() {
                       {!puedeAsaltar(roundNumber)
                         ? "VUELTA DE ACOMODO"
                         : turnPhase !== "attack"
-                        ? "NO ES FASE DE ASALTO"
-                        : canAttack
-                          ? "INICIAR ASALTO"
-                          : "FUERA DE ALCANCE"}
+                          ? "NO ES FASE DE ASALTO"
+                          : canAttack
+                            ? "INICIAR ASALTO"
+                            : "FUERA DE ALCANCE"}
                     </span>
                   </button>
                   {attackerId && turnPhase === "attack" && (
@@ -1661,7 +1622,6 @@ function SindicatoPage() {
                 </>
               )}
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -1698,8 +1658,7 @@ function SindicatoPage() {
                       reglasMesa.maxDadosAtaque,
                       (conquests[attackerId ?? ""]?.troops || 2) - 1,
                     ),
-                  ) +
-                    desafioBonus.atk,
+                  ) + desafioBonus.atk,
                 )}
 
                 defenderCount={Math.min(
@@ -1707,8 +1666,7 @@ function SindicatoPage() {
                   Math.min(
                     reglasMesa.maxDadosDefensa,
                     dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]),
-                  ) +
-                    desafioBonus.def,
+                  ) + desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}
                 bribeDice={myFaction.bribeDice}
@@ -1857,7 +1815,6 @@ function SindicatoPage() {
       ) : null}
       <ConquistaFlash aviso={aviso} />
 
-
       <ActionDock
         phase={turnPhase}
         unassignedTroops={unassignedTroops}
@@ -1951,7 +1908,6 @@ function SindicatoPage() {
           />
         )}
       </AnimatePresence>
-
 
       <AnimatePresence>
         {desafioOpen && selectedTerritory && (

@@ -1679,8 +1679,8 @@ function Table({
           );
         })()}
         <div
-          className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:gap-3 items-stretch overflow-hidden"
-          style={{ maxHeight: "min(56svh, 460px)" }}
+          className="mx-auto grid w-full min-h-0 flex-1 grid-cols-3 gap-1 sm:gap-2 items-stretch overflow-hidden"
+          style={{ maxHeight: "min(62svh, 520px)", maxWidth: "min(100%, 560px)" }}
         >
 
           {h.table.map((t, i) => {
@@ -2124,7 +2124,7 @@ function CardSlot({
 
   return (
     <div
-      className={`relative h-full w-auto max-w-full min-h-[64px] aspect-[7/10] rounded-[7px] border transition-all ${
+      className={`relative h-auto max-h-full w-full max-w-full min-h-[64px] aspect-[7/10] rounded-[7px] border transition-all ${
         highlight
           ? "border-[var(--brass)]/80 shadow-[0_0_16px_rgba(212,175,86,0.35)]"
           : winner

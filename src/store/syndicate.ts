@@ -99,7 +99,11 @@ interface SyndicateState {
   /** Cabeza de los capos rivales: matón, capo o consejero. */
   aiNivel: AiNivel;
   setAiNivel: (n: AiNivel) => void;
+  /** Reglamentación de la mesa (variante del T.E.G. elegida). */
+  reglas: ReglasVariante;
+  setReglas: (r: ReglasVariante) => void;
   tradeCount: number;
+
 
   /** Objetivo tapado de cada capo (id de jugador -> objetivo). */
   objectives: Record<number, Objetivo>;

@@ -110,6 +110,15 @@ interface SyndicateState {
   reglas: ReglasVariante;
   setReglas: (r: ReglasVariante) => void;
   tradeCount: number;
+  /** Detalle del último canje, para avisarle al jugador qué cobró. */
+  ultimoCanje: {
+    playerId: number;
+    fichas: number;
+    bonoSectores: number;
+    destino: string | null;
+    at: number;
+  } | null;
+
 
 
   /** Objetivo tapado de cada capo (id de jugador -> objetivo). */

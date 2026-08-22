@@ -14,6 +14,7 @@ const GAME_ROUTES = new Set([
   "/blackjack",
   "/chinchon",
   "/truco",
+  "/truco-parejas",
   "/mahjong",
   "/escoba",
   "/dados",

@@ -13,6 +13,7 @@ function isDirectGameBoot(): boolean {
       "/blackjack",
       "/chinchon",
       "/truco",
+      "/truco-parejas",
       "/mahjong",
       "/escoba",
       "/dados",

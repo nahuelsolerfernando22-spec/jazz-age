@@ -78,6 +78,15 @@ const ROOM_META: RoomMeta[] = [
     icon: iconPlaceholder,
   },
   {
+    to: "/truco-parejas",
+    label: "Truco en Parejas",
+    tag: "2 vs 2 · señas de mesa",
+    status: "hot",
+    accent: "oklch(0.70 0.18 40)",
+    icon: iconPlaceholder,
+  },
+
+  {
     to: "/escoba",
     label: "La Escoba de Quince",
     tag: "Sumar quince · barrer",

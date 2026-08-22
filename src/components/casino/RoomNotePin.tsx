@@ -14,6 +14,7 @@ const GAME_ROUTES_WITH_ACTION_BAR = new Set<string>([
   "/ruleta",
   "/dados",
   "/truco",
+  "/truco-parejas",
 ]);
 
 export function RoomNotePin() {

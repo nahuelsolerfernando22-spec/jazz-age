@@ -70,13 +70,22 @@ const ROOM_META: RoomMeta[] = [
     icon: iconBlackjack,
   },
   {
-    to: "/truco", "/truco-parejas",
+    to: "/truco",
     label: "El Truco del Cuervo",
     tag: "Envido · flor · truco",
     status: "hot",
     accent: "oklch(0.70 0.18 40)",
     icon: iconPlaceholder,
   },
+  {
+    to: "/truco-parejas",
+    label: "Truco en Parejas",
+    tag: "2 vs 2 · señas de mesa",
+    status: "hot",
+    accent: "oklch(0.70 0.18 40)",
+    icon: iconPlaceholder,
+  },
+
   {
     to: "/escoba",
     label: "La Escoba de Quince",

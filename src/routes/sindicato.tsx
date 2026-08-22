@@ -1212,8 +1212,7 @@ function SindicatoPage() {
                       const marca = sectorRasgos[t.id]
                         ? RASGO_POR_ID[sectorRasgos[t.id]].icono
                         : "";
-                      const etiqueta = marca ? `${marca} ${t.nombre}` : t.nombre;
-                      const w = Math.max(52, etiqueta.length * 6.6 + 18);
+                      const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
                       // El cartucho se mantiene dentro del área jugable visible
                       // (no solo del lienzo) en cualquier zoom y tamaño de pantalla.
@@ -1254,8 +1253,20 @@ function SindicatoPage() {
                               fontWeight="900"
                               className="font-serif uppercase tracking-[0.18em]"
                             >
-                              {etiqueta}
+                              {t.nombre}
                             </text>
+                            {marca && (
+                              <text
+                                x={-w / 2 - 7}
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                fill="#e9cf94"
+                                fontSize="10"
+                                fontWeight="900"
+                              >
+                                {marca}
+                              </text>
+                            )}
                           </g>
                         </g>
                       );

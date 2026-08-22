@@ -108,6 +108,10 @@ interface SyndicateState {
   setComunObjetivo: (n: number) => void;
   /** Ronda completa de la mesa (todos jugaron una vez). */
   roundNumber: number;
+  /** Orden de mesa sorteado con dados (ids de jugador). */
+  turnOrder: number[];
+  /** Tirada del sorteo: id de jugador -> dado. */
+  ordenDados: Record<number, number>;
   /** T.E.G.: un solo naipe por turno, conquistes lo que conquistes. */
   cardDrawnThisTurn: boolean;
   /** Reagrupes usados en la fase de fortificación. */
@@ -125,7 +129,9 @@ interface SyndicateState {
     botBonusTroops?: number,
     mapSeed?: string,
     mapSize?: number,
+    sorteo?: { turnOrder: number[]; dados: Record<number, number> },
   ) => void;
+
   conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
   updateTroops: (id: string, delta: number) => void;
   assignTroops: (id: string, amount: number) => void;

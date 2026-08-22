@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import reglasHero from "@/assets/reglas-hero.webp";
 import { IconChinche } from "@/components/casino/DecoIcons";

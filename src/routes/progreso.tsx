@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { NoirBackdrop } from "@/components/single/NoirBackdrop";
 import { useRouteVeil } from "@/hooks/use-route-veil";

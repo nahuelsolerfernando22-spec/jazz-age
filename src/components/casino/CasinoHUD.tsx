@@ -511,29 +511,6 @@ function RoomIdentity({ room, accent }: { room: RoomMeta | null; accent: string 
   };
   const effectiveSurrender = surrenderHandler ?? (locked ? fallbackSurrender : null);
 
-  const handleBack = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (locked) return;
-    if (isSingle) {
-      router.navigate({ to: "/single" });
-      return;
-    }
-    const hasHistory = typeof window !== "undefined" && window.history.length > 1;
-    if (hasHistory) {
-      router.history.back();
-    } else {
-      router.navigate({ to: "/" });
-    }
-  };
-
-  const handleLobby = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (locked) return;
-    router.navigate({ to: isSingle ? "/single" : "/" });
-  };
-
-  const lockTitle = locked ? "Termina la partida o rendite para salir" : undefined;
-
   return (
     <div className="relative flex items-center gap-1.5">
       {/* El botón de volver vive en GameBackButton (flotante, universal). */}

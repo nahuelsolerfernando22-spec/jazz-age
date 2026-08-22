@@ -108,6 +108,10 @@ interface SyndicateState {
   setComunObjetivo: (n: number) => void;
   /** Ronda completa de la mesa (todos jugaron una vez). */
   roundNumber: number;
+  /** Orden de mesa sorteado con dados (ids de jugador). */
+  turnOrder: number[];
+  /** Tirada del sorteo: id de jugador -> dado. */
+  ordenDados: Record<number, number>;
   /** T.E.G.: un solo naipe por turno, conquistes lo que conquistes. */
   cardDrawnThisTurn: boolean;
   /** Reagrupes usados en la fase de fortificación. */
@@ -125,7 +129,9 @@ interface SyndicateState {
     botBonusTroops?: number,
     mapSeed?: string,
     mapSize?: number,
+    sorteo?: { turnOrder: number[]; dados: Record<number, number> },
   ) => void;
+
   conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
   updateTroops: (id: string, delta: number) => void;
   assignTroops: (id: string, amount: number) => void;
@@ -224,6 +230,9 @@ export const useSyndicate = create<SyndicateState>()(
       comunObjetivo: 20,
       setComunObjetivo: (n) => set({ comunObjetivo: n }),
       roundNumber: 1,
+      turnOrder: [],
+      ordenDados: {},
+
       cardDrawnThisTurn: false,
       fortifyMoves: 0,
       conquestsThisTurn: 0,
@@ -333,7 +342,7 @@ export const useSyndicate = create<SyndicateState>()(
 
       setPhase: (phase) => set({ turnPhase: phase }),
 
-      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize) =>
+      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize, sorteo) =>
         set(() => {
           // Determinar territorios activos
           let activeTerrs = TERRITORIOS;
@@ -394,14 +403,23 @@ export const useSyndicate = create<SyndicateState>()(
 
           const comun = Math.max(8, Math.ceil(activeTerrs.length * 0.6));
 
+          // Orden de mesa: si vino del sorteo de dados se respeta, si no es 0..n.
+          const turnOrder =
+            sorteo?.turnOrder?.length === playerCount
+              ? sorteo.turnOrder
+              : players.map((p) => p.id);
+
           return {
             players,
             conquests,
             gameStarted: true,
             activeTerritories: activeTerrs,
             turnPhase: "deployment",
-            currentPlayerIndex: 0,
+            currentPlayerIndex: turnOrder[0],
+            turnOrder,
+            ordenDados: sorteo?.dados ?? {},
             unassignedTroops: 5,
+
             winner: null,
             // El mazo sólo lleva naipes de sectores que existen esta noche.
             deck: INITIAL_DECK.filter(
@@ -439,15 +457,25 @@ export const useSyndicate = create<SyndicateState>()(
             return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
           if (state.turnPhase === "attack") return { turnPhase: "fortification" };
 
-          let nextIndex = (state.currentPlayerIndex + 1) % state.players.length;
-          while (state.players[nextIndex].eliminated) {
-            nextIndex = (nextIndex + 1) % state.players.length;
-            if (nextIndex === state.currentPlayerIndex) break;
+          // El turno sigue el orden que salió del sorteo de dados.
+          const orden =
+            state.turnOrder.length === state.players.length
+              ? state.turnOrder
+              : state.players.map((p) => p.id);
+          const pos = Math.max(0, orden.indexOf(state.currentPlayerIndex));
+          let siguiente = (pos + 1) % orden.length;
+          let vueltas = 0;
+          let dioVuelta = siguiente === 0;
+          while (state.players[orden[siguiente]]?.eliminated && vueltas < orden.length) {
+            siguiente = (siguiente + 1) % orden.length;
+            if (siguiente === 0) dioVuelta = true;
+            vueltas++;
           }
+          const nextIndex = orden[siguiente];
 
-          // Nueva ronda cuando la mesa vuelve a dar la vuelta.
-          const roundNumber =
-            nextIndex <= state.currentPlayerIndex ? state.roundNumber + 1 : state.roundNumber;
+          // Nueva ronda cuando la mesa vuelve al primero del orden.
+          const roundNumber = dioVuelta ? state.roundNumber + 1 : state.roundNumber;
+
 
           const playerTerritories = Object.values(state.conquests).filter(
             (c) => c.ownerId === nextIndex,

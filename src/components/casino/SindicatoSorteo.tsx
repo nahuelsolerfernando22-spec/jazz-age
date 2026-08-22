@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { FACCIONES } from "@/lib/sindicato-facciones";
 import { useHaptics } from "@/hooks/use-haptics";
+import { VARIANTES, VARIANTE_CLASICA, type ReglasVariante } from "@/lib/sindicato-variantes";
 
 export interface SorteoResultado {
   color: string;
   turnOrder: number[];
   dados: Record<number, number>;
+  reglas: ReglasVariante;
 }
+
 
 /** Paleta de la banda: el jugador elige con qué color juega la noche. */
 export const COLORES_BANDA: Array<{ id: string; nombre: string; valor: string }> = [

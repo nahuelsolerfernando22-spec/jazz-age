@@ -185,6 +185,43 @@ export function evaluarObjetivo(
   }
 
   switch (obj.kind) {
+    case "mision": {
+      // Cada requisito de la tarjeta pesa lo mismo dentro del progreso.
+      const porBarrio = new Map<BarrioId, number>();
+      for (const c of mios) {
+        const t = b.territories.find((x) => x.id === c.id);
+        if (!t) continue;
+        porBarrio.set(t.barrio, (porBarrio.get(t.barrio) ?? 0) + 1);
+      }
+
+      const pasos: number[] = [];
+      const faltan: string[] = [];
+
+      for (const barrio of obj.completos) {
+        const hay = terrsDeBarrio(b.territories, barrio).length;
+        const tengo = porBarrio.get(barrio) ?? 0;
+        pasos.push(hay > 0 ? Math.min(1, tengo / hay) : 1);
+        if (tengo < hay) faltan.push(`${nombreBarrio(barrio)} ${tengo}/${hay}`);
+      }
+
+      for (const p of obj.parciales) {
+        const tengo = porBarrio.get(p.barrio) ?? 0;
+        pasos.push(Math.min(1, tengo / Math.max(1, p.n)));
+        if (tengo < p.n) faltan.push(`${nombreBarrio(p.barrio)} ${tengo}/${p.n}`);
+      }
+
+      if (obj.total > 0) {
+        pasos.push(Math.min(1, mios.length / obj.total));
+        if (mios.length < obj.total) faltan.push(`total ${mios.length}/${obj.total}`);
+      }
+
+      const prog = pasos.length ? pasos.reduce((a, x) => a + x, 0) / pasos.length : 0;
+      return {
+        cumplido: faltan.length === 0 || comunCumplido,
+        progreso: Math.max(prog, comunProg),
+        detalle: faltan.length ? faltan.join(" · ") : "Tarjeta cumplida",
+      };
+    }
     case "barrios": {
       const hechos = obj.barrios.filter((x) => dominaBarrio(b, playerId, x));
       return {

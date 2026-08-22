@@ -1,7 +1,6 @@
 import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
 import { normalizarReglas } from "@/lib/sindicato-variantes";
 import { sugerirDespliegue } from "@/lib/sindicato-ai";
-import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {
@@ -25,10 +24,8 @@ import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
-import {
-  ConquistaFlash,
-  type ConquistaAviso,
-} from "@/components/casino/sindicato/ConquistaFlash";
+import { TroopMover } from "@/components/casino/sindicato/TroopMover";
+import { ConquistaFlash, type ConquistaAviso } from "@/components/casino/sindicato/ConquistaFlash";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import {
   PATRONES_TABLERO,
@@ -39,10 +36,7 @@ import {
 import { configOla, OLAS_TOTALES } from "@/lib/sindicato-run";
 import { ObjetivoCard } from "@/components/casino/sindicato/ObjetivoCard";
 import { RunOverlay } from "@/components/casino/sindicato/RunOverlay";
-import {
-  SindicatoSorteo,
-  type SorteoResultado,
-} from "@/components/casino/SindicatoSorteo";
+import { SindicatoSorteo, type SorteoResultado } from "@/components/casino/SindicatoSorteo";
 
 import {
   Shield,
@@ -127,7 +121,6 @@ function bordeIrregular(points: Point[], semilla: string) {
   return `${d} Z`;
 }
 
-
 function DiceRoller({
   rolling,
   onResult,
@@ -175,7 +168,6 @@ function DiceRoller({
         const isFirstAttack =
           useSyndicate.getState().assaultsThisTurn === 0 &&
           attackerTalismanes.includes("whisky-reserva");
-
 
         // Dado Cargado: Descarta el peor dado una vez (simulamos re-roll si hay un 1)
         if (attackerTalismanes.includes("dado-cargado")) {
@@ -344,9 +336,7 @@ function SindicatoPage() {
     activeTerritories,
     hasMovedFortification,
     sectorRasgos,
-    mapaVariante,
     reglas,
-
   } = useSyndicate();
 
   /** Reglamento de la mesa elegido en el sorteo (con respaldo clásico). */
@@ -429,6 +419,15 @@ function SindicatoPage() {
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
+  /** Ocupación tras ganar un asalto: el jugador elige cuántas fichas cruzan. */
+  const [ocupacion, setOcupacion] = useState<{
+    origen: string;
+    destino: string;
+    min: number;
+    max: number;
+  } | null>(null);
+  /** Reagrupe manual: origen y destino elegidos, cantidad a definir. */
+  const [reagrupe, setReagrupe] = useState<{ origen: string; destino: string } | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -484,8 +483,6 @@ function SindicatoPage() {
     return () => window.removeEventListener("resize", computeFit);
   }, [territoriesKey, computeFit]);
 
-
-
   const runStatus = useSyndicateRun((s) => s.status);
   const runSeed = useSyndicateRun((s) => s.seed);
   const runOla = useSyndicateRun((s) => s.ola);
@@ -513,11 +510,9 @@ function SindicatoPage() {
         { turnOrder: r.turnOrder, dados: r.dados },
         r.reglas,
       );
-
     },
     [startGame, ola],
   );
-
 
   // La oleada fija el objetivo COMÚN de la mesa; el secreto lo reparte el mazo.
   useEffect(() => {
@@ -621,7 +616,6 @@ function SindicatoPage() {
     return out;
   }, [activeTerritories, centros]);
 
-
   // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;
@@ -654,6 +648,11 @@ function SindicatoPage() {
     return new Set(t.vecinos.filter((v) => st.canAttack(attackFrom, v)));
   }, [turnPhase, attackFrom, activeTerritories, conquests]);
 
+  const nombreSector = useCallback(
+    (id: string) => activeTerritories.find((t) => t.id === id)?.nombre ?? id,
+    [activeTerritories],
+  );
+
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
     if (!selectedId || !isMine) return [];
@@ -661,7 +660,6 @@ function SindicatoPage() {
     if (!territory) return [];
     return territory.vecinos.filter((v) => conquests[v]?.ownerId === currentPlayerIndex);
   }, [selectedId, isMine, activeTerritories, conquests, currentPlayerIndex]);
-
 
   const handleSiege = useCallback(() => {
     const activeBribe = Object.values(useSyndicate.getState().activeEffects).find(
@@ -768,7 +766,8 @@ function SindicatoPage() {
         ? "Ahora tocá un sector enemigo marcado en rojo"
         : "Ese sector no tiene vecinos enemigos: elegí otro";
     }
-    if (turnPhase === "fortification") return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
+    if (turnPhase === "fortification")
+      return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
     return "";
   }, [
     currentPlayer?.isBot,
@@ -798,6 +797,52 @@ function SindicatoPage() {
     }
   }, [runTalismanesList]);
 
+  /** Cierra la conquista una vez que el jugador eligió cuántas fichas ocupan el sector. */
+  const finalizarConquista = useCallback(
+    (origen: string, destino: string, mueve: number) => {
+      updateTroops(origen, -mueve);
+      conquerTerritory(destino, mueve, currentPlayerIndex);
+      const naipesAntes = useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0;
+      drawCard(currentPlayerIndex);
+      const naipeNuevo =
+        (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
+
+      // Moneda Doblada: +25 fichas por sector conquistado
+      let fichas = 0;
+      if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
+        useCasino.getState().addChips(25);
+        fichas = 25;
+      }
+
+      haptics("heavy");
+      setIsCombatOpen(false);
+      setLastConflictId(destino);
+
+      if (currentPlayerIndex === 0) {
+        rachaRef.current += 1;
+        const nombre =
+          activeTerritories.find((t) => t.id === destino)?.nombre ?? "Sector sin nombre";
+        setAviso({
+          key: Date.now(),
+          sector: nombre,
+          racha: rachaRef.current,
+          fichas: fichas || undefined,
+          naipe: naipeNuevo,
+        });
+        setSacudon((n) => n + 1);
+      }
+    },
+    [
+      currentPlayerIndex,
+      updateTroops,
+      conquerTerritory,
+      drawCard,
+      haptics,
+      runTalismanesList,
+      activeTerritories,
+    ],
+  );
+
   const onDiceResult = useCallback(
     (aLoss: number, dLoss: number) => {
       setRolling(false);
@@ -816,40 +861,21 @@ function SindicatoPage() {
       const defensorRestante = defensor.troops - bajasDefensor;
 
       if (defensorRestante <= 0) {
-        const disponibles = atacante.troops - bajasAtacante - 1;
-        const mueve = Math.max(1, Math.min(disponibles, dadosAtaque));
-        updateTroops(attackerId, -mueve);
-        conquerTerritory(selectedId, mueve, currentPlayerIndex);
-        const naipesAntes = useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0;
-        drawCard(currentPlayerIndex);
-        const naipeNuevo =
-          (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
-
-        // Moneda Doblada: +25 fichas por sector conquistado
-        let fichas = 0;
-        if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
-          useCasino.getState().addChips(25);
-          fichas = 25;
-        }
-
-        haptics("heavy");
-        setIsCombatOpen(false);
-        setLastConflictId(selectedId);
-
-        if (currentPlayerIndex === 0) {
-          // Golpe propio: cartel de conquista, racha y un sacudón corto del tablero.
-          rachaRef.current += 1;
-          const nombre =
-            activeTerritories.find((t) => t.id === selectedId)?.nombre ?? "Sector sin nombre";
-          setAviso({
-            key: Date.now(),
-            sector: nombre,
-            racha: rachaRef.current,
-            fichas: fichas || undefined,
-            naipe: naipeNuevo,
+        const disponibles = Math.max(1, atacante.troops - bajasAtacante - 1);
+        const minimo = Math.max(1, Math.min(disponibles, dadosAtaque));
+        // El jugador decide con cuántas fichas ocupa la plaza tomada.
+        if (disponibles > minimo) {
+          setIsCombatOpen(false);
+          setOcupacion({
+            origen: attackerId,
+            destino: selectedId,
+            min: minimo,
+            max: disponibles,
           });
-          setSacudon((n) => n + 1);
+          haptics("heavy");
+          return;
         }
+        finalizarConquista(attackerId, selectedId, minimo);
       } else {
         updateTroops(selectedId, -bajasDefensor);
         toast.error(
@@ -865,20 +891,17 @@ function SindicatoPage() {
     [
       selectedId,
       attackerId,
-      currentPlayerIndex,
       updateTroops,
-      conquerTerritory,
-      drawCard,
       haptics,
       conquests,
-      runTalismanesList,
+      reglasMesa.maxDadosAtaque,
+      finalizarConquista,
     ],
   );
   const handleRefit = useCallback(() => {
     computeFit();
     haptics("tap");
   }, [computeFit, haptics]);
-
 
   return (
     <div className="fixed inset-0 w-screen h-dvh min-h-dvh bg-[var(--cd-noir-0)] text-[var(--crema-clara)] flex flex-col font-body select-none overflow-hidden overscroll-none">
@@ -1015,7 +1038,12 @@ function SindicatoPage() {
                     height="220"
                     patternUnits="userSpaceOnUse"
                   >
-                    <image href={p.href} width="220" height="220" preserveAspectRatio="xMidYMid slice" />
+                    <image
+                      href={p.href}
+                      width="220"
+                      height="220"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
                   </pattern>
                 ))}
 
@@ -1042,11 +1070,10 @@ function SindicatoPage() {
                     </pattern>
                   );
                 })}
-
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
-              <g className="pointer-events-none" opacity="0.4">
+              <g className="pointer-events-none" opacity="0.2">
                 {conexiones.map((c) => (
                   <line
                     key={c.id}
@@ -1062,7 +1089,6 @@ function SindicatoPage() {
                 ))}
               </g>
 
-
               {activeTerritories.map((t) => {
                 const conquest = conquests[t.id];
                 const pending = pendingDeployment[t.id] || 0;
@@ -1071,8 +1097,7 @@ function SindicatoPage() {
                 const isMine = conquest?.ownerId === currentPlayerIndex;
                 const esOrigen = attackFrom === t.id;
                 const esObjetivo = objetivosValidos.has(t.id);
-                const puedeRecibir =
-                  turnPhase === "deployment" && isMine && unassignedTroops > 0;
+                const puedeRecibir = turnPhase === "deployment" && isMine && unassignedTroops > 0;
                 const d = bordeIrregular(t.points, t.id);
                 const canSeeTroops =
                   isMine ||
@@ -1162,13 +1187,7 @@ function SindicatoPage() {
                       stroke="url(#tex-laton)"
                       initial={false}
                       animate={{
-                        strokeWidth: altoContraste
-                          ? isSelected
-                            ? 5
-                            : 3.4
-                          : isSelected
-                            ? 3.4
-                            : 2,
+                        strokeWidth: altoContraste ? (isSelected ? 5 : 3.4) : isSelected ? 3.4 : 2,
                         strokeOpacity: isSelected ? 1 : isMine ? 0.95 : 0.7,
                       }}
                       strokeLinejoin="round"
@@ -1264,14 +1283,19 @@ function SindicatoPage() {
                       </path>
                     )}
 
-
-
-                    {/* Cartucho déco con el nombre del sector */}
+                    {/* Cartucho déco: sólo en los sectores que importan ahora,
+                        para que el tablero no sea un muro de nombres. */}
                     {(() => {
+                      const relevante =
+                        isSelected ||
+                        esOrigen ||
+                        esObjetivo ||
+                        puedeRecibir ||
+                        transform.scale >= 1.35;
+                      if (!relevante) return null;
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
-                      const marca = sectorRasgos[t.id]
-                        ? RASGO_POR_ID[sectorRasgos[t.id]].icono
-                        : "";
+                      const marca = "";
+
                       const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
                       // El cartucho se mantiene dentro del área jugable visible
@@ -1332,13 +1356,10 @@ function SindicatoPage() {
                       );
                     })()}
 
-
-
                     {(conquest || pending > 0) && (
                       <g
                         transform={`translate(${center.x}, ${center.y}) scale(${Math.min(1.8, Math.max(1, 1 / transform.scale)).toFixed(2)})`}
                       >
-
                         {/* Ficha de latón troquelada con la guarnición */}
                         <motion.g
                           initial={{ scale: 0.8, opacity: 0 }}
@@ -1348,11 +1369,7 @@ function SindicatoPage() {
                           <ellipse rx="18" ry="7" cy="14" fill="#000" fillOpacity="0.7" />
                           <circle r="17" fill="#08060c" />
                           <circle r="16" fill="url(#tex-laton)" fillOpacity="0.95" />
-                          <circle
-                            r="14.5"
-                            fill="url(#tex-laton)"
-                            filter="url(#bakelite-relief)"
-                          />
+                          <circle r="14.5" fill="url(#tex-laton)" filter="url(#bakelite-relief)" />
                           <circle
                             r="11.5"
                             fill="none"
@@ -1381,7 +1398,6 @@ function SindicatoPage() {
                             {canSeeTroops ? (conquest?.troops || 0) + pending : "?"}
                           </text>
                         </motion.g>
-
                       </g>
                     )}
                   </g>
@@ -1443,7 +1459,6 @@ function SindicatoPage() {
                 })()}
             </svg>
           </div>
-
         </motion.div>
       </main>
 
@@ -1453,12 +1468,8 @@ function SindicatoPage() {
         <SindicatoSorteo playerCount={ola.rivales} onStart={empezarConSorteo} />
       )}
 
-
       {/* Controles flotantes: siempre por debajo del HUD medido */}
-      <div
-        className="fixed right-3 z-[85] flex flex-col items-end gap-2"
-        style={{ top: hudH + 8 }}
-      >
+      <div className="fixed right-3 z-[85] flex flex-col items-end gap-2" style={{ top: hudH + 8 }}>
         <button
           onClick={handleRefit}
           aria-label="Reencuadrar mapa"
@@ -1485,41 +1496,7 @@ function SindicatoPage() {
         </button>
       </div>
 
-
-      {/* Efectos activos: una sola fila discreta, sin tapar el tablero. */}
-      {(() => {
-        const efectos = Object.entries(activeEffects)
-          .filter(([key, e]) => !key.startsWith("talisman-") && e.ownerId === currentPlayerIndex)
-          .map(([key, e]) =>
-            e.type === "bribe"
-              ? "Soborno"
-              : e.type === "informant"
-                ? "Informante"
-                : e.type === "lockdown"
-                  ? "Toque de queda"
-                  : "Golpe sorpresa",
-          );
-        const etiquetas = [...runTalismanes.map((t: string) => t.replaceAll("-", " ")), ...efectos];
-        if (etiquetas.length === 0) return null;
-        return (
-          <div className="pointer-events-none fixed bottom-[176px] left-2 right-2 z-[60] flex gap-1.5 overflow-hidden">
-            {etiquetas.slice(0, 3).map((label) => (
-              <span
-                key={label}
-                className="truncate rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-sm"
-              >
-                {label}
-              </span>
-            ))}
-            {etiquetas.length > 3 ? (
-              <span className="shrink-0 rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black text-[var(--oro-palido)]">
-                +{etiquetas.length - 3}
-              </span>
-            ) : null}
-          </div>
-        );
-      })()}
-
+      {/* Los efectos y talismanes viven en el panel de info: el tablero queda limpio. */}
 
       <AnimatePresence>
         {selectedId && selectedTerritory && (
@@ -1583,15 +1560,8 @@ function SindicatoPage() {
                           <button
                             key={vId}
                             onClick={() => {
-                              const cantidad = Math.max(
-                                1,
-                                Math.floor((conquests[selectedId!]?.troops || 1) / 2),
-                              );
-                              moveTroops(selectedId!, vId, cantidad);
-                              haptics("heavy");
-                              toast.success(
-                                `${cantidad} tropas a ${activeTerritories.find((t) => t.id === vId)?.nombre ?? "vecino"}`,
-                              );
+                              setReagrupe({ origen: selectedId!, destino: vId });
+                              haptics("tap");
                             }}
                             disabled={
                               hasMovedFortification || (conquests[selectedId!]?.troops || 1) <= 1
@@ -1638,10 +1608,10 @@ function SindicatoPage() {
                       {!puedeAsaltar(roundNumber)
                         ? "VUELTA DE ACOMODO"
                         : turnPhase !== "attack"
-                        ? "NO ES FASE DE ASALTO"
-                        : canAttack
-                          ? "INICIAR ASALTO"
-                          : "FUERA DE ALCANCE"}
+                          ? "NO ES FASE DE ASALTO"
+                          : canAttack
+                            ? "INICIAR ASALTO"
+                            : "FUERA DE ALCANCE"}
                     </span>
                   </button>
                   {attackerId && turnPhase === "attack" && (
@@ -1652,7 +1622,6 @@ function SindicatoPage() {
                 </>
               )}
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -1689,8 +1658,7 @@ function SindicatoPage() {
                       reglasMesa.maxDadosAtaque,
                       (conquests[attackerId ?? ""]?.troops || 2) - 1,
                     ),
-                  ) +
-                    desafioBonus.atk,
+                  ) + desafioBonus.atk,
                 )}
 
                 defenderCount={Math.min(
@@ -1698,8 +1666,7 @@ function SindicatoPage() {
                   Math.min(
                     reglasMesa.maxDadosDefensa,
                     dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]),
-                  ) +
-                    desafioBonus.def,
+                  ) + desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}
                 bribeDice={myFaction.bribeDice}
@@ -1776,11 +1743,6 @@ function SindicatoPage() {
           <p className="pointer-events-none min-w-0 flex-1 truncate rounded-xl border border-[var(--oro)]/40 bg-black/85 px-3 py-1.5 font-bebas text-base leading-none text-[var(--oro-palido)] backdrop-blur-md">
             {guia}
           </p>
-          {mapaVariante && (
-            <span className="pointer-events-none hidden shrink-0 rounded-xl border border-[var(--oro)]/30 bg-black/85 px-2 py-1.5 font-bebas text-xs uppercase leading-none tracking-[0.12em] text-[var(--oro)]/80 backdrop-blur-md xs:inline-block">
-              {VARIANTE_NOMBRE[mapaVariante]}
-            </span>
-          )}
           <button
             type="button"
             onClick={() => {
@@ -1840,7 +1802,7 @@ function SindicatoPage() {
       </div>
 
       {/* Placa de turno noir y cartel de conquista. */}
-      {currentPlayer && !winner ? (
+      {currentPlayer && !winner && !currentPlayer.isBot ? (
         <PlacaDeTurno
           playerIndex={currentPlayerIndex}
           name={currentPlayer.name ?? "Sindicato"}
@@ -1852,7 +1814,6 @@ function SindicatoPage() {
         />
       ) : null}
       <ConquistaFlash aviso={aviso} />
-
 
       <ActionDock
         phase={turnPhase}
@@ -1905,6 +1866,45 @@ function SindicatoPage() {
               toast.success(`Operación ${card.type} iniciada`);
             }}
             onClose={() => setIsCardsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Movimiento manual de tropas: ocupar plaza tomada y reagrupar. */}
+      <AnimatePresence>
+        {ocupacion && (
+          <TroopMover
+            key="ocupacion"
+            titulo="¿Con cuántas ocupás la plaza?"
+            origen={nombreSector(ocupacion.origen)}
+            destino={nombreSector(ocupacion.destino)}
+            min={ocupacion.min}
+            max={ocupacion.max}
+            inicial={ocupacion.min}
+            restanteEn={(conquests[ocupacion.origen]?.troops ?? 1) - 1}
+            onConfirm={(n) => {
+              finalizarConquista(ocupacion.origen, ocupacion.destino, n);
+              setOcupacion(null);
+            }}
+          />
+        )}
+        {!ocupacion && reagrupe && (
+          <TroopMover
+            key="reagrupe"
+            titulo="Reagrupar tropas"
+            origen={nombreSector(reagrupe.origen)}
+            destino={nombreSector(reagrupe.destino)}
+            min={1}
+            max={Math.max(1, (conquests[reagrupe.origen]?.troops ?? 1) - 1)}
+            inicial={Math.max(1, Math.floor(((conquests[reagrupe.origen]?.troops ?? 1) - 1) / 2))}
+            restanteEn={conquests[reagrupe.origen]?.troops ?? 1}
+            onCancel={() => setReagrupe(null)}
+            onConfirm={(n) => {
+              moveTroops(reagrupe.origen, reagrupe.destino, n);
+              setReagrupe(null);
+              haptics("heavy");
+              toast.success(`${n} tropas a ${nombreSector(reagrupe.destino)}`);
+            }}
           />
         )}
       </AnimatePresence>

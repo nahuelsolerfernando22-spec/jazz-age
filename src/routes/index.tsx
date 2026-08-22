@@ -74,6 +74,8 @@ function PortadaPage() {
         >
           La puerta está sin cartel. Golpeá tres veces y sentate a jugar.
         </p>
+      </div>
+
 
       <div
         className="relative mt-8 flex w-full max-w-xs flex-col gap-2.5"

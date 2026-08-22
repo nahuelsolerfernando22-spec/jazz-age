@@ -155,7 +155,7 @@ function SinglePage() {
         fontFamily: "'Barlow', system-ui, sans-serif",
         // El alto útil descuenta la barra de pestañas fija y el notch, así el
         // dock inferior y el carrusel nunca quedan tapados ni recortados.
-        height: "calc(100dvh - var(--app-tabbar-h) - var(--sa-top))",
+        height: "calc(100dvh - 74px - var(--sa-bottom))",
       }}
     >
       <WelcomeTutorial />

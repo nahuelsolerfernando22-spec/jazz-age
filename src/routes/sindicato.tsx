@@ -1756,6 +1756,7 @@ function SindicatoPage() {
       {/* HUD superior: una sola columna medida, así nada se solapa en ninguna pantalla. */}
       <div ref={hudRef} className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
         <TurnBanner
+          rondasSinAsalto={reglasMesa.rondasSinAsalto}
           playerName={currentPlayer?.name ?? "Sindicato"}
           playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
           factionId={currentPlayer?.faction}

@@ -24,6 +24,8 @@ interface Props {
   round?: number;
   /** Si es falso, la fase de asalto está cerrada esta vuelta. */
   canAssault?: boolean;
+  /** Rondas de acomodo de la variante en juego. */
+  rondasSinAsalto?: number;
 }
 
 export function TurnBanner({
@@ -39,6 +41,7 @@ export function TurnBanner({
   cards,
   round,
   canAssault = true,
+  rondasSinAsalto = 2,
 }: Props) {
   const faccion = faccionDe(factionId);
   const activeIndex = PHASES.findIndex((p) => p.id === phase);

@@ -462,10 +462,16 @@ function SindicatoPage() {
   // La mesa arranca recién cuando el jugador elige color y sortea el orden.
   const empezarConSorteo = useCallback(
     (r: SorteoResultado) => {
-      startGame(ola.rivales, r.color, ola.ventajaBot, ola.mapSeed, ola.sectores, {
-        turnOrder: r.turnOrder,
-        dados: r.dados,
-      });
+      startGame(
+        ola.rivales,
+        r.color,
+        ola.ventajaBot,
+        ola.mapSeed,
+        ola.sectores,
+        { turnOrder: r.turnOrder, dados: r.dados },
+        r.reglas,
+      );
+
     },
     [startGame, ola],
   );

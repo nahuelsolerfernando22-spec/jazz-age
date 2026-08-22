@@ -1937,6 +1937,46 @@ function SindicatoPage() {
         )}
       </AnimatePresence>
 
+      {/* Movimiento manual de tropas: ocupar plaza tomada y reagrupar. */}
+      <AnimatePresence>
+        {ocupacion && (
+          <TroopMover
+            key="ocupacion"
+            titulo="¿Con cuántas ocupás la plaza?"
+            origen={nombreSector(ocupacion.origen)}
+            destino={nombreSector(ocupacion.destino)}
+            min={ocupacion.min}
+            max={ocupacion.max}
+            inicial={ocupacion.min}
+            restanteEn={(conquests[ocupacion.origen]?.troops ?? 1) - 1}
+            onConfirm={(n) => {
+              finalizarConquista(ocupacion.origen, ocupacion.destino, n);
+              setOcupacion(null);
+            }}
+          />
+        )}
+        {!ocupacion && reagrupe && (
+          <TroopMover
+            key="reagrupe"
+            titulo="Reagrupar tropas"
+            origen={nombreSector(reagrupe.origen)}
+            destino={nombreSector(reagrupe.destino)}
+            min={1}
+            max={Math.max(1, (conquests[reagrupe.origen]?.troops ?? 1) - 1)}
+            inicial={Math.max(1, Math.floor(((conquests[reagrupe.origen]?.troops ?? 1) - 1) / 2))}
+            restanteEn={conquests[reagrupe.origen]?.troops ?? 1}
+            onCancel={() => setReagrupe(null)}
+            onConfirm={(n) => {
+              moveTroops(reagrupe.origen, reagrupe.destino, n);
+              setReagrupe(null);
+              haptics("heavy");
+              toast.success(`${n} tropas a ${nombreSector(reagrupe.destino)}`);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+
       <AnimatePresence>
         {desafioOpen && selectedTerritory && (
           <DesafioDeMesa

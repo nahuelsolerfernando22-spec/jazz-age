@@ -1208,7 +1208,11 @@ function SindicatoPage() {
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
-                      const w = Math.max(52, t.nombre.length * 6.6 + 18);
+                      const marca = sectorRasgos[t.id]
+                        ? RASGO_POR_ID[sectorRasgos[t.id]].icono
+                        : "";
+                      const etiqueta = marca ? `${marca} ${t.nombre}` : t.nombre;
+                      const w = Math.max(52, etiqueta.length * 6.6 + 18);
                       const h = 17;
                       // El cartucho se mantiene dentro del área jugable visible
                       // (no solo del lienzo) en cualquier zoom y tamaño de pantalla.

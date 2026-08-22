@@ -19,8 +19,9 @@ interface Opts {
 export function useSingleHostessCorner(gameId: string, opts?: Opts) {
   // En las mesas queda sólo una burbuja compacta (no reserva alto en el
   // layout); los retratos en grande viven en /camerinos.
-  const backdropOnly = false;
-  void opts?.backdropOnly;
+  // Si la mesa ya muestra el retrato del rival (truco, chinchón, póker),
+  // backdropOnly evita el avatar duplicado.
+  const backdropOnly = opts?.backdropOnly ?? false;
   const mobileOnly = opts?.mobileOnly ?? false;
   useEffect(() => {
     if (typeof document === "undefined") return;

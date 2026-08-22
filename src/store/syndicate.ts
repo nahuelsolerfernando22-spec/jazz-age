@@ -435,12 +435,14 @@ export const useSyndicate = create<SyndicateState>()(
             players,
             conquests,
             gameStarted: true,
+            reglas,
             activeTerritories: activeTerrs,
-            turnPhase: "deployment",
+            turnPhase: "deployment" as const,
             currentPlayerIndex: turnOrder[0],
             turnOrder,
             ordenDados: sorteo?.dados ?? {},
-            unassignedTroops: 5,
+            unassignedTroops: reglas.fichasRonda1,
+
 
             winner: null,
             // El mazo sólo lleva naipes de sectores que existen esta noche.

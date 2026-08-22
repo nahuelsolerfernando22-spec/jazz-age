@@ -150,12 +150,12 @@ function SinglePage() {
   return (
     <div
       data-hub-ready={ready ? "true" : undefined}
-      className="relative flex h-dvh flex-col overflow-hidden bg-[var(--cd-noir-0)] text-[var(--crema-clara)]"
+      className="relative flex flex-col overflow-hidden bg-[var(--cd-noir-0)] text-[var(--crema-clara)]"
       style={{
         fontFamily: "'Barlow', system-ui, sans-serif",
-        // La barra de pestañas es fija: se reserva su alto acá para que el dock
-        // y el carrusel no queden tapados ni recortados.
-        paddingBottom: "calc(74px + var(--sa-bottom))",
+        // El alto útil descuenta la barra de pestañas fija y el notch, así el
+        // dock inferior y el carrusel nunca quedan tapados ni recortados.
+        height: "calc(100dvh - var(--app-tabbar-h) - var(--sa-top))",
       }}
     >
       <WelcomeTutorial />

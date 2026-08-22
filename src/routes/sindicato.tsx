@@ -1,4 +1,5 @@
 import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
+import { normalizarReglas } from "@/lib/sindicato-variantes";
 import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
@@ -766,7 +767,7 @@ function SindicatoPage() {
 
       useSyndicate.getState().registerAssault();
 
-      const dadosAtaque = Math.min(3, atacante.troops - 1);
+      const dadosAtaque = Math.min(reglasMesa.maxDadosAtaque, atacante.troops - 1);
       const bajasAtacante = Math.min(aLoss, Math.max(0, atacante.troops - 1));
       const bajasDefensor = Math.min(dLoss, defensor.troops);
 
@@ -1596,7 +1597,7 @@ function SindicatoPage() {
                   </button>
                   {attackerId && turnPhase === "attack" && (
                     <p className="col-span-2 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[var(--oro-viejo)]">
-                      {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(3, (conquests[attackerId]?.troops || 1) - 1)} dados`}
+                      {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(reglasMesa.maxDadosAtaque, (conquests[attackerId]?.troops || 1) - 1)} dados`}
                     </p>
                   )}
                 </>
@@ -1633,13 +1634,22 @@ function SindicatoPage() {
                 onResult={onDiceResult}
                 attackerCount={Math.min(
                   4,
-                  Math.max(1, Math.min(3, (conquests[attackerId ?? ""]?.troops || 2) - 1)) +
+                  Math.max(
+                    1,
+                    Math.min(
+                      reglasMesa.maxDadosAtaque,
+                      (conquests[attackerId ?? ""]?.troops || 2) - 1,
+                    ),
+                  ) +
                     desafioBonus.atk,
                 )}
 
                 defenderCount={Math.min(
                   4,
-                  dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]) +
+                  Math.min(
+                    reglasMesa.maxDadosDefensa,
+                    dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]),
+                  ) +
                     desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}

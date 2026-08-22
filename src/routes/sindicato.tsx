@@ -1,3 +1,4 @@
+import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {

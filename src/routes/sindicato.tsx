@@ -429,6 +429,15 @@ function SindicatoPage() {
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
+  /** Ocupación tras ganar un asalto: el jugador elige cuántas fichas cruzan. */
+  const [ocupacion, setOcupacion] = useState<{
+    origen: string;
+    destino: string;
+    min: number;
+    max: number;
+  } | null>(null);
+  /** Reagrupe manual: origen y destino elegidos, cantidad a definir. */
+  const [reagrupe, setReagrupe] = useState<{ origen: string; destino: string } | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);
 
   const mapRef = useRef<HTMLDivElement>(null);

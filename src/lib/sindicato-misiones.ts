@@ -349,7 +349,7 @@ export function textoMision(m: MisionTarjeta): string {
   }
   for (const r of m.rasgos ?? []) {
     const info = RASGO_POR_ID[r.tipo];
-    partes.push(`quedate con ${r.n} ${info.nombre.toLowerCase()}${r.n > 1 ? "es" : ""}`.replace("eses", "es"));
+    partes.push(`quedate con ${r.n} ${r.n === 1 ? "sector" : "sectores"} con ${info.nombre.toLowerCase()}`);
   }
   if (m.total > 0) partes.push(`llegá a ${m.total} sectores propios`);
   const cuerpo = partes.join(", ").replace(/,([^,]*)$/, " y$1");

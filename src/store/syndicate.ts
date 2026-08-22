@@ -961,28 +961,65 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
 /**
  * Rondas de acomodo del T.E.G. original: en la primera se colocan 5 fichas y en
  * la segunda 3, sin poder asaltar. Recién en la tercera se abre el fuego.
+ * La variante elegida puede acortar o eliminar el acomodo.
  */
 export const RONDAS_SIN_ASALTO = 2;
-export function puedeAsaltar(roundNumber: number): boolean {
-  return roundNumber > RONDAS_SIN_ASALTO;
+export function puedeAsaltar(roundNumber: number, rondasSinAsalto = RONDAS_SIN_ASALTO): boolean {
+  return roundNumber > rondasSinAsalto;
 }
 
 /**
  * T.E.G.: para llevarte un naipe hace falta haber tomado al menos un sector,
  * o dos si ya canjeaste tres veces o más en la partida.
  */
-export function naipesRequeridos(tradeCount: number): number {
-  return tradeCount >= 3 ? 2 : 1;
+export function naipesRequeridos(tradeCount: number, canjesParaDoble = 3): number {
+  return tradeCount >= canjesParaDoble ? 2 : 1;
 }
 
-/** ¿Tres naipes forman un canje legal? */
+/**
+ * ¿Tres naipes forman un canje legal? T.E.G.: tres símbolos iguales, tres
+ * distintos, o cualquier combinación completada por un comodín.
+ */
 export function esTrioValido(cards: SyndicateCard[]): boolean {
   if (cards.length !== 3) return false;
   const symbols = cards.map((c) => c.symbol);
-  return (
-    new Set(symbols).size === 1 || new Set(symbols).size === 3 || symbols.includes("wildcard")
-  );
+  const comodines = symbols.filter((s) => s === "wildcard").length;
+  const reales = symbols.filter((s) => s !== "wildcard");
+  // Con dos o más comodines siempre se arma el trío.
+  if (comodines >= 2) return true;
+  if (comodines === 1) {
+    // El comodín completa tanto un trío igual como uno de tres distintos.
+    return reales.length === 2;
+  }
+  return new Set(reales).size === 1 || new Set(reales).size === 3;
 }
+
+/** Mejor trío canjeable de una mano (o null si no hay). Prioriza no gastar comodines. */
+export function mejorTrio(cards: SyndicateCard[]): SyndicateCard[] | null {
+  if (cards.length < 3) return null;
+  let mejor: SyndicateCard[] | null = null;
+  let mejorComodines = 99;
+  for (let i = 0; i < cards.length; i++) {
+    for (let j = i + 1; j < cards.length; j++) {
+      for (let k = j + 1; k < cards.length; k++) {
+        const trio = [cards[i], cards[j], cards[k]];
+        if (!esTrioValido(trio)) continue;
+        const comodines = trio.filter((c) => c.symbol === "wildcard").length;
+        if (comodines < mejorComodines) {
+          mejor = trio;
+          mejorComodines = comodines;
+        }
+      }
+    }
+  }
+  return mejor;
+}
+
+/** T.E.G.: con la mano llena hay que canjear sí o sí antes de seguir. */
+export function debeCanjearObligado(cards: SyndicateCard[], maxNaipes = 5): boolean {
+  return cards.length >= maxNaipes && mejorTrio(cards) !== null;
+}
+
 
 function findValidSet(cards: SyndicateCard[]) {
 

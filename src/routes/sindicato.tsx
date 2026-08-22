@@ -344,12 +344,17 @@ function SindicatoPage() {
     hasMovedFortification,
     sectorRasgos,
     mapaVariante,
+    reglas,
 
   } = useSyndicate();
+
+  /** Reglamento de la mesa elegido en el sorteo (con respaldo clásico). */
+  const reglasMesa = useMemo(() => normalizarReglas(reglas), [reglas]);
 
   const currentPlayer = players[currentPlayerIndex];
   const myCards = currentPlayer?.cards || [];
   const myFaction = faccionDe(currentPlayer?.faction);
+
   const [bribeActive, setBribeActive] = useState(false);
 
   const controlCounts = useMemo(() => {

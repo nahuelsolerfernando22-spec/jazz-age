@@ -150,8 +150,13 @@ function SinglePage() {
   return (
     <div
       data-hub-ready={ready ? "true" : undefined}
-      className="relative flex h-dvh flex-col overflow-hidden bg-[var(--cd-noir-0)] text-[var(--crema-clara)]"
-      style={{ fontFamily: "'Barlow', system-ui, sans-serif" }}
+      className="relative flex flex-col overflow-hidden bg-[var(--cd-noir-0)] text-[var(--crema-clara)]"
+      style={{
+        fontFamily: "'Barlow', system-ui, sans-serif",
+        // El alto útil descuenta la barra de pestañas fija y el notch, así el
+        // dock inferior y el carrusel nunca quedan tapados ni recortados.
+        height: "calc(100dvh - 74px - var(--sa-bottom))",
+      }}
     >
       <WelcomeTutorial />
       <NoirBackdrop variant="hub" />
@@ -178,10 +183,7 @@ function SinglePage() {
       </main>
 
       {/* Dock físico inferior */}
-      <div
-        className="mx-auto flex w-full max-w-2xl shrink-0 items-stretch gap-2 px-3 pt-2 sm:px-5"
-        style={{ paddingBottom: "calc(74px + var(--sa-bottom))" }}
-      >
+      <div className="mx-auto flex w-full max-w-2xl shrink-0 items-stretch gap-2 px-3 pb-2 pt-2 sm:px-5">
         <BrassButton variant="ghost" size="md" block onClick={() => setRetosOpen(true)}>
           Retos
         </BrassButton>
@@ -248,7 +250,7 @@ const CarouselTile = memo(function CarouselTile({ g }: { g: GameLike }) {
         borderRadius: "var(--cd-radius-tile)",
       }}
     >
-      <GameCoverArt gameId={g.id} sizes="120px" />
+      <GameCoverArt gameId={g.id} fit="cover" sizes="120px" />
       <div
         aria-hidden
         className="absolute inset-0"
@@ -294,7 +296,7 @@ function HeroTile({
         className="absolute inset-0"
         style={{ background: coverBannerBackground(art), backgroundColor: art.from }}
       />
-      <GameCoverArt gameId={g.id} eager sizes="(min-width: 672px) 672px, 100vw" />
+      <GameCoverArt gameId={g.id} eager fit="cover" sizes="(min-width: 672px) 672px, 100vw" />
 
       <div
         aria-hidden

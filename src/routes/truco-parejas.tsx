@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { reportSingleScore } from "@/store/single-scores";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Hand as HandIcon, HelpCircle, Users } from "lucide-react";
@@ -142,6 +143,28 @@ function TrucoParejasPage() {
     if (!g) return;
     const last = g.hand.log[g.hand.log.length - 1];
     if (last) setFlash(last);
+  }, [g]);
+
+  // Cierre de partida: se engancha al resto de la casa (némesis, progreso,
+  // liga, encargos, torneo y La Noche) igual que las demás mesas.
+  const reportedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!g?.winner) return;
+    const key = `${g.scores.nos}-${g.scores.ellos}`;
+    if (reportedRef.current === key) return;
+    reportedRef.current = key;
+
+    const won = g.winner === "nos";
+    const spread = Math.abs(g.scores.nos - g.scores.ellos);
+
+    reportSingleScore("truco-parejas", g.scores.nos * 10 + (won ? 100 : 0));
+    void import("@/lib/nemesis").then(({ reportGameOutcome }) => {
+      reportGameOutcome("truco-parejas", won ? "win" : "loss");
+    });
+    void import("@/store/league-progress").then(({ awardLeaguePoints }) => {
+      const pts = won ? 80 + spread * 4 : Math.max(0, 20 - spread);
+      if (pts > 0) awardLeaguePoints("truco-parejas", pts);
+    });
   }, [g]);
 
   const myTurn = !!g && canPlay4(g, "you");

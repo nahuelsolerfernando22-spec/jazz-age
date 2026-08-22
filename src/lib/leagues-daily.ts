@@ -126,6 +126,7 @@ export function tierById(id: LeagueTierId): LeagueTier {
 
 export const LEAGUE_GAMES = [
   { id: "truco", label: "Mentira Criolla" },
+  { id: "truco-parejas", label: "Truco en Parejas" },
   { id: "chinchon", label: "El Corte Sucio" },
   { id: "mahjong", label: "Marfil Paciente" },
   { id: "ruleta", label: "La Rueda del Cuervo" },

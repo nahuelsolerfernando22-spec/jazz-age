@@ -35,6 +35,14 @@ export const SINGLE_GAMES: SingleGame[] = [
     hasNemesis: true,
   },
   {
+    id: "truco-parejas",
+    name: "Truco en Parejas",
+    to: "/truco-parejas",
+    hint: "2v2 con socio y señas.",
+    category: "naipes",
+    hasNemesis: true,
+  },
+  {
     id: "mahjong",
     name: "Marfil Paciente",
     to: "/mahjong",

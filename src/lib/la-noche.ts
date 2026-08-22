@@ -26,6 +26,12 @@ export interface Talisman {
 
 const POZO_MESAS: NocheMesa[] = [
   { gameId: "truco", label: "Mentira Criolla", route: "/truco", pedido: "Ganá la mano larga." },
+  {
+    gameId: "truco-parejas",
+    label: "Truco en Parejas",
+    route: "/truco-parejas",
+    pedido: "Ganá con tu socio a 15.",
+  },
   { gameId: "chinchon", label: "El Corte Sucio", route: "/chinchon", pedido: "Cortá primero." },
   { gameId: "blackjack", label: "Filo de Veintiuno", route: "/tables", pedido: "Sacale la mesa al croupier." },
   { gameId: "poker", label: "Cara de Piedra", route: "/poker", pedido: "Cerrá el duelo arriba." },

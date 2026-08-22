@@ -36,6 +36,12 @@ export const CUP_GAMES: CupGame[] = [
     criterio: "Ganás la partida a 15 y pasás de ronda.",
   },
   {
+    id: "truco-parejas",
+    nombre: "Truco en Parejas",
+    ruta: "/truco-parejas",
+    criterio: "Con tu socio a 15: la pareja que llega primero pasa de ronda.",
+  },
+  {
     id: "chinchon",
     nombre: "El Corte Sucio",
     ruta: "/chinchon",

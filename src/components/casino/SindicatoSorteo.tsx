@@ -41,6 +41,12 @@ export function SindicatoSorteo({
   const [color, setColor] = useState(COLORES_BANDA[0].valor);
   const [dados, setDados] = useState<Record<number, number> | null>(null);
   const [tirando, setTirando] = useState(false);
+  const [varianteId, setVarianteId] = useState(VARIANTE_CLASICA.id);
+  const reglas = useMemo(
+    () => VARIANTES.find((v) => v.id === varianteId) ?? VARIANTE_CLASICA,
+    [varianteId],
+  );
+
 
   const orden = useMemo(() => {
     if (!dados) return [];

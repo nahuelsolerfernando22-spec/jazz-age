@@ -1022,20 +1022,6 @@ export function debeCanjearObligado(cards: SyndicateCard[], maxNaipes = 5): bool
 
 
 function findValidSet(cards: SyndicateCard[]) {
-
-
-  if (cards.length < 3) return null;
-  for (let i = 0; i < cards.length; i++) {
-    for (let j = i + 1; j < cards.length; j++) {
-      for (let k = j + 1; k < cards.length; k++) {
-        const trio = [cards[i], cards[j], cards[k]];
-        const symbols = trio.map((c) => c.symbol);
-        const allSame = new Set(symbols).size === 1;
-        const allDifferent = new Set(symbols).size === 3;
-        const hasWildcard = symbols.includes("wildcard");
-        if (allSame || allDifferent || hasWildcard) return trio;
-      }
-    }
-  }
-  return null;
+  return mejorTrio(cards);
 }
+

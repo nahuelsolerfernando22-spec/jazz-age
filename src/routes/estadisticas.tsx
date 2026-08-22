@@ -163,12 +163,6 @@ function EstadisticasPage() {
               Todo lo que jugaste, contado por Madame Corvina.
             </p>
           </div>
-          <Link
-            to="/single"
-            className="inline-flex min-h-[44px] items-center rounded-full border border-[var(--oro)]/60 px-4 py-2 text-xs uppercase tracking-[0.25em] text-[var(--oro)] hover:bg-[var(--oro)]/10"
-          >
-            ← Volver a la sala
-          </Link>
         </header>
 
         {}

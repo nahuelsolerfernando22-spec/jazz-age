@@ -245,12 +245,6 @@ function AjustesInner() {
           <p className="text-[11px] uppercase tracking-[0.3em] text-[var(--marfil)]/65">
             El Cuervo Dorado
           </p>
-          <Link
-            to="/single"
-            className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-[var(--oro)]/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--oro)] hover:bg-[var(--oro)]/10"
-          >
-            Volver
-          </Link>
         </div>
 
         <div className="relative mb-6 overflow-hidden rounded-3xl border border-[var(--oro)]/40 shadow-[0_20px_60px_-30px_rgba(201,168,76,0.55)]">

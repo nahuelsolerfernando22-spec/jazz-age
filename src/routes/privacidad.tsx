@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/privacidad")({
   head: () => ({
@@ -45,12 +45,6 @@ function Privacidad() {
           >
             PRIVACIDAD Y DATOS
           </h1>
-          <Link
-            to="/ajustes"
-            className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-[var(--oro)]/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--oro)] hover:bg-[var(--oro)]/10"
-          >
-            Volver
-          </Link>
         </div>
 
         <div className="space-y-4">

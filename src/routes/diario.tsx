@@ -69,12 +69,8 @@ function DiarioPage() {
         </div>
         <header className="border-b-4 border-double border-[var(--tinta-parda)] pb-4">
           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-[var(--cd-wood)]">
-            <Link
-              to="/single"
-              className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-[11px] hover:underline"
-            >
-              ‹ Volver
-            </Link>
+            <span />
+
             <span>{today}</span>
           </div>
           <h1

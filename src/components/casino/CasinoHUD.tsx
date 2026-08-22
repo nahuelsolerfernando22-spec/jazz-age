@@ -511,81 +511,9 @@ function RoomIdentity({ room, accent }: { room: RoomMeta | null; accent: string 
   };
   const effectiveSurrender = surrenderHandler ?? (locked ? fallbackSurrender : null);
 
-  const handleBack = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (locked) return;
-    if (isSingle) {
-      router.navigate({ to: "/single" });
-      return;
-    }
-    const hasHistory = typeof window !== "undefined" && window.history.length > 1;
-    if (hasHistory) {
-      router.history.back();
-    } else {
-      router.navigate({ to: "/" });
-    }
-  };
-
-  const handleLobby = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (locked) return;
-    router.navigate({ to: isSingle ? "/single" : "/" });
-  };
-
-  const lockTitle = locked ? "Termina la partida o rendite para salir" : undefined;
-
   return (
     <div className="relative flex items-center gap-1.5">
-      {isSingle ? (
-        <button
-          type="button"
-          onClick={handleLobby}
-          disabled={locked}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-[3px] border border-[var(--brass)]/30 bg-[var(--noir)]/85 px-3 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--brass)] transition hover:text-[var(--brass-bright)] hover:border-[var(--brass)]/60 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[var(--brass)]"
-          style={{ height: "max(44px, calc(var(--hud-h) - 12px))" }}
-          title={lockTitle ?? "Volver al menú"}
-          aria-label="Volver al menú"
-        >
-          <span aria-hidden className="text-[14px] leading-none">
-            {locked ? "🔒" : "←"}
-          </span>
-          <span className="ml-1.5 hidden sm:inline">Menú</span>
-        </button>
-      ) : (
-        <>
-          {}
-          <button
-            type="button"
-            onClick={handleBack}
-            disabled={locked}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-[3px] border border-[var(--brass)]/30 bg-[var(--noir)]/85 px-3 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--brass)] transition hover:text-[var(--brass-bright)] hover:border-[var(--brass)]/60 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[var(--brass)]"
-            style={{ height: "max(44px, calc(var(--hud-h) - 12px))" }}
-            title={lockTitle ?? "Volver atrás"}
-            aria-label="Volver atrás"
-          >
-            <span aria-hidden className="text-[14px] leading-none">
-              {locked ? "🔒" : "←"}
-            </span>
-            <span className="ml-1.5 hidden sm:inline">Atrás</span>
-          </button>
-
-          {}
-          <button
-            type="button"
-            onClick={handleLobby}
-            disabled={locked}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-[3px] border border-[var(--brass)]/30 bg-[var(--noir)]/85 px-3 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--brass)] transition hover:text-[var(--brass-bright)] hover:border-[var(--brass)]/60 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[var(--brass)]"
-            style={{ height: "max(44px, calc(var(--hud-h) - 12px))" }}
-            title={lockTitle ?? "Ir al lobby"}
-            aria-label="Ir al lobby"
-          >
-            <span aria-hidden className="text-[14px] leading-none">
-              ⌂
-            </span>
-            <span className="ml-1.5 hidden sm:inline">Lobby</span>
-          </button>
-        </>
-      )}
+      {/* El botón de volver vive en GameBackButton (flotante, universal). */}
 
       {}
       {locked && started && effectiveSurrender && (

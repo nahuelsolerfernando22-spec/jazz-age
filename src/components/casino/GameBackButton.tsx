@@ -54,7 +54,8 @@ export function GameBackButton() {
   const requestRef = useRef<() => void>(() => {});
 
   const first = "/" + (location.pathname.split("/")[1] ?? "");
-  const active = GAME_ROUTES.has(first);
+  const secondary = SECONDARY_ROUTES.has(first);
+  const active = GAME_ROUTES.has(first) || secondary;
 
   useEffect(() => {
     if (!active && confirming) setConfirming(false);

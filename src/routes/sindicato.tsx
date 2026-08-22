@@ -1182,6 +1182,26 @@ function SindicatoPage() {
                       </path>
                     )}
 
+                    {/* Última plaza disputada: brasa de latón que respira. */}
+                    {lastConflictId === t.id && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ffd98a"
+                        strokeWidth={3}
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-opacity"
+                          values="0.75;0.15;0.75"
+                          dur="2.2s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+
+
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));

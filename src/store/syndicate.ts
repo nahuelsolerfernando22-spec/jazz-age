@@ -576,12 +576,13 @@ export const useSyndicate = create<SyndicateState>()(
 
       moveTroops: (fromId, toId, amount) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           const from = state.conquests[fromId];
           const to = state.conquests[toId];
           if (!from || !to || from.ownerId !== to.ownerId || from.troops <= amount) return state;
           if (state.turnPhase === "fortification" && state.hasMovedFortification) return state;
 
-          // Reagrupe T.E.G.: hasta 3 movimientos por fase de fortificación.
+          // Reagrupe: la variante define cuántos movimientos entran por fase.
           const fortifyMoves =
             state.turnPhase === "fortification" ? state.fortifyMoves + 1 : state.fortifyMoves;
 
@@ -593,19 +594,23 @@ export const useSyndicate = create<SyndicateState>()(
             },
             fortifyMoves,
             hasMovedFortification:
-              state.turnPhase === "fortification" ? fortifyMoves >= 3 : state.hasMovedFortification,
+              state.turnPhase === "fortification"
+                ? fortifyMoves >= reglas.reagrupesPorTurno
+                : state.hasMovedFortification,
           };
         }),
 
       drawCard: (playerId) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           if (state.deck.length === 0) return state;
           // Un solo naipe por turno, como manda la mesa.
           if (playerId === state.currentPlayerIndex && state.cardDrawnThisTurn) return state;
-          // T.E.G.: hace falta 1 sector tomado, o 2 si ya hiciste 3 canjes o más.
+          // T.E.G.: hace falta 1 sector tomado, o 2 si ya hiciste varios canjes.
           if (
             playerId === state.currentPlayerIndex &&
-            state.conquestsThisTurn < naipesRequeridos(state.tradeCount)
+            state.conquestsThisTurn <
+              naipesRequeridos(state.tradeCount, reglas.canjesParaDobleConquista)
           )
             return state;
           const newDeck = [...state.deck];
@@ -623,11 +628,13 @@ export const useSyndicate = create<SyndicateState>()(
 
       tradeCards: (playerId, cardIds) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           const player = state.players.find((p) => p.id === playerId);
           if (!player) return state;
 
           const tradedCards = player.cards.filter((c) => cardIds.includes(c.id));
-          // La mesa sólo acepta tríos legales: tres iguales, tres distintos o con comodín.
+          // La mesa sólo acepta tríos legales: tres iguales, tres distintos
+          // o cualquier combinación completada por un comodín.
           if (!esTrioValido(tradedCards)) return state;
           const remainingCards = player.cards.filter((c) => !cardIds.includes(c.id));
 
@@ -636,21 +643,22 @@ export const useSyndicate = create<SyndicateState>()(
           );
 
           const newDeck = [...state.deck, ...tradedCards].sort(() => Math.random() - 0.5);
-          const reinforcementsList = [4, 7, 10, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+          const escalera = reglas.canjeProgresion;
           const bonus =
-            reinforcementsList[Math.min(state.tradeCount, reinforcementsList.length - 1)] +
+            escalera[Math.min(state.tradeCount, escalera.length - 1)] +
             faccionDe(player.faction).tradeBonus;
 
-          // Contrabando (efecto pasivo de naipe extra si estuviera activo)
-          // Por ahora lo simplificamos a la lógica base de trade.
-
+          // T.E.G.: cada naipe canjeado que dibuje un sector propio deja
+          // fichas extra directamente sobre ese sector.
           const updatedConquests = { ...state.conquests };
+          let bonoSectores = 0;
           tradedCards.forEach((card) => {
             if (updatedConquests[card.territoryId]?.ownerId === playerId) {
               updatedConquests[card.territoryId] = {
                 ...updatedConquests[card.territoryId],
-                troops: updatedConquests[card.territoryId].troops + 2,
+                troops: updatedConquests[card.territoryId].troops + reglas.bonoSectorCanje,
               };
+              bonoSectores += reglas.bonoSectorCanje;
             }
           });
 
@@ -676,9 +684,17 @@ export const useSyndicate = create<SyndicateState>()(
               ? state.unassignedTroops
               : state.unassignedTroops + bonus,
             tradeCount: state.tradeCount + 1,
+            ultimoCanje: {
+              playerId,
+              fichas: bonus,
+              bonoSectores,
+              destino: destinoForzado,
+              at: Date.now(),
+            },
             conquests: updatedConquests,
           };
         }),
+
 
       conquerTerritory: (id, troopsRemaining, playerId) =>
         set((state) => {

@@ -310,11 +310,15 @@ export const useSyndicate = create<SyndicateState>()(
 
       canAttack: (fromId: string, toId: string) => {
         const state = get();
+        const reglas = normalizarReglas(state.reglas);
         const from = state.conquests[fromId];
         const to = state.conquests[toId];
-        if (!from || !to || from.ownerId === to.ownerId || from.troops <= 1) return false;
-        // Rondas de acomodo: nadie asalta hasta la tercera vuelta.
-        if (!puedeAsaltar(state.roundNumber)) return false;
+        if (!from || !to || from.ownerId === to.ownerId) return false;
+        // Mínimo de tropas para salir a la calle (la variante lo define).
+        if (from.troops < reglas.minTropasAtaque) return false;
+        // Rondas de acomodo: nadie asalta hasta que la variante lo habilite.
+        if (!puedeAsaltar(state.roundNumber, reglas.rondasSinAsalto)) return false;
+
 
         // Efecto del naipe: Toque de Queda (lockdown global)
         const activeLockdowns = Object.values(state.activeEffects).filter(

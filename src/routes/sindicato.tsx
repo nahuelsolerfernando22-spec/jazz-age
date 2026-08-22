@@ -1396,6 +1396,11 @@ function SindicatoPage() {
 
       <RunOverlay />
 
+      {enRun && !gameStarted && (
+        <SindicatoSorteo playerCount={ola.rivales} onStart={empezarConSorteo} />
+      )}
+
+
       {/* Controles flotantes: siempre por debajo del HUD medido */}
       <div
         className="fixed right-3 z-[85] flex flex-col items-end gap-2"

@@ -36,6 +36,7 @@ import { Route as SolitarioRouteImport } from './routes/solitario'
 import { Route as TablesRouteImport } from './routes/tables'
 import { Route as TorneoRouteImport } from './routes/torneo'
 import { Route as TrucoRouteImport } from './routes/truco'
+import { Route as TrucoParejasRouteImport } from './routes/truco-parejas'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -172,6 +173,11 @@ const TrucoRoute = TrucoRouteImport.update({
   path: '/truco',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrucoParejasRoute = TrucoParejasRouteImport.update({
+  id: '/truco-parejas',
+  path: '/truco-parejas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/tables': typeof TablesRoute
   '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
+  '/truco-parejas': typeof TrucoParejasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/tables': typeof TablesRoute
   '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
+  '/truco-parejas': typeof TrucoParejasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/tables': typeof TablesRoute
   '/torneo': typeof TorneoRoute
   '/truco': typeof TrucoRoute
+  '/truco-parejas': typeof TrucoParejasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
     | '/tables'
     | '/torneo'
     | '/truco'
+    | '/truco-parejas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/tables'
     | '/torneo'
     | '/truco'
+    | '/truco-parejas'
   id:
     | '__root__'
     | '/'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/tables'
     | '/torneo'
     | '/truco'
+    | '/truco-parejas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -379,6 +391,7 @@ export interface RootRouteChildren {
   TablesRoute: typeof TablesRoute
   TorneoRoute: typeof TorneoRoute
   TrucoRoute: typeof TrucoRoute
+  TrucoParejasRoute: typeof TrucoParejasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrucoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/truco-parejas': {
+      id: '/truco-parejas'
+      path: '/truco-parejas'
+      fullPath: '/truco-parejas'
+      preLoaderRoute: typeof TrucoParejasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   TablesRoute: TablesRoute,
   TorneoRoute: TorneoRoute,
   TrucoRoute: TrucoRoute,
+  TrucoParejasRoute: TrucoParejasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

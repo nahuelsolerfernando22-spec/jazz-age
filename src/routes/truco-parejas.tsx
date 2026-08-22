@@ -150,13 +150,13 @@ function TrucoParejasPage() {
 
   const play = (c: Card) => {
     if (!g) return;
-    haptics.tap();
+    haptics("tap");
     setG(playCard4(g, "you", c.id));
   };
 
   const doSena = (id: SenaId) => {
     if (!g) return;
-    haptics.tap();
+    haptics("tap");
     setShowSenas(false);
     setG(hacerSena(g, "you", id));
   };
@@ -274,14 +274,14 @@ function TrucoParejasPage() {
               label="¡Quiero!"
               primary
               onClick={() => {
-                haptics.tap();
+                haptics("tap");
                 setG(pending!.kind === "truco" ? responderTruco4(g, "you", true) : responderEnvido4(g, "you", true));
               }}
             />
             <ActionButton
               label="No quiero"
               onClick={() => {
-                haptics.tap();
+                haptics("tap");
                 setG(pending!.kind === "truco" ? responderTruco4(g, "you", false) : responderEnvido4(g, "you", false));
               }}
             />
@@ -295,7 +295,7 @@ function TrucoParejasPage() {
                 key={lv}
                 label={lv === "real" ? "Real envido" : lv === "falta" ? "Falta envido" : "Envido"}
                 onClick={() => {
-                  haptics.tap();
+                  haptics("tap");
                   setG(cantarEnvido4(g, "you", lv));
                 }}
               />
@@ -305,7 +305,7 @@ function TrucoParejasPage() {
             <ActionButton
               label={h.trucoLevel === "truco" ? "Retruco" : h.trucoLevel === "retruco" ? "Vale cuatro" : "Truco"}
               onClick={() => {
-                haptics.tap();
+                haptics("tap");
                 setG(cantarTruco4(g, "you"));
               }}
             />
@@ -320,7 +320,7 @@ function TrucoParejasPage() {
             <ActionButton
               label="Al mazo"
               onClick={() => {
-                haptics.tap();
+                haptics("tap");
                 setG(irseAlMazo4(g, "you"));
               }}
             />
@@ -364,7 +364,7 @@ function TrucoParejasPage() {
               <button
                 type="button"
                 onClick={() => {
-                  haptics.tap();
+                  haptics("tap");
                   if (g.winner) start();
                   else nextHand();
                 }}

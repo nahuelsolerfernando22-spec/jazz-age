@@ -1679,8 +1679,8 @@ function Table({
           );
         })()}
         <div
-          className="grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:gap-3 items-stretch overflow-hidden"
-          style={{ maxHeight: "min(56svh, 460px)" }}
+          className="mx-auto grid w-full min-h-0 flex-1 grid-cols-3 gap-1 sm:gap-2 items-stretch overflow-hidden"
+          style={{ maxHeight: "min(62svh, 520px)", maxWidth: "min(100%, 560px)" }}
         >
 
           {h.table.map((t, i) => {

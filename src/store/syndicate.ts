@@ -403,14 +403,23 @@ export const useSyndicate = create<SyndicateState>()(
 
           const comun = Math.max(8, Math.ceil(activeTerrs.length * 0.6));
 
+          // Orden de mesa: si vino del sorteo de dados se respeta, si no es 0..n.
+          const turnOrder =
+            sorteo?.turnOrder?.length === playerCount
+              ? sorteo.turnOrder
+              : players.map((p) => p.id);
+
           return {
             players,
             conquests,
             gameStarted: true,
             activeTerritories: activeTerrs,
             turnPhase: "deployment",
-            currentPlayerIndex: 0,
+            currentPlayerIndex: turnOrder[0],
+            turnOrder,
+            ordenDados: sorteo?.dados ?? {},
             unassignedTroops: 5,
+
             winner: null,
             // El mazo sólo lleva naipes de sectores que existen esta noche.
             deck: INITIAL_DECK.filter(

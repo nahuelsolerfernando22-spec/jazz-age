@@ -20,6 +20,11 @@ import { TurnBanner } from "@/components/casino/sindicato/TurnBanner";
 import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
+import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
+import {
+  ConquistaFlash,
+  type ConquistaAviso,
+} from "@/components/casino/sindicato/ConquistaFlash";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import {
   PATRONES_TABLERO,
@@ -366,6 +371,10 @@ function SindicatoPage() {
   });
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [altoContraste, setAltoContraste] = useState(false);
+  /** Aviso de sector tomado y racha de conquistas del turno. */
+  const [aviso, setAviso] = useState<ConquistaAviso | null>(null);
+  const rachaRef = useRef(0);
+  const [sacudon, setSacudon] = useState(0);
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
@@ -655,6 +664,30 @@ function SindicatoPage() {
     setAttackFrom(null);
   }, [turnPhase, currentPlayerIndex]);
 
+  // La racha de conquistas vive dentro del turno.
+  useEffect(() => {
+    rachaRef.current = 0;
+  }, [currentPlayerIndex]);
+
+  // El cartel de conquista se retira solo.
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 1700);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
+  // Sacudón corto del tablero al tomar un sector (sobrio, sin marear).
+  useEffect(() => {
+    if (!sacudon) return;
+    const el = containerRef.current;
+    if (!el) return;
+    el.classList.remove("sindicato-sacudon");
+    void el.offsetWidth;
+    el.classList.add("sindicato-sacudon");
+    const t = setTimeout(() => el.classList.remove("sindicato-sacudon"), 360);
+    return () => clearTimeout(t);
+  }, [sacudon]);
+
   /** Texto guía: siempre dice el próximo paso concreto. */
   const guia = useMemo(() => {
     if (currentPlayer?.isBot) return "Juega el rival…";
@@ -729,18 +762,30 @@ function SindicatoPage() {
           (useSyndicate.getState().players[currentPlayerIndex]?.cards.length ?? 0) > naipesAntes;
 
         // Moneda Doblada: +25 fichas por sector conquistado
+        let fichas = 0;
         if (currentPlayerIndex === 0 && runTalismanesList.includes("moneda-doblada")) {
           useCasino.getState().addChips(25);
+          fichas = 25;
         }
 
         haptics("heavy");
-        toast.success(
-          naipeNuevo
-            ? "¡Sector bajo control! Carta táctica recibida."
-            : "¡Sector bajo control! Con tres canjes hechos, hacen falta dos sectores para el naipe.",
-        );
         setIsCombatOpen(false);
         setLastConflictId(selectedId);
+
+        if (currentPlayerIndex === 0) {
+          // Golpe propio: cartel de conquista, racha y un sacudón corto del tablero.
+          rachaRef.current += 1;
+          const nombre =
+            activeTerritories.find((t) => t.id === selectedId)?.nombre ?? "Sector sin nombre";
+          setAviso({
+            key: Date.now(),
+            sector: nombre,
+            racha: rachaRef.current,
+            fichas: fichas || undefined,
+            naipe: naipeNuevo,
+          });
+          setSacudon((n) => n + 1);
+        }
       } else {
         updateTroops(selectedId, -bajasDefensor);
         toast.error(
@@ -779,6 +824,14 @@ function SindicatoPage() {
         .safe-pt { padding-top: max(1rem, var(--sa-top)); }
         .safe-pb { padding-bottom: max(1rem, var(--sa-bottom)); }
         body { overflow: hidden; position: fixed; width: 100%; height: 100%; overscroll-behavior: none; }
+        @keyframes sindicato-sacudon {
+          0% { transform: translate3d(0,0,0); }
+          25% { transform: translate3d(-3px,2px,0); }
+          55% { transform: translate3d(3px,-2px,0); }
+          100% { transform: translate3d(0,0,0); }
+        }
+        .sindicato-sacudon { animation: sindicato-sacudon 0.34s ease-out; }
+        @media (prefers-reduced-motion: reduce) { .sindicato-sacudon { animation: none; } }
       `,
         }}
       />
@@ -1128,6 +1181,26 @@ function SindicatoPage() {
                         />
                       </path>
                     )}
+
+                    {/* Última plaza disputada: brasa de latón que respira. */}
+                    {lastConflictId === t.id && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ffd98a"
+                        strokeWidth={3}
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-opacity"
+                          values="0.75;0.15;0.75"
+                          dur="2.2s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+
 
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
@@ -1648,6 +1721,20 @@ function SindicatoPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Placa de turno noir y cartel de conquista. */}
+      {currentPlayer && !winner ? (
+        <PlacaDeTurno
+          playerIndex={currentPlayerIndex}
+          name={currentPlayer.name ?? "Sindicato"}
+          color={currentPlayer.color ?? "var(--cd-gold-mid)"}
+          factionId={currentPlayer.faction}
+          isBot={!!currentPlayer.isBot}
+          round={roundNumber}
+          canAssault={puedeAsaltar(roundNumber)}
+        />
+      ) : null}
+      <ConquistaFlash aviso={aviso} />
 
 
       <ActionDock

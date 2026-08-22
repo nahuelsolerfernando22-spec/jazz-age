@@ -70,7 +70,7 @@ const ROOM_META: RoomMeta[] = [
     icon: iconBlackjack,
   },
   {
-    to: "/truco",
+    to: "/truco", "/truco-parejas",
     label: "El Truco del Cuervo",
     tag: "Envido · flor · truco",
     status: "hot",

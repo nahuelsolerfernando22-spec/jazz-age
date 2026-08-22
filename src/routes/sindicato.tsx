@@ -1253,7 +1253,7 @@ function SindicatoPage() {
                               fontWeight="900"
                               className="font-serif uppercase tracking-[0.18em]"
                             >
-                              {t.nombre}
+                              {etiqueta}
                             </text>
                           </g>
                         </g>

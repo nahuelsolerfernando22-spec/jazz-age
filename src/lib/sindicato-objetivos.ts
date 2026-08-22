@@ -13,7 +13,9 @@ import {
   adaptarMision,
   textoMision,
   type MisionParcial,
+  type MisionRasgo,
 } from "@/lib/sindicato-misiones";
+import { RASGO_POR_ID, type MapaRasgos } from "@/lib/sindicato-rasgos";
 
 export type Objetivo =
   | {
@@ -25,6 +27,7 @@ export type Objetivo =
       completos: BarrioId[];
       parciales: MisionParcial[];
       total: number;
+      rasgos?: MisionRasgo[];
     }
   | { kind: "barrios"; id: string; titulo: string; desc: string; barrios: BarrioId[] }
   | {
@@ -46,6 +49,8 @@ export interface ObjetivoBoard {
   eliminados: Record<number, boolean>;
   /** Objetivo común de la mesa (cantidad de sectores). */
   comun: number;
+  /** Marcas de sector de la noche. */
+  rasgos?: MapaRasgos;
 }
 
 function rngDe(semilla: string) {
@@ -86,8 +91,8 @@ function dominaBarrio(b: ObjetivoBoard, playerId: number, barrio: BarrioId) {
 }
 
 /** Misiones del catálogo que esta ciudad permite cumplir, ya recortadas. */
-export function misionesPosibles(territories: Territorio[]) {
-  return CATALOGO_MISIONES.map((m) => adaptarMision(m, territories)).filter(
+export function misionesPosibles(territories: Territorio[], rasgos: MapaRasgos = {}) {
+  return CATALOGO_MISIONES.map((m) => adaptarMision(m, territories, rasgos)).filter(
     (m): m is NonNullable<typeof m> => m !== null,
   );
 }
@@ -104,13 +109,14 @@ export function repartirObjetivos(
   playerIds: number[],
   territories: Territorio[],
   comun: number,
+  rasgos: MapaRasgos = {},
 ): Record<number, Objetivo> {
   const rnd = rngDe(`obj:${semilla}:${playerIds.length}`);
   const total = territories.length;
   const out: Record<number, Objetivo> = {};
 
   // Barajado determinista de las tarjetas viables.
-  const mazo = misionesPosibles(territories)
+  const mazo = misionesPosibles(territories, rasgos)
     .map((m) => ({ m, k: rnd() }))
     .sort((a, b) => a.k - b.k)
     .map((x) => x.m);
@@ -142,6 +148,7 @@ export function repartirObjetivos(
         completos: tarjeta.completos,
         parciales: tarjeta.parciales,
         total: tarjeta.total,
+        rasgos: tarjeta.rasgos,
       };
       return;
     }
@@ -208,6 +215,12 @@ export function evaluarObjetivo(
         const tengo = porBarrio.get(p.barrio) ?? 0;
         pasos.push(Math.min(1, tengo / Math.max(1, p.n)));
         if (tengo < p.n) faltan.push(`${nombreBarrio(p.barrio)} ${tengo}/${p.n}`);
+      }
+
+      for (const r of obj.rasgos ?? []) {
+        const tengo = mios.filter((c) => b.rasgos?.[c.id] === r.tipo).length;
+        pasos.push(Math.min(1, tengo / Math.max(1, r.n)));
+        if (tengo < r.n) faltan.push(`${RASGO_POR_ID[r.tipo].nombre} ${tengo}/${r.n}`);
       }
 
       if (obj.total > 0) {

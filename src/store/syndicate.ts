@@ -9,7 +9,14 @@ import {
   type Territorio,
 } from "@/lib/sindicato-data";
 import { FACCIONES, faccionDe, type FactionId } from "@/lib/sindicato-facciones";
-import { generateSubMap } from "@/lib/sindicato-map-gen";
+import { generateSubMap, type VarianteMapa } from "@/lib/sindicato-map-gen";
+import {
+  bonosDeRasgos,
+  dadosDefensa,
+  RASGO_POR_ID,
+  type MapaRasgos,
+  type RasgoId,
+} from "@/lib/sindicato-rasgos";
 import {
   NIVEL_TUNING,
   amenaza,
@@ -17,6 +24,7 @@ import {
   mejorAsalto,
   planDeployment,
   planFortify,
+  tuningDe,
   type AiBoard,
   type AiNivel,
 } from "@/lib/sindicato-ai";
@@ -80,6 +88,14 @@ interface SyndicateState {
   deck: SyndicateCard[];
   hasMovedFortification: boolean;
   assaultsThisTurn: number;
+  /** Marcas de sector de la ciudad de esta noche. */
+  sectorRasgos: MapaRasgos;
+  /** Forma que tomó la ciudad al generarse. */
+  mapaVariante: VarianteMapa | null;
+  /** Pares de sectores unidos por túnel. */
+  tuneles: Array<[string, string]>;
+  /** Rencor: cuántos golpes le debe cada capo a cada rival. */
+  rencor: Record<number, Record<number, number>>;
   /** Cabeza de los capos rivales: matón, capo o consejero. */
   aiNivel: AiNivel;
   setAiNivel: (n: AiNivel) => void;
@@ -196,6 +212,10 @@ export const useSyndicate = create<SyndicateState>()(
       assaultsThisTurn: 0,
       aiNivel: "capo",
       setAiNivel: (aiNivel) => set({ aiNivel }),
+      sectorRasgos: {},
+      mapaVariante: null,
+      tuneles: [],
+      rencor: {},
       tradeCount: 0,
       pendingDeployment: {},
       activeEffects: {},
@@ -279,7 +299,7 @@ export const useSyndicate = create<SyndicateState>()(
         );
         if (activeLockdowns.length > 0) return false;
 
-        return sonVecinos(fromId, toId);
+        return esVecinoActivo(state.activeTerritories, fromId, toId);
       },
 
       confirmDeployment: () =>
@@ -317,10 +337,17 @@ export const useSyndicate = create<SyndicateState>()(
         set(() => {
           // Determinar territorios activos
           let activeTerrs = TERRITORIOS;
+          let rasgos: MapaRasgos = {};
+          let variante: VarianteMapa | null = null;
+          let tuneles: Array<[string, string]> = [];
           if (mapSeed) {
             // El tamaño del mapa crece con la oleada de la noche.
             const target = Math.max(10, Math.min(TERRITORIOS.length, mapSize ?? 20));
-            activeTerrs = generateSubMap(mapSeed, target).territorios;
+            const gen = generateSubMap(mapSeed, target);
+            activeTerrs = gen.territorios;
+            rasgos = gen.rasgos;
+            variante = gen.variante;
+            tuneles = gen.tuneles;
           }
 
           const colors = ["var(--cd-gold-mid)", "#A83A3A", "var(--cd-teal)", "#6B7A3A", "#5B4B8A"];
@@ -383,11 +410,16 @@ export const useSyndicate = create<SyndicateState>()(
             ).sort(() => Math.random() - 0.5),
             hasMovedFortification: false,
             assaultsThisTurn: 0,
+            sectorRasgos: rasgos,
+            mapaVariante: variante,
+            tuneles,
+            rencor: {},
             objectives: repartirObjetivos(
               `${Date.now()}-${activeTerrs.length}`,
               players.map((p) => p.id),
               activeTerrs,
               comun,
+              rasgos,
             ),
             comunObjetivo: comun,
             roundNumber: 1,
@@ -449,6 +481,14 @@ export const useSyndicate = create<SyndicateState>()(
               chipRevenue += (barrio.bonus || 2) * 20 * multiplier;
             }
           });
+
+          // Rasgos del mapa: cuarteles, contrabando, ruinas.
+          const bonos = bonosDeRasgos(
+            playerTerritories.map((c) => c.id),
+            state.sectorRasgos,
+          );
+          reinforcements += bonos.refuerzo;
+          chipRevenue += bonos.renta;
 
           // Puro Apagado: +2 refuerzos al abrir cada turno
           if (nextIndex === 0 && state.activeEffects["talisman-puro-apagado"]) {
@@ -616,9 +656,17 @@ export const useSyndicate = create<SyndicateState>()(
             }
           }
           const esTurnoDelJugador = playerId === state.currentPlayerIndex;
+          // El que pierde el sector se lo anota: los capos devuelven golpes.
+          const rencor = { ...state.rencor };
+          if (oldOwnerId !== undefined && oldOwnerId !== playerId) {
+            const previo = { ...(rencor[oldOwnerId] ?? {}) };
+            previo[playerId] = (previo[playerId] ?? 0) + 1;
+            rencor[oldOwnerId] = previo;
+          }
           return {
             conquests: newConquests,
             players: newPlayers,
+            rencor,
             conquestsThisTurn: esTurnoDelJugador
               ? state.conquestsThisTurn + 1
               : state.conquestsThisTurn,
@@ -710,6 +758,7 @@ export const useSyndicate = create<SyndicateState>()(
           territories: state.activeTerritories,
           eliminados: Object.fromEntries(state.players.map((p) => [p.id, p.eliminated])),
           comun: state.comunObjetivo,
+          rasgos: state.sectorRasgos,
         };
 
         // El que está en turno tiene prioridad; después se revisa el resto de la mesa.
@@ -739,10 +788,30 @@ export const useSyndicate = create<SyndicateState>()(
         const bot = state.players[state.currentPlayerIndex];
         if (!bot || !bot.isBot || bot.eliminated) return;
 
-        const tuning = NIVEL_TUNING[state.aiNivel ?? "capo"];
+        const tuning = tuningDe(state.aiNivel ?? "capo", bot.faction);
         const board = (): AiBoard => {
           const s = get();
-          return { botId: bot.id, conquests: s.conquests, territories: s.activeTerritories };
+          // Quién va ganando la mesa (para que los capos le hagan frente).
+          const conteo = new Map<number, number>();
+          for (const c of Object.values(s.conquests)) {
+            conteo.set(c.ownerId, (conteo.get(c.ownerId) ?? 0) + 1);
+          }
+          let liderId: number | null = null;
+          let mejor = -1;
+          for (const [pid, n] of conteo) {
+            if (pid !== bot.id && n > mejor) {
+              mejor = n;
+              liderId = pid;
+            }
+          }
+          return {
+            botId: bot.id,
+            conquests: s.conquests,
+            territories: s.activeTerritories,
+            rasgos: s.sectorRasgos,
+            liderId,
+            rencor: s.rencor[bot.id] ?? {},
+          };
         };
 
         if (state.turnPhase === "deployment") {
@@ -781,7 +850,10 @@ export const useSyndicate = create<SyndicateState>()(
             const origen = plan.from;
             const destino = plan.to;
             const atkDados = Math.min(3, get().conquests[origen].troops - 1);
-            const defDados = Math.min(3, get().conquests[destino].troops);
+            const defDados = dadosDefensa(
+              get().conquests[destino].troops,
+              get().sectorRasgos[destino],
+            );
             const { bajasAtacante, bajasDefensor } = tirarAsalto(atkDados, defDados);
 
             get().updateTroops(origen, -bajasAtacante);
@@ -815,6 +887,13 @@ export const useSyndicate = create<SyndicateState>()(
     { name: "syndicate-storage" },
   ),
 );
+
+/** Vecindad de la noche: incluye los túneles que abrió el mapa procedural. */
+export function esVecinoActivo(territories: Territorio[], a: string, b: string): boolean {
+  const t = territories.find((x) => x.id === a);
+  if (t) return t.vecinos.includes(b);
+  return sonVecinos(a, b);
+}
 
 /** Resuelve un asalto al estilo T.E.G.: se comparan dados ordenados de mayor a menor. */
 export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {

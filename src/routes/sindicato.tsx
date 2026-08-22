@@ -1,3 +1,5 @@
+import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
+import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {
@@ -334,6 +336,8 @@ function SindicatoPage() {
     activeEffects,
     activeTerritories,
     hasMovedFortification,
+    sectorRasgos,
+    mapaVariante,
 
   } = useSyndicate();
 
@@ -1205,6 +1209,9 @@ function SindicatoPage() {
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
+                      const marca = sectorRasgos[t.id]
+                        ? RASGO_POR_ID[sectorRasgos[t.id]].icono
+                        : "";
                       const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
                       // El cartucho se mantiene dentro del área jugable visible
@@ -1248,6 +1255,18 @@ function SindicatoPage() {
                             >
                               {t.nombre}
                             </text>
+                            {marca && (
+                              <text
+                                x={-w / 2 - 7}
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                fill="#e9cf94"
+                                fontSize="10"
+                                fontWeight="900"
+                              >
+                                {marca}
+                              </text>
+                            )}
                           </g>
                         </g>
                       );
@@ -1462,6 +1481,15 @@ function SindicatoPage() {
                 <h2 className="font-serif italic font-bold text-3xl text-[var(--crema-brillo)] uppercase leading-none drop-shadow-sm">
                   {selectedTerritory.nombre}
                 </h2>
+                {sectorRasgos[selectedTerritory.id] && (
+                  <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--oro)]/90">
+                    {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].icono}{" "}
+                    {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].nombre}
+                    <span className="block normal-case tracking-normal text-[10px] text-[var(--crema-brillo)]/70 font-medium">
+                      {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].desc}
+                    </span>
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => setSelectedId(null)}
@@ -1588,7 +1616,8 @@ function SindicatoPage() {
 
                 defenderCount={Math.min(
                   4,
-                  Math.min(3, conquests[selectedId!]?.troops || 1) + desafioBonus.def,
+                  dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]) +
+                    desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}
                 bribeDice={myFaction.bribeDice}
@@ -1664,6 +1693,11 @@ function SindicatoPage() {
           <p className="pointer-events-none min-w-0 flex-1 truncate rounded-xl border border-[var(--oro)]/40 bg-black/85 px-3 py-1.5 font-bebas text-base leading-none text-[var(--oro-palido)] backdrop-blur-md">
             {guia}
           </p>
+          {mapaVariante && (
+            <span className="pointer-events-none hidden shrink-0 rounded-xl border border-[var(--oro)]/30 bg-black/85 px-2 py-1.5 font-bebas text-xs uppercase leading-none tracking-[0.12em] text-[var(--oro)]/80 backdrop-blur-md xs:inline-block">
+              {VARIANTE_NOMBRE[mapaVariante]}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => {

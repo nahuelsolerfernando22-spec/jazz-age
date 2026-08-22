@@ -1,13 +1,33 @@
 import { TERRITORIOS, type Territorio, type BarrioId, BARRIOS } from "./sindicato-data";
 import { rngFromSeed, rngInt, type RngFn } from "./rng";
+import { aplicarTuneles, generarRasgos, type MapaRasgos } from "./sindicato-rasgos";
 
 /** Formas posibles de la ciudad en una noche. */
-export type VarianteMapa = "mancha" | "archipielago" | "corredor";
+export type VarianteMapa =
+  | "mancha"
+  | "archipielago"
+  | "corredor"
+  | "peninsula"
+  | "anillo"
+  | "cuna";
+
+export const VARIANTE_NOMBRE: Record<VarianteMapa, string> = {
+  mancha: "Mancha cerrada",
+  archipielago: "Archipiélago",
+  corredor: "Corredor largo",
+  peninsula: "Península",
+  anillo: "Anillo de barrios",
+  cuna: "Cuña partida",
+};
 
 export interface ProceduralMap {
   territorios: Territorio[];
   seed: string;
   variante: VarianteMapa;
+  /** Marcas de sector de esta noche (fortín, contrabando, túnel...). */
+  rasgos: MapaRasgos;
+  /** Pares de túneles conectados. */
+  tuneles: Array<[string, string]>;
 }
 
 /** Vecindad simétrica: en los datos hay lindes cargadas de un solo lado. */
@@ -63,16 +83,23 @@ function crecer(sel: Set<string>, objetivo: number, rng: RngFn, variante: Varian
     const cand = [...frontera];
     let elegido: string;
 
-    if (variante === "corredor") {
+    if (variante === "corredor" || variante === "peninsula") {
       // Prefiere bordes poco pegados: la ciudad sale larga y angosta.
       const min = Math.min(...cand.map((c) => adherencia(c, sel)));
       const flacos = cand.filter((c) => adherencia(c, sel) === min);
       elegido = flacos[rngInt(rng, 0, flacos.length - 1)];
-    } else if (variante === "mancha") {
+    } else if (variante === "mancha" || variante === "cuna") {
       // Prefiere bordes muy pegados: la ciudad sale redonda y densa.
       const max = Math.max(...cand.map((c) => adherencia(c, sel)));
       const gordos = cand.filter((c) => adherencia(c, sel) === max);
       elegido = gordos[rngInt(rng, 0, gordos.length - 1)];
+    } else if (variante === "anillo") {
+      // Alterna pegado y suelto: la ciudad se cierra sobre sí misma.
+      const usarBorde = sel.size % 3 === 0;
+      const vals = cand.map((c) => adherencia(c, sel));
+      const objetivo = usarBorde ? Math.min(...vals) : Math.max(...vals);
+      const filtrados = cand.filter((c) => adherencia(c, sel) === objetivo);
+      elegido = filtrados[rngInt(rng, 0, filtrados.length - 1)];
     } else {
       elegido = cand[rngInt(rng, 0, cand.length - 1)];
     }
@@ -92,11 +119,19 @@ export function generateSubMap(seed: string, targetCount: number): ProceduralMap
   const rng = rngFromSeed(`map-gen:${seed}`);
   const objetivo = Math.max(8, Math.min(TERRITORIOS.length, targetCount));
 
-  const tirada = rng();
-  const variante: VarianteMapa =
-    tirada < 0.4 ? "mancha" : tirada < 0.72 ? "corredor" : "archipielago";
+  const barajaVariantes: VarianteMapa[] = [
+    "mancha",
+    "mancha",
+    "corredor",
+    "archipielago",
+    "peninsula",
+    "anillo",
+    "cuna",
+  ];
+  const variante = barajaVariantes[rngInt(rng, 0, barajaVariantes.length - 1)];
 
-  const nucleos = variante === "archipielago" ? rngInt(rng, 2, 3) : 1;
+  const nucleos =
+    variante === "archipielago" ? rngInt(rng, 2, 4) : variante === "cuna" ? 2 : 1;
   const sel = new Set<string>();
   for (let i = 0; i < nucleos; i++) {
     sel.add(TERRITORIOS[rngInt(rng, 0, TERRITORIOS.length - 1)].id);
@@ -109,12 +144,15 @@ export function generateSubMap(seed: string, targetCount: number): ProceduralMap
   if (final.size < objetivo) crecer(final, objetivo, rng, variante);
   final = mayorComponente(final);
 
-  const territorios: Territorio[] = TERRITORIOS.filter((t) => final.has(t.id)).map((t) => ({
+  const base: Territorio[] = TERRITORIOS.filter((t) => final.has(t.id)).map((t) => ({
     ...t,
     vecinos: (VECINOS_POR_ID[t.id] ?? []).filter((v) => final.has(v)),
   }));
 
-  return { territorios, seed, variante };
+  const rasgos = generarRasgos(`${seed}:${variante}`, base);
+  const { territorios, pares } = aplicarTuneles(seed, base, rasgos);
+
+  return { territorios, seed, variante, rasgos, tuneles: pares };
 }
 
 export function getActiveBarrios(territorios: Territorio[]) {

@@ -7,6 +7,8 @@ interface Props {
   sizes?: string;
   /** Prioridad de carga: el hero se descarga enseguida, los tiles no. */
   eager?: boolean;
+  /** `contain` muestra el arte completo; `cover` lo recorta para llenar el marco. */
+  fit?: "contain" | "cover";
   className?: string;
 }
 
@@ -21,6 +23,7 @@ export const GameCoverArt = memo(function GameCoverArt({
   gameId,
   sizes = "100vw",
   eager = false,
+  fit = "contain",
   className = "",
 }: Props) {
   const s = coverSourcesForGame(gameId);
@@ -55,7 +58,9 @@ export const GameCoverArt = memo(function GameCoverArt({
       {picture("absolute inset-[-8%] h-[116%] w-[116%] object-cover", {
         filter: "blur(28px) saturate(0.9) brightness(0.62)",
       })}
-      {picture("absolute inset-0 h-full w-full object-contain object-center")}
+      {picture(
+        `absolute inset-0 h-full w-full object-center ${fit === "cover" ? "object-cover" : "object-contain"}`,
+      )}
     </div>
   );
 });

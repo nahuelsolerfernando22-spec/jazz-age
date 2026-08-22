@@ -169,10 +169,10 @@ export function GamesSheet({ open, onClose }: Props) {
       />
       <div
         ref={containerRef}
-        className="paria-paper paria-grime relative w-full overflow-hidden rounded-t-sm border-x-0 border-b-0 border-t-2 border-[var(--oro)]/45"
+        className="paria-paper paria-grime relative flex w-full flex-col overflow-hidden rounded-t-sm border-x-0 border-b-0 border-t-2 border-[var(--oro)]/45"
         style={{
           paddingBottom: "calc(var(--sa-bottom) + 24px)",
-          maxHeight: "85vh",
+          maxHeight: "85dvh",
         }}
       >
         {/* Cintas de embalar sujetando la hoja al marco */}
@@ -187,9 +187,9 @@ export function GamesSheet({ open, onClose }: Props) {
         </div>
         <header className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 pb-2 pt-3 sm:px-5">
           <div className="min-w-0">
-            <p className="paria-eyebrow">— Sala completa —</p>
+            <p className="paria-eyebrow">— Sala completa · {SINGLE_GAMES.length} mesas —</p>
             <h2 id={TITLE_ID} className="paria-sign mt-0.5 truncate text-[1.35rem] sm:text-2xl">
-              TODOS LOS JUEGOS ({SINGLE_GAMES.length})
+              Todos los juegos
             </h2>
           </div>
           <button
@@ -247,7 +247,7 @@ export function GamesSheet({ open, onClose }: Props) {
           <div
             role="tablist"
             aria-label="Filtrar por categoría"
-            className="mt-2 flex snap-x snap-mandatory gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="cd-scroll-x-fade -mx-4 mt-2 flex snap-x snap-mandatory gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {FILTERS.map((f) => {
               const on = filter === f;
@@ -269,8 +269,8 @@ export function GamesSheet({ open, onClose }: Props) {
         </div>
 
         <div
-          className="overflow-y-auto px-4 pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ maxHeight: "calc(85dvh - 14rem)", overscrollBehavior: "contain" }}
+          className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ overscrollBehavior: "contain" }}
           aria-live="polite"
           aria-busy={!rendered}
         >

@@ -872,53 +872,7 @@ function OverflowMenu({
                 </div>
               </button>
 
-              {}
-              {isSingle ? (
-                <Link
-                  to="/single"
-                  title="Volver a la grilla de mesas del modo Single"
-                  aria-label="Volver a la lista de mesas"
-                  onClick={() => setOpen(false)}
-                  role="menuitem"
-                  className="group flex w-full items-center gap-3 rounded-sm border border-transparent px-2.5 py-2 pr-3 text-left transition-all duration-200 hover:border-[var(--brass)]/40 hover:bg-[var(--mahogany)]/45 active:scale-[0.98] active:bg-[var(--mahogany)]/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brass)]/60"
-                >
-                  <span className="grid size-7 place-items-center rounded-sm border border-[var(--brass)]/40 bg-[var(--noir)]/70 text-[var(--brass-bright)]">
-                    <DoorOpen size={14} strokeWidth={1.75} />
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-display text-[11px] uppercase tracking-[0.2em] text-[var(--brass-bright)]">
-                      Volver a Single
-                    </span>
-                    <span className="line-clamp-2 text-[11px] italic leading-tight text-[var(--smoke)]">
-                      grilla de mesas · trofeos
-                    </span>
-                  </div>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  title="Volver al menú principal · elegir modo de juego"
-                  aria-label="Salir al menú principal"
-                  onClick={() => {
-                    setOpen(false);
-                    exitToMainMenu();
-                  }}
-                  role="menuitem"
-                  className="group flex w-full items-center gap-3 rounded-sm border border-transparent px-2.5 py-2 pr-3 text-left transition-all duration-200 hover:border-[var(--brass)]/40 hover:bg-[var(--mahogany)]/45 active:scale-[0.98] active:bg-[var(--mahogany)]/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brass)]/60"
-                >
-                  <span className="grid size-7 place-items-center rounded-sm border border-[var(--brass)]/40 bg-[var(--noir)]/70 text-[var(--brass-bright)]">
-                    <DoorOpen size={14} strokeWidth={1.75} />
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-display text-[11px] uppercase tracking-[0.2em] text-[var(--brass-bright)]">
-                      Salir
-                    </span>
-                    <span className="line-clamp-2 text-[11px] italic leading-tight text-[var(--smoke)]">
-                      volver al menú principal
-                    </span>
-                  </div>
-                </button>
-              )}
+              {/* Salida del garito: sólo el botón flotante universal. */}
             </div>
 
             {}

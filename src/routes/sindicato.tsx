@@ -862,6 +862,11 @@ function SindicatoPage() {
                 const owner = conquest ? players[conquest.ownerId] : null;
                 const isSelected = selectedId === t.id;
                 const isMine = conquest?.ownerId === currentPlayerIndex;
+                const esOrigen = attackFrom === t.id;
+                const esObjetivo = objetivosValidos.has(t.id);
+                const puedeRecibir =
+                  turnPhase === "deployment" && isMine && unassignedTroops > 0;
+                const d = bordeIrregular(t.points, t.id);
                 const canSeeTroops =
                   isMine ||
                   Object.values(activeEffects).some(
@@ -879,23 +884,19 @@ function SindicatoPage() {
                 return (
                   <g
                     key={t.id}
-                    className="pointer-events-auto cursor-pointer"
+                    className="cursor-pointer"
                     onPointerDown={(e) => {
                       e.stopPropagation();
-                      if (turnPhase === "deployment" && isMine && unassignedTroops > 0) {
-                        assignTroops(t.id, 1);
-                        haptics("tap");
-                      } else {
-                        setSelectedId(t.id);
-                        haptics("tap");
-                      }
+                      handleSectorTap(t.id);
                     }}
                   >
+                    {/* Zona táctil: todo el sector responde al toque, no sólo la ficha. */}
+                    <path d={d} fill="#fff" fillOpacity={0.001} className="pointer-events-auto" />
+
                     {/* Sector: arte raster propio del dueño (o de la facción si es neutral) */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill={
-                        patronDeDueno(previewOwner) ??
                         (conquest ? patronDeDueno(conquest.ownerId) : null) ??
                         patronDeFaccion(owner?.faction)
                       }
@@ -916,7 +917,7 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
                     <motion.path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       initial={false}
                       animate={{
                         fill: owner
@@ -941,7 +942,7 @@ function SindicatoPage() {
 
                     {/* Canto de latón raster: trazo oscuro exterior + filete de latón */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="#0b0806"
                       strokeWidth={altoContraste ? (isSelected ? 10 : 8) : isSelected ? 8 : 6}
@@ -949,7 +950,7 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
                     <motion.path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="url(#tex-laton)"
                       initial={false}
@@ -968,15 +969,76 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
 
+                    {/* Lo tuyo se lee de un golpe: filete blanco marcado en tus sectores. */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="#fff8e0"
-                      strokeWidth={0.8}
-                      strokeOpacity={isMine ? 0.5 : 0.22}
-                      strokeDasharray="3 5"
+                      strokeWidth={isMine ? 2.4 : 0.8}
+                      strokeOpacity={isMine ? 0.95 : 0.18}
+                      strokeDasharray={isMine ? undefined : "3 5"}
                       className="pointer-events-none"
                     />
+
+                    {/* Sector propio listo para recibir fichas en el despliegue. */}
+                    {puedeRecibir && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#8de89b"
+                        strokeWidth={3.2}
+                        strokeDasharray="10 8"
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          from="18"
+                          to="0"
+                          dur="1s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+                    {/* Cabecera del asalto elegida por el jugador. */}
+                    {esOrigen && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ffe9a8"
+                        strokeWidth={4.5}
+                        strokeDasharray="14 9"
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          from="23"
+                          to="0"
+                          dur="0.8s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+                    {/* Blancos válidos desde esa cabecera. */}
+                    {esObjetivo && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ff5a4a"
+                        strokeWidth={4}
+                        strokeOpacity={0.95}
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-opacity"
+                          values="0.4;1;0.4"
+                          dur="1.1s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));

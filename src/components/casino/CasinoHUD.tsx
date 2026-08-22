@@ -555,7 +555,7 @@ function RoomIdentity({ room, accent }: { room: RoomMeta | null; accent: string 
               <ArtIcon src={room.icon} alt="" size={14} />
             </span>
             <span
-              className="hidden sm:inline font-script text-[15px] leading-none"
+              className="hidden min-w-0 max-w-[42vw] truncate sm:inline font-script text-[15px] leading-none"
               style={{
                 color: accent,
                 textShadow: `0 0 6px ${accent.replace(")", " / 0.45)")}, 0 1px 0 rgba(0,0,0,0.7)`,

@@ -65,7 +65,7 @@ const SMALL_BLIND = 5;
 const CALMA_MS = 7000;
 
 function PokerPage() {
-  useSingleHostessCorner("poker");
+  useSingleHostessCorner("poker", { backdropOnly: true });
   const haptic = useHaptics();
   const chips = useCasino((s) => s.chips);
   const addChips = useCasino((s) => s.addChips);

@@ -1,3 +1,4 @@
+import { rngFromSeed } from "@/lib/rng";
 export type LevelShape =
   | "cuadrado"
   | "doble"
@@ -1850,13 +1851,74 @@ export const LEVELS: LevelDef[] = [
   ),
 ];
 
+// ── Variación roguelike del trazado ──────────────────────────────────────────
+// Cada vigilia (run) espeja el tablero de forma determinista según su semilla,
+// así el mismo nivel nunca se juega dos veces con el mismo recorrido.
+let LAYOUT_VARIANT = "";
+const VARIANT_CACHE = new Map<string, LevelDef>();
+
+export function setLayoutVariant(seed: string): void {
+  if (seed === LAYOUT_VARIANT) return;
+  LAYOUT_VARIANT = seed;
+  VARIANT_CACHE.clear();
+}
+
+function applyVariant(lv: LevelDef): LevelDef {
+  if (!LAYOUT_VARIANT) return lv;
+  const key = `${LAYOUT_VARIANT}:${lv.id}`;
+  const hit = VARIANT_CACHE.get(key);
+  if (hit) return hit;
+  const rng = rngFromSeed(`mahjong-layout:${key}`);
+  const mirrorX = rng() < 0.5;
+  const mirrorY = rng() < 0.5;
+  let maxX = 0;
+  let maxY = 0;
+  for (const p of lv.positions) {
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const positions =
+    mirrorX || mirrorY
+      ? lv.positions.map((p) => ({
+          x: mirrorX ? maxX - p.x : p.x,
+          y: mirrorY ? maxY - p.y : p.y,
+          z: p.z,
+        }))
+      : lv.positions;
+  const out: LevelDef = { ...lv, positions };
+  VARIANT_CACHE.set(key, out);
+  return out;
+}
+
+/**
+ * Recorrido de una vigilia: por cada piso se sortea un tablero dentro de la
+ * banda de dificultad correspondiente, de modo que dos runs nunca compartan
+ * la misma secuencia de mesas.
+ */
+export function runRouteIds(seed: string, floors = 10): string[] {
+  const pool = LEVELS.filter((l) => !l.practice).sort((a, b) => a.order - b.order);
+  const rng = rngFromSeed(`mahjong-route:${seed}`);
+  const band = pool.length / floors;
+  const used = new Set<string>();
+  const route: string[] = [];
+  for (let f = 0; f < floors; f++) {
+    const lo = Math.floor(f * band);
+    const hi = Math.max(lo, Math.floor((f + 1) * band) - 1);
+    const slice = pool.slice(lo, hi + 1).filter((l) => !used.has(l.id));
+    const pick = (slice.length ? slice : pool)[Math.floor(rng() * (slice.length || pool.length))];
+    used.add(pick.id);
+    route.push(pick.id);
+  }
+  return route;
+}
+
 export function getLevel(id: string): LevelDef {
   const lv = LEVELS.find((l) => l.id === id);
-  if (lv) return lv;
+  if (lv) return applyVariant(lv);
   const m = /^l(\d+)$/.exec(id);
   if (m) {
     const order = Number(m[1]);
-    if (order > LEVELS.length) return getOrSynthLevel(order);
+    if (order > LEVELS.length) return applyVariant(getOrSynthLevel(order));
   }
   throw new Error(`Nivel desconocido: ${id}`);
 }

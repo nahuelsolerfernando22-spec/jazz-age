@@ -462,15 +462,22 @@ function Felt({
       <div className="flex justify-center gap-1.5">
         {[0, 1, 2, 3, 4].map((i) => {
           const c = state.board[i];
-          return (
-            <PlayingCard
-              key={c ? cardLabel(c) : `hueco-${i}`}
-              card={c}
-              hidden={!c}
-              lit={!!c && luces.has(cardLabel(c))}
-            />
-          );
+          if (!c) {
+            return (
+              <div
+                key={`hueco-${i}`}
+                className={`${SIZES.md.box} rounded-[3px] border border-dashed`}
+                style={{
+                  borderColor: "oklch(0.72 0.14 78 / 0.28)",
+                  background: "oklch(0 0 0 / 0.18)",
+                }}
+                aria-hidden
+              />
+            );
+          }
+          return <PlayingCard key={cardLabel(c)} card={c} lit={luces.has(cardLabel(c))} />;
         })}
+
       </div>
 
       <motion.p

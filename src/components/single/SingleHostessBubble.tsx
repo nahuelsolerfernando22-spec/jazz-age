@@ -83,9 +83,9 @@ export function SingleHostessBubble({ gameId, overrideLine }: Props) {
 
   return (
     <div
-      className="pointer-events-none fixed z-30 flex items-end justify-end gap-2"
+      className="cd-hostess-bubble pointer-events-none fixed z-30 flex items-end justify-end gap-2"
       style={{
-        bottom: "calc(var(--sa-bottom) + 12px)",
+        bottom: "calc(max(var(--sa-bottom), var(--gesture-bar, 8px)) + 12px)",
         right: "max(8px, var(--sa-right))",
         maxWidth: "min(320px, calc(100vw - 96px))",
         fontFamily: "'Barlow', system-ui, sans-serif",
@@ -94,6 +94,7 @@ export function SingleHostessBubble({ gameId, overrideLine }: Props) {
       role="complementary"
       aria-label={`Anfitriona ${hostess.name}`}
     >
+
       {open ? (
         <div
           className="pointer-events-auto max-w-[220px] rounded-2xl rounded-br-sm border border-[var(--oro-viejo)]/60 bg-[#1a1612]/95 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.6)] backdrop-blur-md"

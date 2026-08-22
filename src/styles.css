@@ -5766,4 +5766,10 @@ a[href] {
   [data-float="left"] { margin-left: max(var(--sa-left), 8px); }
   .fixed.right-0,
   [data-float="right"] { margin-right: max(var(--sa-right), 8px); }
+  /* La burbuja de anfitriona se despega de la barra de gestos. */
+  .cd-hostess-bubble {
+    bottom: calc(max(var(--sa-bottom), var(--gesture-bar, 8px)) + 16px) !important;
+    right: calc(max(8px, var(--sa-right)) + 8px) !important;
+  }
 }
+

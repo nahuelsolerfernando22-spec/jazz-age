@@ -8,8 +8,24 @@
  */
 
 import { BARRIOS, type BarrioId, type Territorio } from "@/lib/sindicato-data";
+import {
+  CATALOGO_MISIONES,
+  adaptarMision,
+  textoMision,
+  type MisionParcial,
+} from "@/lib/sindicato-misiones";
 
 export type Objetivo =
+  | {
+      /** Tarjeta del catálogo fijo, ya recortada al mapa de esta noche. */
+      kind: "mision";
+      id: string;
+      titulo: string;
+      desc: string;
+      completos: BarrioId[];
+      parciales: MisionParcial[];
+      total: number;
+    }
   | { kind: "barrios"; id: string; titulo: string; desc: string; barrios: BarrioId[] }
   | {
       kind: "barrios-mas";
@@ -69,7 +85,20 @@ function dominaBarrio(b: ObjetivoBoard, playerId: number, barrio: BarrioId) {
   return terrs.length > 0 && terrs.every((t) => b.conquests[t.id]?.ownerId === playerId);
 }
 
-/** Reparte un objetivo tapado a cada jugador, determinista por semilla. */
+/** Misiones del catálogo que esta ciudad permite cumplir, ya recortadas. */
+export function misionesPosibles(territories: Territorio[]) {
+  return CATALOGO_MISIONES.map((m) => adaptarMision(m, territories)).filter(
+    (m): m is NonNullable<typeof m> => m !== null,
+  );
+}
+
+/**
+ * Reparte una tarjeta tapada a cada capo, determinista por semilla.
+ *
+ * Primero se barajan las misiones del catálogo que el mapa de esta noche
+ * habilita; si la ciudad salió chica o partida y no alcanzan las tarjetas, se
+ * completa con "ajuste de cuentas" o "fuerza bruta".
+ */
 export function repartirObjetivos(
   semilla: string,
   playerIds: number[],
@@ -77,47 +106,21 @@ export function repartirObjetivos(
   comun: number,
 ): Record<number, Objetivo> {
   const rnd = rngDe(`obj:${semilla}:${playerIds.length}`);
-  const activos = barriosActivos(territories);
   const total = territories.length;
   const out: Record<number, Objetivo> = {};
 
-  // Barrios ordenados por tamaño: los objetivos de dominio usan los chicos.
-  const porTamaño = [...activos].sort(
-    (a, b) => terrsDeBarrio(territories, a).length - terrsDeBarrio(territories, b).length,
-  );
+  // Barajado determinista de las tarjetas viables.
+  const mazo = misionesPosibles(territories)
+    .map((m) => ({ m, k: rnd() }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.m);
 
-  playerIds.forEach((pid, i) => {
-    const tirada = rnd();
+  playerIds.forEach((pid) => {
     const otros = playerIds.filter((p) => p !== pid);
+    const tirada = rnd();
 
-    if (tirada < 0.4 && porTamaño.length >= 2) {
-      const a = porTamaño[(i * 2) % porTamaño.length];
-      const b = porTamaño[(i * 2 + 1) % porTamaño.length];
-      const barrios = a === b ? [a] : [a, b];
-      const cubre = barrios.reduce((n, x) => n + terrsDeBarrio(territories, x).length, 0);
-      const extra = Math.max(0, Math.ceil(total * 0.45) - cubre);
-      if (extra > 0) {
-        out[pid] = {
-          kind: "barrios-mas",
-          id: `obj-bm-${pid}`,
-          titulo: "Plantar bandera",
-          desc: `Dominá ${barrios.map(nombreBarrio).join(" y ")} y sumá ${extra} sectores más en cualquier lado.`,
-          barrios,
-          extra,
-        };
-      } else {
-        out[pid] = {
-          kind: "barrios",
-          id: `obj-b-${pid}`,
-          titulo: "Dueño del barrio",
-          desc: `Dominá por completo ${barrios.map(nombreBarrio).join(" y ")}.`,
-          barrios,
-        };
-      }
-      return;
-    }
-
-    if (tirada < 0.68 && otros.length > 0) {
+    // Una de cada cinco tarjetas es de destrucción, como en la mesa original.
+    if (tirada < 0.2 && otros.length > 0) {
       const target = otros[Math.floor(rnd() * otros.length)];
       out[pid] = {
         kind: "destruir",
@@ -129,24 +132,27 @@ export function repartirObjetivos(
       return;
     }
 
-    if (tirada < 0.85 && activos.length >= 3) {
+    const tarjeta = mazo.pop();
+    if (tarjeta) {
       out[pid] = {
-        kind: "frentes",
-        id: `obj-f-${pid}`,
-        titulo: "Mano larga",
-        desc: `Tené al menos 2 sectores en 3 barrios distintos y ${Math.ceil(total * 0.4)} sectores en total.`,
-        barrios: 3,
-        porBarrio: 2,
+        kind: "mision",
+        id: `${tarjeta.id}-${pid}`,
+        titulo: tarjeta.titulo,
+        desc: textoMision(tarjeta),
+        completos: tarjeta.completos,
+        parciales: tarjeta.parciales,
+        total: tarjeta.total,
       };
       return;
     }
 
+    const n = Math.max(comun, Math.ceil(total * 0.55));
     out[pid] = {
       kind: "cantidad",
       id: `obj-c-${pid}`,
       titulo: "Fuerza bruta",
-      desc: `Controlá ${Math.max(comun, Math.ceil(total * 0.55))} sectores.`,
-      n: Math.max(comun, Math.ceil(total * 0.55)),
+      desc: `Controlá ${n} sectores.`,
+      n,
     };
   });
 
@@ -179,6 +185,43 @@ export function evaluarObjetivo(
   }
 
   switch (obj.kind) {
+    case "mision": {
+      // Cada requisito de la tarjeta pesa lo mismo dentro del progreso.
+      const porBarrio = new Map<BarrioId, number>();
+      for (const c of mios) {
+        const t = b.territories.find((x) => x.id === c.id);
+        if (!t) continue;
+        porBarrio.set(t.barrio, (porBarrio.get(t.barrio) ?? 0) + 1);
+      }
+
+      const pasos: number[] = [];
+      const faltan: string[] = [];
+
+      for (const barrio of obj.completos) {
+        const hay = terrsDeBarrio(b.territories, barrio).length;
+        const tengo = porBarrio.get(barrio) ?? 0;
+        pasos.push(hay > 0 ? Math.min(1, tengo / hay) : 1);
+        if (tengo < hay) faltan.push(`${nombreBarrio(barrio)} ${tengo}/${hay}`);
+      }
+
+      for (const p of obj.parciales) {
+        const tengo = porBarrio.get(p.barrio) ?? 0;
+        pasos.push(Math.min(1, tengo / Math.max(1, p.n)));
+        if (tengo < p.n) faltan.push(`${nombreBarrio(p.barrio)} ${tengo}/${p.n}`);
+      }
+
+      if (obj.total > 0) {
+        pasos.push(Math.min(1, mios.length / obj.total));
+        if (mios.length < obj.total) faltan.push(`total ${mios.length}/${obj.total}`);
+      }
+
+      const prog = pasos.length ? pasos.reduce((a, x) => a + x, 0) / pasos.length : 0;
+      return {
+        cumplido: faltan.length === 0 || comunCumplido,
+        progreso: Math.max(prog, comunProg),
+        detalle: faltan.length ? faltan.join(" · ") : "Tarjeta cumplida",
+      };
+    }
     case "barrios": {
       const hechos = obj.barrios.filter((x) => dominaBarrio(b, playerId, x));
       return {

@@ -376,7 +376,11 @@ export const useSyndicate = create<SyndicateState>()(
             currentPlayerIndex: 0,
             unassignedTroops: 5,
             winner: null,
-            deck: [...INITIAL_DECK].sort(() => Math.random() - 0.5),
+            // El mazo sólo lleva naipes de sectores que existen esta noche.
+            deck: INITIAL_DECK.filter(
+              (c) =>
+                c.territoryId === "special" || activeTerrs.some((t) => t.id === c.territoryId),
+            ).sort(() => Math.random() - 0.5),
             hasMovedFortification: false,
             assaultsThisTurn: 0,
             objectives: repartirObjetivos(

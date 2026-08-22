@@ -96,8 +96,10 @@ const tabStyle = (active: boolean): React.CSSProperties => ({
   touchAction: "manipulation",
   WebkitTapHighlightColor: "transparent",
   fontFamily: "'Bebas Neue', 'Barlow', sans-serif",
-  fontSize: "0.5625rem",
-  letterSpacing: "0.26em",
+  // Tipografía fluida: legible en 320px y sin desbordar en tablets.
+  fontSize: "clamp(0.625rem, 2.5vw, 0.75rem)",
+  letterSpacing: "clamp(0.08em, 0.7vw, 0.2em)",
+  lineHeight: 1.1,
   textShadow: active ? "0 0 10px rgba(244,217,122,0.35)" : "0 1px 0 rgba(0,0,0,0.75)",
 });
 

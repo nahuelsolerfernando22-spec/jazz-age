@@ -20,6 +20,11 @@ import { TurnBanner } from "@/components/casino/sindicato/TurnBanner";
 import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
+import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
+import {
+  ConquistaFlash,
+  type ConquistaAviso,
+} from "@/components/casino/sindicato/ConquistaFlash";
 import { faccionDe } from "@/lib/sindicato-facciones";
 import {
   PATRONES_TABLERO,

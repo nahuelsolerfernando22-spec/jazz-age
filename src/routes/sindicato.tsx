@@ -552,9 +552,10 @@ function SindicatoPage() {
   }, [activeTerritories, centros]);
 
 
-  // Sector propio que lidera el asalto: se calcula una sola vez y se usa en dados y resolución.
+  // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;
+    if (attackFrom && useSyndicate.getState().canAttack(attackFrom, selectedId)) return attackFrom;
     const territory = activeTerritories.find((t) => t.id === selectedId);
     if (!territory) return null;
     return (
@@ -570,9 +571,18 @@ function SindicatoPage() {
         })
         .sort((a, b) => conquests[b].troops - conquests[a].troops)[0] ?? null
     );
-  }, [selectedId, currentPlayerIndex, conquests, activeTerritories, currentPlayer]);
+  }, [selectedId, currentPlayerIndex, conquests, activeTerritories, currentPlayer, attackFrom]);
 
   const canAttack = !!attackerId;
+
+  /** Sectores enemigos alcanzables desde la cabecera elegida. */
+  const objetivosValidos = useMemo(() => {
+    if (turnPhase !== "attack" || !attackFrom) return new Set<string>();
+    const t = activeTerritories.find((x) => x.id === attackFrom);
+    if (!t) return new Set<string>();
+    const st = useSyndicate.getState();
+    return new Set(t.vecinos.filter((v) => st.canAttack(attackFrom, v)));
+  }, [turnPhase, attackFrom, activeTerritories, conquests]);
 
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
@@ -583,15 +593,98 @@ function SindicatoPage() {
   }, [selectedId, isMine, activeTerritories, conquests, currentPlayerIndex]);
 
 
-  const handleSiege = () => {
-    const activeBribe = Object.values(activeEffects).find(
+  const handleSiege = useCallback(() => {
+    const activeBribe = Object.values(useSyndicate.getState().activeEffects).find(
       (e) => e.type === "bribe" && e.ownerId === currentPlayerIndex,
     );
     setBribeActive(!!activeBribe);
     setDesafioBonus({ atk: 0, def: 0 });
     setIsCombatOpen(true);
     haptics("heavy");
-  };
+  }, [currentPlayerIndex, haptics]);
+
+  /**
+   * Un solo gesto para todo: tocar un sector hace lo que corresponde a la fase.
+   * Despliegue -> pone una ficha en lo tuyo. Asalto -> elegís cabecera y luego blanco.
+   */
+  const handleSectorTap = useCallback(
+    (id: string) => {
+      const st = useSyndicate.getState();
+      if (st.players[st.currentPlayerIndex]?.isBot || st.winner) return;
+      const c = st.conquests[id];
+      const mine = c?.ownerId === st.currentPlayerIndex;
+
+      if (st.turnPhase === "deployment") {
+        if (mine && st.unassignedTroops > 0) {
+          st.assignTroops(id, 1);
+          haptics("tap");
+          return;
+        }
+        setSelectedId(id);
+        haptics("tap");
+        return;
+      }
+
+      if (st.turnPhase === "attack") {
+        if (mine) {
+          if ((c?.troops ?? 0) > 1) {
+            setAttackFrom(id);
+            setSelectedId(null);
+            haptics("tap");
+          } else {
+            setSelectedId(id);
+            toast.error("Ese sector necesita al menos 2 tropas para salir al asalto.");
+          }
+          return;
+        }
+        if (attackFrom && st.canAttack(attackFrom, id)) {
+          setSelectedId(id);
+          handleSiege();
+          return;
+        }
+        setSelectedId(id);
+        haptics("tap");
+        return;
+      }
+
+      setSelectedId(id);
+      haptics("tap");
+    },
+    [attackFrom, haptics, handleSiege],
+  );
+
+  // La cabecera de asalto se limpia al cambiar de fase o de mano.
+  useEffect(() => {
+    setAttackFrom(null);
+  }, [turnPhase, currentPlayerIndex]);
+
+  /** Texto guía: siempre dice el próximo paso concreto. */
+  const guia = useMemo(() => {
+    if (currentPlayer?.isBot) return "Juega el rival…";
+    if (turnPhase === "deployment")
+      return unassignedTroops > 0
+        ? `Tocá tus sectores (borde blanco) para poner ${unassignedTroops} fichas`
+        : pendingTroops > 0
+          ? "Confirmá el despliegue abajo"
+          : "Sin refuerzos: pasá al asalto";
+    if (turnPhase === "attack") {
+      if (!puedeAsaltar(roundNumber)) return "Vuelta de acomodo: todavía no se asalta";
+      if (!attackFrom) return "Tocá un sector tuyo con 2+ tropas para atacar desde ahí";
+      return objetivosValidos.size > 0
+        ? "Ahora tocá un sector enemigo marcado en rojo"
+        : "Ese sector no tiene vecinos enemigos: elegí otro";
+    }
+    if (turnPhase === "fortification") return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
+    return "";
+  }, [
+    currentPlayer?.isBot,
+    turnPhase,
+    unassignedTroops,
+    pendingTroops,
+    roundNumber,
+    attackFrom,
+    objetivosValidos,
+  ]);
   const runTalismanesList = useSyndicateRun((s) => s.talismanes);
 
   useEffect(() => {

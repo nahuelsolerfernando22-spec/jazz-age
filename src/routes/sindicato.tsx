@@ -354,6 +354,10 @@ function SindicatoPage() {
 
   const haptics = useHaptics();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** Sector propio elegido como cabecera del asalto (paso 1 de 2). */
+  const [attackFrom, setAttackFrom] = useState<string | null>(null);
+  /** Panel plegable con barrios, control y objetivo: libera pantalla. */
+  const [infoOpen, setInfoOpen] = useState(false);
   const [isCombatOpen, setIsCombatOpen] = useState(false);
   const [rolling, setRolling] = useState(false);
   // Desafío de mesa del barrio: ganar suma un dado de asalto, perder se lo da al defensor.

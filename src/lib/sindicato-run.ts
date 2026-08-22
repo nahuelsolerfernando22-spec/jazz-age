@@ -161,7 +161,10 @@ export interface OlaConfig {
 export function configOla(seed: string, ola: number): OlaConfig {
   const rng = rngFromSeed(`sindicato-ola:${seed}:${ola}`);
   const esCapo = ola === OLAS_TOTALES;
-  const sectores = Math.min(28, 16 + (ola - 1) * 3);
+  // La ciudad nunca es la misma: la base crece con la oleada, pero cada run
+  // la corre unos sectores para arriba o para abajo.
+  const base = 16 + (ola - 1) * 3;
+  const sectores = Math.max(12, Math.min(34, base + rngInt(rng, -4, 5)));
   const rivales = esCapo ? 2 : Math.min(5, 2 + Math.floor(ola / 1.5));
   const ventajaBot = esCapo ? 4 + ola * 2 : Math.floor((ola - 1) * 1.6);
   const reparto = Math.ceil(sectores / rivales);

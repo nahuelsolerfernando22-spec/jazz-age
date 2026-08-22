@@ -1681,6 +1681,11 @@ function SindicatoPage() {
           <p className="pointer-events-none min-w-0 flex-1 truncate rounded-xl border border-[var(--oro)]/40 bg-black/85 px-3 py-1.5 font-bebas text-base leading-none text-[var(--oro-palido)] backdrop-blur-md">
             {guia}
           </p>
+          {mapaVariante && (
+            <span className="pointer-events-none hidden shrink-0 rounded-xl border border-[var(--oro)]/30 bg-black/85 px-2 py-1.5 font-bebas text-xs uppercase leading-none tracking-[0.12em] text-[var(--oro)]/80 backdrop-blur-md xs:inline-block">
+              {VARIANTE_NOMBRE[mapaVariante]}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => {

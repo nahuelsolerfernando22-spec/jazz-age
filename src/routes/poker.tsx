@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { GameRoomShell } from "@/components/casino/GameRoomShell";
 import { BrassButton } from "@/components/casino/BrassButton";
 import { useCasino } from "@/store/casino";
+import { useHaptics } from "@/hooks/use-haptics";
 import { useSingleHostessCorner } from "@/hooks/use-single-hostess-corner";
 import {
   type Card,
@@ -30,26 +32,22 @@ import {
   leerTellPoker,
   tellPropio,
 } from "@/lib/games/poker/poker-tells";
+import { PokerLegajo } from "@/components/casino/poker/PokerTellHint";
 import retratoLola from "@/assets/poker-lola-portrait.jpg";
 import retratoBruno from "@/assets/poker-bruno-portrait.jpg";
-
-import {
-  PokerLegajo,
-  PokerSelfTell,
-  PokerTellHint,
-} from "@/components/casino/poker/PokerTellHint";
+import bgPoker from "@/assets/bg-poker-sala.jpg";
 
 export const Route = createFileRoute("/poker")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Mesa de Póker — Texas Hold'em noir · El Cuervo Dorado" },
+      { title: "Cara de Piedra — Texas Hold'em noir · El Cuervo Dorado" },
       {
         name: "description",
         content:
-          "Sentate al Texas Hold'em de límite fijo del Cuervo Dorado: ciegas, flop, turn y river contra Lola «La Sombra» y Bruno «El Cuervo».",
+          "Sentate al Texas Hold'em de límite fijo del Cuervo Dorado: leé los gestos de Lola «La Sombra» y Bruno «El Cuervo» y no dejes que te lean la cara.",
       },
-      { property: "og:title", content: "Mesa de Póker — Texas Hold'em noir" },
+      { property: "og:title", content: "Cara de Piedra — Texas Hold'em noir" },
       {
         property: "og:description",
         content: "Hold'em de límite fijo contra dos rivales del casino de 1928.",
@@ -63,9 +61,12 @@ export const Route = createFileRoute("/poker")({
 
 const BUY_IN = 300;
 const SMALL_BLIND = 5;
+/** Segundos de compostura antes de que la mesa empiece a leerte la cara. */
+const CALMA_MS = 7000;
 
 function PokerPage() {
   useSingleHostessCorner("poker");
+  const haptic = useHaptics();
   const chips = useCasino((s) => s.chips);
   const addChips = useCasino((s) => s.addChips);
   const spendChips = useCasino((s) => s.spend);
@@ -74,11 +75,10 @@ function PokerPage() {
   const [seated, setSeated] = useState(false);
   const [legajo, setLegajo] = useState<Legajo>(LEGAJO_VACIO);
   const [pensados, setPensados] = useState(0);
+  const [verLegajo, setVerLegajo] = useState(false);
   const stackRef = useRef(0);
   const timerRef = useRef<number | null>(null);
-  /** Último rival que movió: es de quien se puede leer el gesto. */
   const ultimoRivalRef = useRef<Seat | null>(null);
-  /** Lectura pendiente de verificar contra las cartas descubiertas. */
   const lecturaRef = useRef<{ seat: Seat; read: "farol" | "firme"; hand: number } | null>(null);
   const presionRef = useRef(0);
 
@@ -105,6 +105,7 @@ function PokerPage() {
     stackRef.current = table.stacks.you;
     setState(table);
     setSeated(true);
+    haptic("chip");
   };
 
   const leave = () => {
@@ -124,16 +125,21 @@ function PokerPage() {
         ultimoRivalRef.current = seat;
         return act(cur, seat, aiChoose(cur, seat, Math.random, presionRef.current));
       });
-    }, 750);
+      haptic("card");
+    }, 620);
     timerRef.current = id;
     return () => window.clearTimeout(id);
-  }, [state]);
+  }, [state, haptic]);
 
-  const play = useCallback((kind: Parameters<typeof act>[2]) => {
-    setPensados(0);
-    presionRef.current = 0;
-    setState((cur) => (cur && cur.toAct === "you" ? act(cur, "you", kind) : cur));
-  }, []);
+  const play = useCallback(
+    (kind: Parameters<typeof act>[2]) => {
+      setPensados(0);
+      presionRef.current = 0;
+      haptic(kind === "retirarse" ? "tap" : "chip");
+      setState((cur) => (cur && cur.toAct === "you" ? act(cur, "you", kind) : cur));
+    },
+    [haptic],
+  );
 
   // Reloj de tu propia cara: cuanto más dudás, más te leen los rivales.
   const esTuTurno = !!state && state.toAct === "you" && state.stage !== "showdown";
@@ -148,9 +154,17 @@ function PokerPage() {
       const ms = Date.now() - desde;
       setPensados(ms);
       presionRef.current = tellPropio(ms)?.nivel ?? 0;
-    }, 500);
+    }, 200);
     return () => window.clearInterval(id);
   }, [esTuTurno, state?.hand, state?.stage]);
+
+  // Vibración seca justo cuando se te quiebra la cara de piedra.
+  const quiebreRef = useRef(false);
+  useEffect(() => {
+    const roto = pensados >= CALMA_MS;
+    if (roto && !quiebreRef.current) haptic("warning");
+    quiebreRef.current = roto;
+  }, [pensados, haptic]);
 
   // Lectura visible del último movimiento rival, mientras te toca decidir.
   const tellRival = useMemo(() => {
@@ -176,7 +190,17 @@ function PokerPage() {
     setLegajo((prev) => anotarLegajo(prev, pend.seat, pend.read, fuerza));
   }, [state]);
 
+  // Remate de la mano: vibración distinta si te llevás el bote.
+  const manoCerradaRef = useRef(0);
+  useEffect(() => {
+    if (!state || state.stage !== "showdown") return;
+    if (manoCerradaRef.current === state.hand) return;
+    manoCerradaRef.current = state.hand;
+    haptic(state.winners.includes("you") ? "win" : "loss");
+  }, [state, haptic]);
+
   const nextHand = () => {
+    haptic("card");
     setState((cur) => {
       if (!cur) return cur;
       if (cur.stacks.you <= 0) return cur;
@@ -198,25 +222,47 @@ function PokerPage() {
   const need = state ? toCall(state, "you") : 0;
   const myHand = useMemo(() => (state ? describeHand(state.hole.you, state.board) : null), [state]);
 
+  // Cartas que forman la jugada ganadora, para encenderlas en el remate.
+  const luces = useMemo(() => {
+    if (!state || state.stage !== "showdown" || !state.showdown) return new Set<string>();
+    const ganador = state.winners[0];
+    if (!ganador) return new Set<string>();
+    const v = evaluate([...state.hole[ganador], ...state.board]);
+    return new Set(v.cards.map(cardLabel));
+  }, [state]);
+
+  const rivales = SEATS.filter((s) => s !== "you");
+
   return (
-    <GameRoomShell bg="" room="poker" title="Póker" subtitle="Texas Hold'em de límite fijo">
-      <div className="mx-auto w-full max-w-md px-3 pb-28 pt-2">
+    <GameRoomShell
+      bg={bgPoker}
+      room="poker"
+      title="Cara de Piedra"
+      subtitle="Texas Hold'em de límite fijo"
+    >
+      <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-3 pb-24 pt-1">
         {!seated || !state ? (
           <Lobby chips={chips} onSit={sit} />
         ) : (
           <>
-            <TableHeader state={state} onLeave={leave} />
-            <Board state={state} />
+            <TableHeader state={state} onLeave={leave} onLegajo={() => setVerLegajo((v) => !v)} />
 
-            <div className="mt-3 space-y-2">
-              {SEATS.filter((s) => s !== "you").map((seat) => (
-                <RivalRow key={seat} state={state} seat={seat} tell={tellRival} />
+            {/* Rivales enfrentados, uno a cada lado de la mesa. */}
+            <div className="grid grid-cols-2 gap-2">
+              {rivales.map((seat) => (
+                <RivalPod key={seat} state={state} seat={seat} tell={tellRival} luces={luces} />
               ))}
             </div>
 
-            <MyHand state={state} handName={myHand} />
-            <PokerTellHint tell={tellRival} />
-            {esTuTurno && <PokerSelfTell tell={tellPropio(pensados)} />}
+            <Felt state={state} luces={luces} tell={tellRival} />
+
+            <MyPod
+              state={state}
+              handName={myHand}
+              luces={luces}
+              pensados={pensados}
+              esTuTurno={esTuTurno}
+            />
 
             {state.stage === "showdown" ? (
               <Showdown
@@ -236,8 +282,20 @@ function PokerPage() {
               />
             )}
 
-            <PokerLegajo legajo={legajo} seats={SEATS.filter((sx) => sx !== "you")} />
-            <LogPanel log={state.log} />
+            <Ticker log={state.log} />
+
+            <AnimatePresence>
+              {verLegajo && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <PokerLegajo legajo={legajo} seats={rivales} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
       </div>
@@ -261,8 +319,9 @@ function Lobby({ chips, onSit }: { chips: number; onSit: () => void }) {
       </p>
       <p className="mt-2 font-serif text-[14px] leading-relaxed text-[var(--cd-text-main)]">
         Hold&apos;em de límite fijo a tres manos. Ciegas de {SMALL_BLIND} y {SMALL_BLIND * 2}, hasta
-        cuatro subidas por calle. Lola mide cada ficha; Bruno paga cualquier cosa. Miralos: cada
-        uno tiene sus tics, y el legajo de la mesa recuerda cuáles te sirvieron.
+        cuatro subidas por calle. Lola mide cada ficha; Bruno paga cualquier cosa. Miralos: cada uno
+        tiene sus tics, y el legajo de la mesa recuerda cuáles te sirvieron. Ojo con vos: si dudás
+        más de siete segundos, tu cara empieza a hablar.
       </p>
       <p className="mt-3 font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-text-muted)]">
         Entrada: {BUY_IN} fichas · tenés {chips}
@@ -276,7 +335,15 @@ function Lobby({ chips, onSit }: { chips: number; onSit: () => void }) {
   );
 }
 
-function TableHeader({ state, onLeave }: { state: PokerState; onLeave: () => void }) {
+function TableHeader({
+  state,
+  onLeave,
+  onLegajo,
+}: {
+  state: PokerState;
+  onLeave: () => void;
+  onLegajo: () => void;
+}) {
   const stageLabel =
     state.stage === "preflop"
       ? "Cartas tapadas"
@@ -284,85 +351,156 @@ function TableHeader({ state, onLeave }: { state: PokerState; onLeave: () => voi
         ? "Mano cerrada"
         : state.stage;
   return (
-    <div className="mb-3 flex items-center justify-between gap-2">
-      <div>
-        <p className="font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-gold-bright)]">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+      <div className="min-w-0">
+        <p className="truncate font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-gold-bright)]">
           Mano {state.hand} · {stageLabel}
         </p>
-        <p className="font-display text-[11px] uppercase tracking-[0.16em] text-[var(--cd-text-muted)]">
-          Bote {state.pot} · ciegas {state.smallBlind}/{state.bigBlind}
+        <p className="truncate font-display text-[11px] uppercase tracking-[0.16em] text-[var(--cd-text-muted)]">
+          ciegas {state.smallBlind}/{state.bigBlind}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={onLeave}
-        className="cd-press min-h-9 rounded-sm border px-3 py-1 font-display text-[11px] uppercase tracking-[0.16em]"
-        style={{ borderColor: "var(--cd-gold-mid)", color: "var(--cd-gold-bright)" }}
-      >
-        Levantarse
-      </button>
+      <div className="flex shrink-0 gap-1.5">
+        <HeaderChip label="Legajo" onClick={onLegajo} />
+        <HeaderChip label="Levantarse" onClick={onLeave} />
+      </div>
     </div>
   );
 }
 
-function PlayingCard({ card, hidden, small }: { card?: Card; hidden?: boolean; small?: boolean }) {
-  const w = small ? "h-12 w-9" : "h-16 w-12";
+function HeaderChip({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="cd-press min-h-11 rounded-sm border px-2.5 font-display text-[10.5px] uppercase tracking-[0.14em]"
+      style={{ borderColor: "var(--cd-gold-mid)", color: "var(--cd-gold-bright)" }}
+    >
+      {label}
+    </button>
+  );
+}
+
+type CardSize = "sm" | "md" | "lg";
+
+const SIZES: Record<CardSize, { box: string; rank: string; suit: string }> = {
+  sm: { box: "h-[3.25rem] w-10", rank: "text-[16px]", suit: "text-[13px]" },
+  md: { box: "h-[4.5rem] w-[3.25rem]", rank: "text-[21px]", suit: "text-[17px]" },
+  lg: { box: "h-[5.5rem] w-16", rank: "text-[26px]", suit: "text-[21px]" },
+};
+
+function PlayingCard({
+  card,
+  hidden,
+  size = "md",
+  lit,
+}: {
+  card?: Card;
+  hidden?: boolean;
+  size?: CardSize;
+  lit?: boolean;
+}) {
+  const s = SIZES[size];
   if (hidden || !card) {
     return (
       <div
-        className={`${w} flex items-center justify-center rounded-sm border`}
+        className={`${s.box} flex items-center justify-center rounded-[3px] border`}
         style={{
           borderColor: "oklch(0.72 0.14 78 / 0.45)",
           background:
             "repeating-linear-gradient(45deg, oklch(0.2 0.05 60), oklch(0.2 0.05 60) 4px, oklch(0.26 0.07 60) 4px, oklch(0.26 0.07 60) 8px)",
+          boxShadow: "inset 0 0 10px oklch(0 0 0 / 0.7)",
         }}
-        aria-label="Carta tapada"
+        aria-label={card ? "Carta tapada" : "Sin carta"}
       >
         <span className="font-display text-[14px] text-[var(--cd-gold-mid)]">◆</span>
       </div>
     );
   }
   return (
-    <div
-      className={`${w} flex flex-col items-center justify-center rounded-sm border tabular-nums`}
+    <motion.div
+      initial={{ rotateY: 90, opacity: 0 }}
+      animate={{ rotateY: 0, opacity: 1 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+      className={`${s.box} flex flex-col items-center justify-center rounded-[3px] border tabular-nums`}
       style={{
-        borderColor: "oklch(0.72 0.14 78 / 0.65)",
-        background: "oklch(0.95 0.02 90)",
+        borderColor: lit ? "var(--cd-gold-bright)" : "oklch(0.72 0.14 78 / 0.65)",
+        background: lit ? "oklch(0.98 0.04 92)" : "oklch(0.95 0.02 90)",
         color: isRed(card) ? "oklch(0.48 0.19 25)" : "oklch(0.2 0.02 60)",
+        boxShadow: lit
+          ? "0 0 16px oklch(0.78 0.15 85 / 0.75), 0 4px 10px oklch(0 0 0 / 0.5)"
+          : "0 4px 10px oklch(0 0 0 / 0.5)",
       }}
       aria-label={`Carta ${cardLabel(card)}`}
     >
-      <span className={`font-display ${small ? "text-[15px]" : "text-[19px]"} leading-none`}>
-        {cardLabel(card).slice(0, -1)}
-      </span>
-      <span className={small ? "text-[13px] leading-none" : "text-[16px] leading-none"}>
-        {card.s}
-      </span>
-    </div>
+      <span className={`font-display ${s.rank} leading-none`}>{cardLabel(card).slice(0, -1)}</span>
+      <span className={`${s.suit} leading-none`}>{card.s}</span>
+    </motion.div>
   );
 }
 
-function Board({ state }: { state: PokerState }) {
+/** Paño central: cartas comunitarias y bote. */
+function Felt({
+  state,
+  luces,
+  tell,
+}: {
+  state: PokerState;
+  luces: Set<string>;
+  tell: TellPoker | null;
+}) {
   return (
     <div
-      className="rounded-sm border p-3"
+      className="relative overflow-hidden rounded-[14px] border px-2 py-3"
       style={{
         borderColor: "oklch(0.72 0.14 78 / 0.5)",
-        background: "oklch(0.28 0.07 155 / 0.55)",
-        boxShadow: "inset 0 0 50px oklch(0 0 0 / 0.55)",
+        background:
+          "radial-gradient(120% 90% at 50% 20%, oklch(0.34 0.08 155 / 0.85), oklch(0.19 0.05 155 / 0.92))",
+        boxShadow: "inset 0 0 60px oklch(0 0 0 / 0.7), 0 10px 30px oklch(0 0 0 / 0.55)",
       }}
     >
-      <p className="mb-2 text-center font-display text-[11px] uppercase tracking-[0.2em] text-[var(--cd-text-muted)]">
-        Cartas comunitarias
-      </p>
       <div className="flex justify-center gap-1.5">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <PlayingCard key={i} card={state.board[i]} hidden={!state.board[i]} />
-        ))}
+        {[0, 1, 2, 3, 4].map((i) => {
+          const c = state.board[i];
+          return (
+            <PlayingCard
+              key={c ? cardLabel(c) : `hueco-${i}`}
+              card={c}
+              hidden={!c}
+              lit={!!c && luces.has(cardLabel(c))}
+            />
+          );
+        })}
       </div>
-      <p className="mt-2 text-center font-display text-[13px] uppercase tracking-[0.18em] text-[var(--cd-gold-bright)]">
+
+      <motion.p
+        key={state.pot}
+        initial={{ scale: 0.9, opacity: 0.6 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.25 }}
+        className="mt-2.5 text-center font-display text-[15px] uppercase tracking-[0.2em] text-[var(--cd-gold-bright)]"
+        style={{ textShadow: "0 2px 6px oklch(0 0 0 / 0.9)" }}
+      >
         Bote {state.pot}
-      </p>
+      </motion.p>
+
+      <AnimatePresence mode="wait">
+        {tell && (
+          <motion.p
+            key={`${tell.seat}-${tell.gesto}`}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mt-1 text-center font-serif text-[12.5px] leading-snug"
+            style={{
+              color: tell.read === "farol" ? "var(--blood)" : "var(--brass-bright)",
+              textShadow: "0 1px 3px oklch(0 0 0 / 0.95)",
+            }}
+          >
+            {tell.gesto}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -372,14 +510,16 @@ const RIVAL_RETRATO: Partial<Record<Seat, string>> = {
   bruno: retratoBruno,
 };
 
-function RivalRow({
+function RivalPod({
   state,
   seat,
   tell,
+  luces,
 }: {
   state: PokerState;
   seat: Seat;
   tell: TellPoker | null;
+  luces: Set<string>;
 }) {
   const out = state.folded[seat];
   const isTurn = state.toAct === seat;
@@ -387,39 +527,34 @@ function RivalRow({
   const value = reveal ? evaluate([...state.hole[seat], ...state.board]) : null;
   const won = state.winners.includes(seat);
   const marcado = !out && tell?.seat === seat;
+  const acento = marcado
+    ? tell.read === "farol"
+      ? "var(--blood)"
+      : "var(--brass-bright)"
+    : won
+      ? "var(--cd-gold-bright)"
+      : isTurn
+        ? "oklch(0.72 0.14 78 / 0.75)"
+        : "oklch(0.72 0.14 78 / 0.28)";
   const retrato = RIVAL_RETRATO[seat];
   return (
     <div
-      className="flex items-center justify-between gap-2 rounded-sm border px-3 py-2"
+      className="relative flex flex-col items-center gap-1.5 rounded-[10px] border px-2 py-2"
       style={{
-        borderColor: won
-          ? "var(--cd-gold-bright)"
-          : marcado
-            ? tell.read === "farol"
-              ? "var(--blood)"
-              : "var(--brass-bright)"
-            : isTurn
-              ? "oklch(0.72 0.14 78 / 0.7)"
-              : "oklch(0.72 0.14 78 / 0.28)",
-        background: out ? "oklch(0.14 0.01 60 / 0.6)" : "oklch(0.18 0.03 60 / 0.82)",
+        borderColor: acento,
+        background: out ? "oklch(0.13 0.01 60 / 0.72)" : "oklch(0.18 0.03 60 / 0.86)",
+        boxShadow: isTurn ? `0 0 14px ${acento}` : "0 6px 18px oklch(0 0 0 / 0.45)",
         opacity: out ? 0.55 : 1,
       }}
     >
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex w-full min-w-0 items-center gap-2">
         {retrato && (
           <span
             className="relative shrink-0 overflow-hidden rounded-full border"
             style={{
-              width: 42,
-              height: 42,
-              borderColor: marcado
-                ? tell.read === "farol"
-                  ? "var(--blood)"
-                  : "var(--brass-bright)"
-                : "oklch(0.72 0.14 78 / 0.4)",
-              boxShadow: marcado
-                ? `0 0 12px ${tell.read === "farol" ? "oklch(0.55 0.19 25 / 0.7)" : "oklch(0.72 0.14 78 / 0.6)"}`
-                : "inset 0 0 10px oklch(0 0 0 / 0.7)",
+              width: 40,
+              height: 40,
+              borderColor: acento,
               filter: out ? "grayscale(1)" : "none",
             }}
           >
@@ -432,53 +567,135 @@ function RivalRow({
               className="h-full w-full object-cover"
               style={{ objectPosition: "50% 22%" }}
             />
+            {isTurn && (
+              <motion.span
+                className="pointer-events-none absolute inset-0 rounded-full"
+                animate={{ opacity: [0.15, 0.55, 0.15] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+                style={{ boxShadow: `inset 0 0 12px ${acento}` }}
+              />
+            )}
           </span>
         )}
-        <div className="min-w-0">
-          <p className="truncate font-display text-[12px] uppercase tracking-[0.14em] text-[var(--cd-gold-bright)]">
-            {SEAT_NAME[seat]}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-display text-[11.5px] uppercase tracking-[0.12em] text-[var(--cd-gold-bright)]">
+            {SEAT_SHORT[seat]}
           </p>
-          <p className="font-display text-[11px] uppercase tracking-[0.14em] text-[var(--cd-text-muted)]">
+          <p className="truncate font-display text-[10.5px] uppercase tracking-[0.1em] text-[var(--cd-text-muted)]">
             {state.stacks[seat]} fichas
-            {state.bets[seat] > 0 ? ` · en mesa ${state.bets[seat]}` : ""}
-            {state.lastAction[seat] ? ` · ${state.lastAction[seat]}` : ""}
-            {value ? ` · ${value.name}` : ""}
           </p>
         </div>
       </div>
-      <div className="flex gap-1">
 
-        <PlayingCard card={state.hole[seat][0]} hidden={!reveal} small />
-        <PlayingCard card={state.hole[seat][1]} hidden={!reveal} small />
+      <div className="flex gap-1">
+        <PlayingCard
+          card={state.hole[seat][0]}
+          hidden={!reveal}
+          size="sm"
+          lit={reveal && luces.has(cardLabel(state.hole[seat][0]))}
+        />
+        <PlayingCard
+          card={state.hole[seat][1]}
+          hidden={!reveal}
+          size="sm"
+          lit={reveal && luces.has(cardLabel(state.hole[seat][1]))}
+        />
       </div>
+
+      <p
+        className="w-full truncate text-center font-display text-[10px] uppercase tracking-[0.1em]"
+        style={{ color: marcado ? acento : "var(--cd-text-muted)" }}
+      >
+        {out
+          ? "se retiró"
+          : value
+            ? value.name
+            : state.bets[seat] > 0
+              ? `apostó ${state.bets[seat]}`
+              : (state.lastAction[seat] ?? "espera")}
+      </p>
+
+      {marcado && (
+        <span
+          className="absolute -top-2 right-1 rounded-sm border px-1.5 py-[1px] font-display text-[9px] uppercase tracking-[0.12em]"
+          style={{ borderColor: acento, color: acento, background: "oklch(0.1 0.01 60 / 0.95)" }}
+        >
+          {tell.read === "farol" ? "farol" : "firme"}
+        </span>
+      )}
     </div>
   );
 }
 
-function MyHand({ state, handName }: { state: PokerState; handName: string | null }) {
+/** Tu asiento: cartas grandes y el medidor de cara de piedra. */
+function MyPod({
+  state,
+  handName,
+  luces,
+  pensados,
+  esTuTurno,
+}: {
+  state: PokerState;
+  handName: string | null;
+  luces: Set<string>;
+  pensados: number;
+  esTuTurno: boolean;
+}) {
   const won = state.winners.includes("you");
+  const propio = tellPropio(pensados);
+  // 1 = cara impecable, 0 = te leyeron entera.
+  const compostura = esTuTurno
+    ? Math.max(0, 1 - Math.min(1, pensados / (CALMA_MS + 13000)))
+    : 1;
+  const rota = !!propio;
   return (
     <div
-      className="mt-3 rounded-sm border p-3"
+      className="rounded-[10px] border p-2.5"
       style={{
-        borderColor: won ? "var(--cd-gold-bright)" : "var(--cd-gold-mid)",
+        borderColor: won ? "var(--cd-gold-bright)" : rota ? "var(--blood)" : "var(--cd-gold-mid)",
         background: "oklch(0.18 0.03 60 / 0.9)",
+        boxShadow: won ? "0 0 20px oklch(0.78 0.15 85 / 0.45)" : "0 6px 18px oklch(0 0 0 / 0.45)",
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <p className="font-display text-[12px] uppercase tracking-[0.16em] text-[var(--cd-gold-bright)]">
-            Tus cartas
+            Vos · {state.stacks.you} fichas
           </p>
-          <p className="font-display text-[11px] uppercase tracking-[0.14em] text-[var(--cd-text-muted)]">
-            {state.stacks.you} fichas
+          <p className="truncate font-display text-[11px] uppercase tracking-[0.12em] text-[var(--cd-text-muted)]">
+            {handName ?? "sin jugada"}
             {state.bets.you > 0 ? ` · en mesa ${state.bets.you}` : ""}
-            {handName ? ` · ${handName}` : ""}
           </p>
+
+          {/* Medidor de cara de piedra. */}
+          <div className="mt-2 w-[9.5rem] max-w-full">
+            <div className="h-[4px] w-full overflow-hidden rounded-full bg-[var(--cd-text-main)]/15">
+              <motion.div
+                className="h-full"
+                animate={{ width: `${Math.round(compostura * 100)}%` }}
+                transition={{ duration: 0.2 }}
+                style={{ background: rota ? "var(--blood)" : "var(--brass)" }}
+              />
+            </div>
+            <p
+              className="mt-1 font-display text-[9.5px] uppercase tracking-[0.14em]"
+              style={{ color: rota ? "var(--blood)" : "var(--cd-text-muted)" }}
+            >
+              {rota ? propio.texto : "Cara de piedra"}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-1.5">
-          <PlayingCard card={state.hole.you[0]} />
-          <PlayingCard card={state.hole.you[1]} />
+        <div className="flex shrink-0 gap-1.5">
+          <PlayingCard
+            card={state.hole.you[0]}
+            size="lg"
+            lit={luces.has(cardLabel(state.hole.you[0]))}
+          />
+          <PlayingCard
+            card={state.hole.you[1]}
+            size="lg"
+            lit={luces.has(cardLabel(state.hole.you[1]))}
+          />
         </div>
       </div>
     </div>
@@ -500,7 +717,7 @@ function ActionRow({
 }) {
   if (waiting) {
     return (
-      <p className="mt-3 text-center font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-text-muted)]">
+      <p className="min-h-11 py-2 text-center font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-text-muted)]">
         Piensa {turnOf ? SEAT_SHORT[turnOf] : "la mesa"}…
       </p>
     );
@@ -513,7 +730,7 @@ function ActionRow({
     return "Retirarse";
   };
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {actions.map((a) => (
         <BrassButton
           key={a.kind}
@@ -543,9 +760,11 @@ function Showdown({
   const broke = state.stacks.you <= 0;
   const rivalsBroke = SEATS.filter((s) => s !== "you" && state.stacks[s] > 0).length === 0;
   return (
-    <div
-      className="mt-3 rounded-sm border p-3 text-center"
-      style={{ borderColor: "var(--cd-gold-bright)", background: "oklch(0.2 0.05 60 / 0.92)" }}
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-[10px] border p-3 text-center"
+      style={{ borderColor: "var(--cd-gold-bright)", background: "oklch(0.2 0.05 60 / 0.94)" }}
     >
       <p className="font-display text-[14px] uppercase tracking-[0.16em] text-[var(--cd-gold-bright)]">
         {state.result}
@@ -561,27 +780,25 @@ function Showdown({
           <BrassButton onClick={onNext}>Mano siguiente</BrassButton>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function LogPanel({ log }: { log: string[] }) {
-  const last = log.slice(-6);
+/** Relato compacto: solo la última jugada cantada, sin robar alto de pantalla. */
+function Ticker({ log }: { log: string[] }) {
+  const last = log[log.length - 1];
+  if (!last) return null;
   return (
-    <div className="mt-3">
-      <p className="mb-1 font-display text-[11px] uppercase tracking-[0.2em] text-[var(--cd-text-muted)]">
-        Relato de la mano
-      </p>
-      <ul className="space-y-0.5">
-        {last.map((line, i) => (
-          <li
-            key={`${i}-${line}`}
-            className="font-serif text-[13px] leading-snug text-[var(--cd-text-main)]"
-          >
-            {line}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.p
+        key={`${log.length}-${last}`}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        className="truncate text-center font-serif text-[12.5px] text-[var(--cd-text-muted)]"
+      >
+        {last}
+      </motion.p>
+    </AnimatePresence>
   );
 }

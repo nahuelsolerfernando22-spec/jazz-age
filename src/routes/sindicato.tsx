@@ -45,8 +45,6 @@ import {
   Minimize2,
   X,
   Plus,
-  Minus,
-  Map as MapIcon,
 } from "lucide-react";
 
 // --- Visual Constants ---
@@ -354,6 +352,10 @@ function SindicatoPage() {
 
   const haptics = useHaptics();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** Sector propio elegido como cabecera del asalto (paso 1 de 2). */
+  const [attackFrom, setAttackFrom] = useState<string | null>(null);
+  /** Panel plegable con barrios, control y objetivo: libera pantalla. */
+  const [infoOpen, setInfoOpen] = useState(false);
   const [isCombatOpen, setIsCombatOpen] = useState(false);
   const [rolling, setRolling] = useState(false);
   // Desafío de mesa del barrio: ganar suma un dado de asalto, perder se lo da al defensor.
@@ -365,7 +367,6 @@ function SindicatoPage() {
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [altoContraste, setAltoContraste] = useState(false);
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
-  const [previewOwner, setPreviewOwner] = useState<number | null>(null);
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);
   const [fitScale, setFitScale] = useState(INITIAL_SCALE);
@@ -548,9 +549,10 @@ function SindicatoPage() {
   }, [activeTerritories, centros]);
 
 
-  // Sector propio que lidera el asalto: se calcula una sola vez y se usa en dados y resolución.
+  // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
     if (!selectedId || !currentPlayer) return null;
+    if (attackFrom && useSyndicate.getState().canAttack(attackFrom, selectedId)) return attackFrom;
     const territory = activeTerritories.find((t) => t.id === selectedId);
     if (!territory) return null;
     return (
@@ -566,9 +568,18 @@ function SindicatoPage() {
         })
         .sort((a, b) => conquests[b].troops - conquests[a].troops)[0] ?? null
     );
-  }, [selectedId, currentPlayerIndex, conquests, activeTerritories, currentPlayer]);
+  }, [selectedId, currentPlayerIndex, conquests, activeTerritories, currentPlayer, attackFrom]);
 
   const canAttack = !!attackerId;
+
+  /** Sectores enemigos alcanzables desde la cabecera elegida. */
+  const objetivosValidos = useMemo(() => {
+    if (turnPhase !== "attack" || !attackFrom) return new Set<string>();
+    const t = activeTerritories.find((x) => x.id === attackFrom);
+    if (!t) return new Set<string>();
+    const st = useSyndicate.getState();
+    return new Set(t.vecinos.filter((v) => st.canAttack(attackFrom, v)));
+  }, [turnPhase, attackFrom, activeTerritories, conquests]);
 
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
@@ -579,15 +590,98 @@ function SindicatoPage() {
   }, [selectedId, isMine, activeTerritories, conquests, currentPlayerIndex]);
 
 
-  const handleSiege = () => {
-    const activeBribe = Object.values(activeEffects).find(
+  const handleSiege = useCallback(() => {
+    const activeBribe = Object.values(useSyndicate.getState().activeEffects).find(
       (e) => e.type === "bribe" && e.ownerId === currentPlayerIndex,
     );
     setBribeActive(!!activeBribe);
     setDesafioBonus({ atk: 0, def: 0 });
     setIsCombatOpen(true);
     haptics("heavy");
-  };
+  }, [currentPlayerIndex, haptics]);
+
+  /**
+   * Un solo gesto para todo: tocar un sector hace lo que corresponde a la fase.
+   * Despliegue -> pone una ficha en lo tuyo. Asalto -> elegís cabecera y luego blanco.
+   */
+  const handleSectorTap = useCallback(
+    (id: string) => {
+      const st = useSyndicate.getState();
+      if (st.players[st.currentPlayerIndex]?.isBot || st.winner) return;
+      const c = st.conquests[id];
+      const mine = c?.ownerId === st.currentPlayerIndex;
+
+      if (st.turnPhase === "deployment") {
+        if (mine && st.unassignedTroops > 0) {
+          st.assignTroops(id, 1);
+          haptics("tap");
+          return;
+        }
+        setSelectedId(id);
+        haptics("tap");
+        return;
+      }
+
+      if (st.turnPhase === "attack") {
+        if (mine) {
+          if ((c?.troops ?? 0) > 1) {
+            setAttackFrom(id);
+            setSelectedId(null);
+            haptics("tap");
+          } else {
+            setSelectedId(id);
+            toast.error("Ese sector necesita al menos 2 tropas para salir al asalto.");
+          }
+          return;
+        }
+        if (attackFrom && st.canAttack(attackFrom, id)) {
+          setSelectedId(id);
+          handleSiege();
+          return;
+        }
+        setSelectedId(id);
+        haptics("tap");
+        return;
+      }
+
+      setSelectedId(id);
+      haptics("tap");
+    },
+    [attackFrom, haptics, handleSiege],
+  );
+
+  // La cabecera de asalto se limpia al cambiar de fase o de mano.
+  useEffect(() => {
+    setAttackFrom(null);
+  }, [turnPhase, currentPlayerIndex]);
+
+  /** Texto guía: siempre dice el próximo paso concreto. */
+  const guia = useMemo(() => {
+    if (currentPlayer?.isBot) return "Juega el rival…";
+    if (turnPhase === "deployment")
+      return unassignedTroops > 0
+        ? `Tocá tus sectores (borde blanco) para poner ${unassignedTroops} fichas`
+        : pendingTroops > 0
+          ? "Confirmá el despliegue abajo"
+          : "Sin refuerzos: pasá al asalto";
+    if (turnPhase === "attack") {
+      if (!puedeAsaltar(roundNumber)) return "Vuelta de acomodo: todavía no se asalta";
+      if (!attackFrom) return "Tocá un sector tuyo con 2+ tropas para atacar desde ahí";
+      return objetivosValidos.size > 0
+        ? "Ahora tocá un sector enemigo marcado en rojo"
+        : "Ese sector no tiene vecinos enemigos: elegí otro";
+    }
+    if (turnPhase === "fortification") return "Reagrupá: tocá un sector tuyo y mandá tropas al vecino";
+    return "";
+  }, [
+    currentPlayer?.isBot,
+    turnPhase,
+    unassignedTroops,
+    pendingTroops,
+    roundNumber,
+    attackFrom,
+    objetivosValidos,
+  ]);
   const runTalismanesList = useSyndicateRun((s) => s.talismanes);
 
   useEffect(() => {
@@ -858,6 +952,11 @@ function SindicatoPage() {
                 const owner = conquest ? players[conquest.ownerId] : null;
                 const isSelected = selectedId === t.id;
                 const isMine = conquest?.ownerId === currentPlayerIndex;
+                const esOrigen = attackFrom === t.id;
+                const esObjetivo = objetivosValidos.has(t.id);
+                const puedeRecibir =
+                  turnPhase === "deployment" && isMine && unassignedTroops > 0;
+                const d = bordeIrregular(t.points, t.id);
                 const canSeeTroops =
                   isMine ||
                   Object.values(activeEffects).some(
@@ -875,23 +974,19 @@ function SindicatoPage() {
                 return (
                   <g
                     key={t.id}
-                    className="pointer-events-auto cursor-pointer"
+                    className="cursor-pointer"
                     onPointerDown={(e) => {
                       e.stopPropagation();
-                      if (turnPhase === "deployment" && isMine && unassignedTroops > 0) {
-                        assignTroops(t.id, 1);
-                        haptics("tap");
-                      } else {
-                        setSelectedId(t.id);
-                        haptics("tap");
-                      }
+                      handleSectorTap(t.id);
                     }}
                   >
+                    {/* Zona táctil: todo el sector responde al toque, no sólo la ficha. */}
+                    <path d={d} fill="#fff" fillOpacity={0.001} className="pointer-events-auto" />
+
                     {/* Sector: arte raster propio del dueño (o de la facción si es neutral) */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill={
-                        patronDeDueno(previewOwner) ??
                         (conquest ? patronDeDueno(conquest.ownerId) : null) ??
                         patronDeFaccion(owner?.faction)
                       }
@@ -912,7 +1007,7 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
                     <motion.path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       initial={false}
                       animate={{
                         fill: owner
@@ -937,7 +1032,7 @@ function SindicatoPage() {
 
                     {/* Canto de latón raster: trazo oscuro exterior + filete de latón */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="#0b0806"
                       strokeWidth={altoContraste ? (isSelected ? 10 : 8) : isSelected ? 8 : 6}
@@ -945,7 +1040,7 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
                     <motion.path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="url(#tex-laton)"
                       initial={false}
@@ -964,15 +1059,76 @@ function SindicatoPage() {
                       className="pointer-events-none"
                     />
 
+                    {/* Lo tuyo se lee de un golpe: filete blanco marcado en tus sectores. */}
                     <path
-                      d={bordeIrregular(t.points, t.id)}
+                      d={d}
                       fill="none"
                       stroke="#fff8e0"
-                      strokeWidth={0.8}
-                      strokeOpacity={isMine ? 0.5 : 0.22}
-                      strokeDasharray="3 5"
+                      strokeWidth={isMine ? 2.4 : 0.8}
+                      strokeOpacity={isMine ? 0.95 : 0.18}
+                      strokeDasharray={isMine ? undefined : "3 5"}
                       className="pointer-events-none"
                     />
+
+                    {/* Sector propio listo para recibir fichas en el despliegue. */}
+                    {puedeRecibir && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#8de89b"
+                        strokeWidth={3.2}
+                        strokeDasharray="10 8"
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          from="18"
+                          to="0"
+                          dur="1s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+                    {/* Cabecera del asalto elegida por el jugador. */}
+                    {esOrigen && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ffe9a8"
+                        strokeWidth={4.5}
+                        strokeDasharray="14 9"
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-dashoffset"
+                          from="23"
+                          to="0"
+                          dur="0.8s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
+                    {/* Blancos válidos desde esa cabecera. */}
+                    {esObjetivo && (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="#ff5a4a"
+                        strokeWidth={4}
+                        strokeOpacity={0.95}
+                        className="pointer-events-none"
+                      >
+                        <animate
+                          attributeName="stroke-opacity"
+                          values="0.4;1;0.4"
+                          dur="1.1s"
+                          repeatCount="indefinite"
+                        />
+                      </path>
+                    )}
+
                     {/* Cartucho déco con el nombre del sector */}
                     {(() => {
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
@@ -1154,7 +1310,7 @@ function SindicatoPage() {
           <Maximize2 size={18} />
         </button>
 
-        {/* Alto contraste: apaga el arte de fondo y refuerza sectores, latón y cartuchos */}
+        {/* Alto contraste: apaga el arte de fondo y refuerza sectores y cartuchos */}
         <button
           onClick={() => {
             setAltoContraste((v) => !v);
@@ -1170,72 +1326,42 @@ function SindicatoPage() {
         >
           <Contrast size={18} />
         </button>
-
-        {/* Previsualizar el tablero con la estética de cada propietario */}
-        <button
-          onClick={() => {
-            setPreviewOwner((v) => (v === null ? 0 : v + 1 >= players.length ? null : v + 1));
-            haptics("tap");
-          }}
-          aria-label="Previsualizar arte del tablero por propietario"
-          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md active:translate-y-[1px] touch-manipulation ${
-            previewOwner !== null
-              ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
-              : "border-[var(--oro)]/60 bg-black/85 text-[var(--oro)]"
-          }`}
-        >
-          <MapIcon size={18} />
-        </button>
-        {previewOwner !== null && players[previewOwner] && (
-          <span className="max-w-[40vw] truncate rounded-full border border-[var(--oro)]/50 bg-black/85 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-md">
-            <span
-              className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
-              style={{ background: players[previewOwner].color }}
-            />
-            {players[previewOwner].name ?? `Banda ${previewOwner + 1}`}
-          </span>
-        )}
       </div>
 
 
-      {/* HUD de Efectos Activos y Talismanes */}
-      <div className="fixed bottom-[210px] right-3 flex max-w-[52vw] flex-col items-end gap-2 pointer-events-none z-[80]">
-        {runTalismanes.map((tId: string) => (
-          <motion.div
-            key={tId}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="bg-black/90 border border-[var(--oro)]/40 px-2 py-1 rounded-md flex items-center gap-2 shadow-lg backdrop-blur-sm"
-          >
-            <span className="truncate text-[11px] font-black text-[var(--oro-palido)] uppercase tracking-tight">
-              {tId.replaceAll("-", " ")}
-            </span>
-          </motion.div>
-        ))}
-        {Object.entries(activeEffects)
-          .filter(([key]) => !key.startsWith("talisman-"))
-          .map(
-            ([key, effect]) =>
-              effect.ownerId === currentPlayerIndex && (
-                <motion.div
-                  key={key}
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  className="bg-black/85 border-2 border-[var(--oro)] px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md"
-                >
-                  <span className="truncate text-[11px] font-black text-[var(--oro)] uppercase tracking-widest">
-                    {effect.type === "bribe"
-                      ? "Soborno activo"
-                      : effect.type === "informant"
-                        ? "Informante activo"
-                        : effect.type === "lockdown"
-                          ? "Toque de queda"
-                          : "Golpe sorpresa"}
-                  </span>
-                </motion.div>
-              ),
-          )}
-      </div>
+      {/* Efectos activos: una sola fila discreta, sin tapar el tablero. */}
+      {(() => {
+        const efectos = Object.entries(activeEffects)
+          .filter(([key, e]) => !key.startsWith("talisman-") && e.ownerId === currentPlayerIndex)
+          .map(([key, e]) =>
+            e.type === "bribe"
+              ? "Soborno"
+              : e.type === "informant"
+                ? "Informante"
+                : e.type === "lockdown"
+                  ? "Toque de queda"
+                  : "Golpe sorpresa",
+          );
+        const etiquetas = [...runTalismanes.map((t: string) => t.replaceAll("-", " ")), ...efectos];
+        if (etiquetas.length === 0) return null;
+        return (
+          <div className="pointer-events-none fixed bottom-[176px] left-2 right-2 z-[60] flex gap-1.5 overflow-hidden">
+            {etiquetas.slice(0, 3).map((label) => (
+              <span
+                key={label}
+                className="truncate rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[var(--oro-palido)] backdrop-blur-sm"
+              >
+                {label}
+              </span>
+            ))}
+            {etiquetas.length > 3 ? (
+              <span className="shrink-0 rounded-full border border-[var(--oro)]/40 bg-black/80 px-2 py-0.5 text-[10px] font-black text-[var(--oro-palido)]">
+                +{etiquetas.length - 3}
+              </span>
+            ) : null}
+          </div>
+        );
+      })()}
 
 
       <AnimatePresence>
@@ -1460,34 +1586,67 @@ function SindicatoPage() {
           canAssault={puedeAsaltar(roundNumber)}
         />
 
-        <ControlBar
-          players={players}
-          counts={controlCounts}
-          total={activeTerritories.length}
-          currentPlayerId={currentPlayerIndex}
-        />
-
-        <BarriosPanel
-          territories={activeTerritories}
-          conquests={conquests}
-          myPlayerId={0}
-          myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
-        />
-
-        <div className="mt-1.5 flex items-start gap-2 px-2">
-          <ObjetivoCard />
-          <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
-            <span className="text-sm text-[var(--oro)]">&#9824;</span>
-            <span className="min-w-0">
-              <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
-                {ola.titulo}
-              </span>
-              <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
-                {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
-              </span>
-            </span>
-          </div>
+        {/* Guía de una línea: siempre dice qué hacer ahora. */}
+        <div className="mt-1.5 flex items-center gap-2 px-2">
+          <p className="pointer-events-none min-w-0 flex-1 truncate rounded-xl border border-[var(--oro)]/40 bg-black/85 px-3 py-1.5 font-bebas text-base leading-none text-[var(--oro-palido)] backdrop-blur-md">
+            {guia}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setInfoOpen((v) => !v);
+              haptics("tap");
+            }}
+            aria-label="Ver barrios, control y objetivo"
+            aria-pressed={infoOpen}
+            className={`pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 backdrop-blur-md touch-manipulation ${
+              infoOpen
+                ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+                : "border-[var(--oro)]/50 bg-black/85 text-[var(--oro)]"
+            }`}
+          >
+            <Info size={16} />
+          </button>
         </div>
+
+        <AnimatePresence>
+          {infoOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <ControlBar
+                players={players}
+                counts={controlCounts}
+                total={activeTerritories.length}
+                currentPlayerId={currentPlayerIndex}
+              />
+
+              <BarriosPanel
+                territories={activeTerritories}
+                conquests={conquests}
+                myPlayerId={0}
+                myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
+              />
+
+              <div className="mt-1.5 flex items-start gap-2 px-2">
+                <ObjetivoCard />
+                <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
+                  <span className="text-sm text-[var(--oro)]">&#9824;</span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
+                      {ola.titulo}
+                    </span>
+                    <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
+                      {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
 

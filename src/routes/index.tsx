@@ -89,6 +89,9 @@ function PortadaPage() {
             Continuar · {ultima.name}
           </BrassButton>
         ) : null}
+        <BrassButton variant="ghost" size="md" block onClick={() => navigate({ to: "/la-noche" })}>
+          La Noche · corrida de 5 mesas
+        </BrassButton>
         <Link to="/ajustes" className="w-full">
           <BrassButton variant="ghost" size="md" block>
             Ajustes

@@ -63,6 +63,8 @@ const BUY_IN = 300;
 const SMALL_BLIND = 5;
 /** Segundos de compostura antes de que la mesa empiece a leerte la cara. */
 const CALMA_MS = 7000;
+/** Manos que dura un duelo de reputación completo. */
+const MANOS_DUELO = 9;
 
 function PokerPage() {
   useSingleHostessCorner("poker", { backdropOnly: true });
@@ -232,6 +234,8 @@ function PokerPage() {
   }, [state]);
 
   const rivales = SEATS.filter((s) => s !== "you");
+  const dueloCerrado =
+    !!state && state.stage === "showdown" && (state.hand >= MANOS_DUELO || state.stacks.you <= 0);
 
   return (
     <GameRoomShell
@@ -268,6 +272,7 @@ function PokerPage() {
               <Showdown
                 state={state}
                 chips={chips}
+                cerrado={dueloCerrado}
                 onNext={nextHand}
                 onRebuy={rebuy}
                 onLeave={leave}
@@ -318,8 +323,9 @@ function Lobby({ chips, onSit }: { chips: number; onSit: () => void }) {
         Mesa reservada
       </p>
       <p className="mt-2 font-serif text-[14px] leading-relaxed text-[var(--cd-text-main)]">
-        Hold&apos;em de límite fijo a tres manos. Ciegas de {SMALL_BLIND} y {SMALL_BLIND * 2}, hasta
-        cuatro subidas por calle. Lola mide cada ficha; Bruno paga cualquier cosa. Miralos: cada uno
+        Duelo narrativo a {MANOS_DUELO} manos de Hold&apos;em de límite fijo: las fichas de la mesa
+        son reputación, no plata. Ciegas de {SMALL_BLIND} y {SMALL_BLIND * 2}, hasta cuatro subidas
+        por calle. Lola mide cada ficha; Bruno paga cualquier cosa. Miralos: cada uno
         tiene sus tics, y el legajo de la mesa recuerda cuáles te sirvieron. Ojo con vos: si dudás
         más de siete segundos, tu cara empieza a hablar.
       </p>
@@ -354,7 +360,7 @@ function TableHeader({
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
       <div className="min-w-0">
         <p className="truncate font-display text-[12px] uppercase tracking-[0.18em] text-[var(--cd-gold-bright)]">
-          Mano {state.hand} · {stageLabel}
+          Mano {Math.min(state.hand, MANOS_DUELO)}/{MANOS_DUELO} · {stageLabel}
         </p>
         <p className="truncate font-display text-[11px] uppercase tracking-[0.16em] text-[var(--cd-text-muted)]">
           ciegas {state.smallBlind}/{state.bigBlind}
@@ -754,18 +760,27 @@ function ActionRow({
 function Showdown({
   state,
   chips,
+  cerrado,
   onNext,
   onRebuy,
   onLeave,
 }: {
   state: PokerState;
   chips: number;
+  cerrado: boolean;
   onNext: () => void;
   onRebuy: () => void;
   onLeave: () => void;
 }) {
   const broke = state.stacks.you <= 0;
   const rivalsBroke = SEATS.filter((s) => s !== "you" && state.stacks[s] > 0).length === 0;
+  const saldo = state.stacks.you - BUY_IN;
+  const veredicto =
+    saldo > 60
+      ? "Te vas con la palabra pesada: la mesa te va a recordar."
+      : saldo >= 0
+        ? "Empataste la noche. Nadie te leyó del todo."
+        : "Te leyeron la cara. La reputación se paga cara acá.";
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -776,8 +791,16 @@ function Showdown({
       <p className="font-display text-[14px] uppercase tracking-[0.16em] text-[var(--cd-gold-bright)]">
         {state.result}
       </p>
+      {cerrado && (
+        <p className="mt-1 font-serif text-[12.5px] leading-snug text-[var(--cd-text-muted)]">
+          Duelo cerrado a {MANOS_DUELO} manos · reputación {saldo >= 0 ? "+" : ""}
+          {saldo}. {veredicto}
+        </p>
+      )}
       <div className="mt-3 flex flex-wrap justify-center gap-2">
-        {broke ? (
+        {cerrado && !broke ? (
+          <BrassButton onClick={onLeave}>Cerrar el duelo</BrassButton>
+        ) : broke ? (
           <BrassButton onClick={onRebuy} disabled={chips < BUY_IN}>
             {chips < BUY_IN ? "Sin fichas para recomprar" : `Recomprar ${BUY_IN}`}
           </BrassButton>

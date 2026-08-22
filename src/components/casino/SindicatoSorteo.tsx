@@ -104,7 +104,39 @@ export function SindicatoSorteo({
               </button>
             ))}
           </div>
+
+        <div className="mt-4">
+          <p className="text-[11px] uppercase tracking-wider text-[var(--oro)]/60">
+            Variante de la casa
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {VARIANTES.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => {
+                  setVarianteId(v.id);
+                  haptics("tap");
+                }}
+                aria-pressed={varianteId === v.id}
+                className={`min-h-11 rounded-lg border px-2 py-2 text-left transition-transform active:scale-95 ${
+                  varianteId === v.id
+                    ? "border-[var(--oro)] bg-[var(--oro)]/15"
+                    : "border-white/12 bg-black/40"
+                }`}
+              >
+                <span className="block text-[11px] font-semibold text-[var(--marfil)]">
+                  {v.nombre}
+                </span>
+                <span className="block text-[9px] leading-tight text-[var(--oro)]/60">
+                  {v.resumen}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
+
+
 
         <div className="mt-4">
           <p className="text-[11px] uppercase tracking-wider text-[var(--oro)]/60">

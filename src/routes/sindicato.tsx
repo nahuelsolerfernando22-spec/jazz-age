@@ -824,6 +824,14 @@ function SindicatoPage() {
         .safe-pt { padding-top: max(1rem, var(--sa-top)); }
         .safe-pb { padding-bottom: max(1rem, var(--sa-bottom)); }
         body { overflow: hidden; position: fixed; width: 100%; height: 100%; overscroll-behavior: none; }
+        @keyframes sindicato-sacudon {
+          0% { transform: translate3d(0,0,0); }
+          25% { transform: translate3d(-3px,2px,0); }
+          55% { transform: translate3d(3px,-2px,0); }
+          100% { transform: translate3d(0,0,0); }
+        }
+        .sindicato-sacudon { animation: sindicato-sacudon 0.34s ease-out; }
+        @media (prefers-reduced-motion: reduce) { .sindicato-sacudon { animation: none; } }
       `,
         }}
       />

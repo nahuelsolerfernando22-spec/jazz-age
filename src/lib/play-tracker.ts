@@ -40,7 +40,7 @@ export function installPlayTracker() {
   useSingleScores.subscribe((state) => {
     const next = snapshotScoresFrom(state.byGame);
     for (const id of Object.keys(next)) {
-      const before = prevScores[id] ?? { plays: 0 };
+      const before = prevScores[id] ?? { plays: 0, best: 0 };
       const after = next[id];
       const dPlays = after.plays - before.plays;
       if (dPlays > 0) {

@@ -292,7 +292,7 @@ function MahjongPage() {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
       }
       if (!useMahjongRun.getState().active) useMahjongRun.getState().startRun();
-      game.newGame();
+      game.newGame(useMahjongRun.getState().currentLevelId);
       setHasStarted(true);
     });
 
@@ -303,7 +303,8 @@ function MahjongPage() {
       } else if (mahjongEcon.hostess) {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
       }
-      game.newGame(nextLevelId(game.difficulty));
+      const runApi = useMahjongRun.getState();
+      game.newGame(runApi.active ? runApi.currentLevelId : nextLevelId(game.difficulty));
       setHasStarted(true);
     });
 
@@ -329,6 +330,13 @@ function MahjongPage() {
         if (!spendFavor(mahjongEcon.highStakesEntry)) return;
       } else if (mahjongEcon.hostess) {
         markHighStakesWaiverUsed(mahjongEcon.hostess);
+      }
+      // Toda partida es una vigilia roguelike: si no hay run abierta se sortea
+      // el recorrido de la noche y se reparte el tablero de su primer piso.
+      const api = useMahjongRun.getState();
+      if (!api.active) {
+        api.startRun();
+        game.newGame(useMahjongRun.getState().currentLevelId);
       }
       setHasStarted(true);
       match.begin();

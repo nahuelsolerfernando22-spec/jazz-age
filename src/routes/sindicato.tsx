@@ -442,7 +442,7 @@ function SindicatoPage() {
 
   useEffect(() => {
     if (!enRun) return;
-    if (!gameStarted) startGame(ola.rivales, undefined, ola.ventajaBot, ola.mapSeed);
+    if (!gameStarted) startGame(ola.rivales, undefined, ola.ventajaBot, ola.mapSeed, ola.sectores);
   }, [enRun, gameStarted, startGame, ola]);
 
   // La oleada fija el objetivo COMÚN de la mesa; el secreto lo reparte el mazo.

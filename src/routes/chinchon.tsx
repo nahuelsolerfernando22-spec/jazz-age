@@ -156,7 +156,7 @@ interface PendingClose {
 function ChinchonPage() {
   const nem = useNemesisSession("chinchon");
   const haptic = useHaptics();
-  useSingleHostessCorner("chinchon");
+  useSingleHostessCorner("chinchon", { backdropOnly: true });
   useEffect(() => {
     void import("@/lib/games/chinchon/chinchon-deck").then((m) => m.preloadDeck());
   }, []);

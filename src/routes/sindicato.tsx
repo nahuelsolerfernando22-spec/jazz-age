@@ -366,6 +366,10 @@ function SindicatoPage() {
   });
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: INITIAL_SCALE });
   const [altoContraste, setAltoContraste] = useState(false);
+  /** Aviso de sector tomado y racha de conquistas del turno. */
+  const [aviso, setAviso] = useState<ConquistaAviso | null>(null);
+  const rachaRef = useRef(0);
+  const [sacudon, setSacudon] = useState(0);
   /** Previsualización de arte: pinta todo el tablero con la textura de un dueño. */
   const [isCardsOpen, setIsCardsOpen] = useState(false);
   const [lastConflictId, setLastConflictId] = useState<string | null>(null);

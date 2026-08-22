@@ -193,7 +193,11 @@ export function SindicatoSorteo({
           </button>
         </div>
         <p className="mt-2 text-center text-[10px] text-[var(--oro)]/55">
-          Ronda 1: 5 fichas por capo. Ronda 2: 3 fichas. Recién en la 3ª se asalta.
+          Ronda 1: {reglas.fichasRonda1} fichas por capo. Ronda 2: {reglas.fichasRonda2}.{" "}
+          {reglas.rondasSinAsalto === 0
+            ? "Se asalta desde la primera."
+            : `Recién en la ${reglas.rondasSinAsalto + 1}ª se asalta.`}{" "}
+          Ataque con {reglas.minTropasAtaque}+ tropas y hasta {reglas.maxDadosAtaque} dados.
         </p>
       </div>
     </div>

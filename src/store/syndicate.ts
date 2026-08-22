@@ -28,7 +28,14 @@ import {
   type AiBoard,
   type AiNivel,
 } from "@/lib/sindicato-ai";
+import {
+  VARIANTE_CLASICA,
+  fichasDeRonda,
+  normalizarReglas,
+  type ReglasVariante,
+} from "@/lib/sindicato-variantes";
 import { useCasino } from "@/store/casino";
+
 import {
   evaluarObjetivo,
   repartirObjetivos,

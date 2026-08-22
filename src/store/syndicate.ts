@@ -230,6 +230,9 @@ export const useSyndicate = create<SyndicateState>()(
       comunObjetivo: 20,
       setComunObjetivo: (n) => set({ comunObjetivo: n }),
       roundNumber: 1,
+      turnOrder: [],
+      ordenDados: {},
+
       cardDrawnThisTurn: false,
       fortifyMoves: 0,
       conquestsThisTurn: 0,

@@ -933,11 +933,16 @@ export const useSyndicate = create<SyndicateState>()(
 
             const origen = plan.from;
             const destino = plan.to;
-            const atkDados = Math.min(3, get().conquests[origen].troops - 1);
-            const defDados = dadosDefensa(
-              get().conquests[destino].troops,
-              get().sectorRasgos[destino],
+            const reglasMesa = normalizarReglas(get().reglas);
+            const atkDados = Math.min(
+              reglasMesa.maxDadosAtaque,
+              get().conquests[origen].troops - 1,
             );
+            const defDados = Math.min(
+              reglasMesa.maxDadosDefensa,
+              dadosDefensa(get().conquests[destino].troops, get().sectorRasgos[destino]),
+            );
+
             const { bajasAtacante, bajasDefensor } = tirarAsalto(atkDados, defDados);
 
             get().updateTroops(origen, -bajasAtacante);

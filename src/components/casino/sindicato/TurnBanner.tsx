@@ -24,6 +24,8 @@ interface Props {
   round?: number;
   /** Si es falso, la fase de asalto está cerrada esta vuelta. */
   canAssault?: boolean;
+  /** Rondas de acomodo de la variante en juego. */
+  rondasSinAsalto?: number;
 }
 
 export function TurnBanner({
@@ -39,6 +41,7 @@ export function TurnBanner({
   cards,
   round,
   canAssault = true,
+  rondasSinAsalto = 2,
 }: Props) {
   const faccion = faccionDe(factionId);
   const activeIndex = PHASES.findIndex((p) => p.id === phase);
@@ -120,7 +123,7 @@ export function TurnBanner({
 
         {!canAssault && (
           <p className="mt-1.5 rounded-md border border-[var(--oro)]/40 bg-[var(--oro)]/10 px-2 py-1 text-center text-[10px] font-black uppercase tracking-[0.14em] text-[var(--oro-palido)]">
-            {`Vuelta ${round ?? 1} de acomodo · el fuego se abre en la 3ª`}
+            {`Vuelta ${round ?? 1} de acomodo · el fuego se abre en la ${(rondasSinAsalto ?? 2) + 1}ª`}
           </p>
         )}
       </div>

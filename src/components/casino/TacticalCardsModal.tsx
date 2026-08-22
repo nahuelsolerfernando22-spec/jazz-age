@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { SyndicateCard } from "@/store/syndicate";
+import { SyndicateCard, esTrioValido, mejorTrio, debeCanjearObligado } from "@/store/syndicate";
 import { REGLAS_NAIPES, faccionDe } from "@/lib/sindicato-facciones";
 
 interface Props {
@@ -26,18 +26,19 @@ export const TacticalCardsModal = ({
     setSelectedCards((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
-  const canTrade = React.useMemo(() => {
-    if (selectedCards.length !== 3) return false;
-    const selected = cards.filter((c) => selectedCards.includes(c.id));
+  const canTrade = React.useMemo(
+    () => esTrioValido(cards.filter((c) => selectedCards.includes(c.id))),
+    [selectedCards, cards],
+  );
 
-    // Regla T.E.G.: 3 iguales o 3 distintos
-    const symbols = selected.map((c) => c.symbol);
-    const allSame = new Set(symbols).size === 1;
-    const allDifferent = new Set(symbols).size === 3;
-    const hasWildcard = symbols.includes("wildcard");
+  /** Mano llena con trío disponible: la mesa obliga a canjear. */
+  const canjeObligado = React.useMemo(() => debeCanjearObligado(cards), [cards]);
 
-    return allSame || allDifferent || hasWildcard;
-  }, [selectedCards, cards]);
+  /** Marca automáticamente el mejor trío legal, cuidando los comodines. */
+  const marcarMejorTrio = React.useCallback(() => {
+    const trio = mejorTrio(cards);
+    if (trio) setSelectedCards(trio.map((c) => c.id));
+  }, [cards]);
 
   return (
     <motion.div
@@ -66,6 +67,22 @@ export const TacticalCardsModal = ({
             {faccion.efecto}
           </p>
         </div>
+
+        {canjeObligado && (
+          <div className="mt-3 rounded-lg border-2 border-red-500/70 bg-red-950/40 p-2 text-center">
+            <p className="text-[11px] font-black uppercase tracking-widest text-red-300">
+              Mano llena · canje obligatorio
+            </p>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={marcarMejorTrio}
+          className="mt-3 min-h-11 w-full rounded-lg border-2 border-[var(--oro)]/60 bg-black/50 px-3 text-[11px] font-black uppercase tracking-widest text-[var(--oro)] active:scale-95"
+        >
+          Marcar mejor trío
+        </button>
 
         <div className="mt-3 grid grid-cols-3 gap-3 mb-4 overflow-y-auto max-h-[42vh] p-2">
           {cards.map((card, idx) => {

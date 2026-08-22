@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { FACCIONES } from "@/lib/sindicato-facciones";
 import { useHaptics } from "@/hooks/use-haptics";
+import { VARIANTES, VARIANTE_CLASICA, type ReglasVariante } from "@/lib/sindicato-variantes";
 
 export interface SorteoResultado {
   color: string;
   turnOrder: number[];
   dados: Record<number, number>;
+  reglas: ReglasVariante;
 }
+
 
 /** Paleta de la banda: el jugador elige con qué color juega la noche. */
 export const COLORES_BANDA: Array<{ id: string; nombre: string; valor: string }> = [
@@ -38,6 +41,12 @@ export function SindicatoSorteo({
   const [color, setColor] = useState(COLORES_BANDA[0].valor);
   const [dados, setDados] = useState<Record<number, number> | null>(null);
   const [tirando, setTirando] = useState(false);
+  const [varianteId, setVarianteId] = useState(VARIANTE_CLASICA.id);
+  const reglas = useMemo(
+    () => VARIANTES.find((v) => v.id === varianteId) ?? VARIANTE_CLASICA,
+    [varianteId],
+  );
+
 
   const orden = useMemo(() => {
     if (!dados) return [];
@@ -97,6 +106,41 @@ export function SindicatoSorteo({
           </div>
         </div>
 
+
+
+        <div className="mt-4">
+          <p className="text-[11px] uppercase tracking-wider text-[var(--oro)]/60">
+            Variante de la casa
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {VARIANTES.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => {
+                  setVarianteId(v.id);
+                  haptics("tap");
+                }}
+                aria-pressed={varianteId === v.id}
+                className={`min-h-11 rounded-lg border px-2 py-2 text-left transition-transform active:scale-95 ${
+                  varianteId === v.id
+                    ? "border-[var(--oro)] bg-[var(--oro)]/15"
+                    : "border-white/12 bg-black/40"
+                }`}
+              >
+                <span className="block text-[11px] font-semibold text-[var(--marfil)]">
+                  {v.nombre}
+                </span>
+                <span className="block text-[9px] leading-tight text-[var(--oro)]/60">
+                  {v.desc}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+
+
         <div className="mt-4">
           <p className="text-[11px] uppercase tracking-wider text-[var(--oro)]/60">
             Sorteo de orden
@@ -141,7 +185,7 @@ export function SindicatoSorteo({
           </button>
           <button
             type="button"
-            onClick={() => dados && onStart({ color, turnOrder: orden, dados })}
+            onClick={() => dados && onStart({ color, turnOrder: orden, dados, reglas })}
             disabled={!dados || tirando}
             className="h-12 flex-1 rounded-lg bg-[var(--oro)] text-sm font-bold text-[#12100c] active:scale-95 disabled:opacity-40"
           >
@@ -149,7 +193,11 @@ export function SindicatoSorteo({
           </button>
         </div>
         <p className="mt-2 text-center text-[10px] text-[var(--oro)]/55">
-          Ronda 1: 5 fichas por capo. Ronda 2: 3 fichas. Recién en la 3ª se asalta.
+          Ronda 1: {reglas.fichasRonda1} fichas por capo. Ronda 2: {reglas.fichasRonda2}.{" "}
+          {reglas.rondasSinAsalto === 0
+            ? "Se asalta desde la primera."
+            : `Recién en la ${reglas.rondasSinAsalto + 1}ª se asalta.`}{" "}
+          Ataque con {reglas.minTropasAtaque}+ tropas y hasta {reglas.maxDadosAtaque} dados.
         </p>
       </div>
     </div>

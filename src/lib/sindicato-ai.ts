@@ -248,51 +248,116 @@ export function valorSector(b: AiBoard, id: string, tuning = NIVEL_TUNING.capo):
 export interface DeployStep {
   id: string;
   troops: number;
+  /** Por qué el consejero manda fichas acá (para mostrárselo al jugador). */
+  motivo?: string;
+}
+
+/** Modificador de defensa que aporta el rasgo del sector (fortín, ruina...). */
+function modDefensa(b: AiBoard, id: string): number {
+  const r = b.rasgos?.[id];
+  return r ? RASGO_POR_ID[r].defensa : 0;
 }
 
 /**
- * Reparte los refuerzos entre frontera amenazada y sectores desde donde
- * conviene abrir el próximo asalto.
+ * Riesgo real de perder un sector propio: probabilidad de que el vecino más
+ * peligroso lo tome, ponderada por lo que vale ese sector.
  */
-export function planDeployment(b: AiBoard, refuerzos: number, tuning = NIVEL_TUNING.capo): DeployStep[] {
+export function riesgoDe(b: AiBoard, id: string, tropas: number, tuning = NIVEL_TUNING.capo): number {
+  const valor = valorSector(b, id, tuning);
+  let peor = 0;
+  for (const n of vecinosDe(b, id)) {
+    const e = b.conquests[n];
+    if (!e || e.ownerId === b.botId) continue;
+    const p = probTomar(e.troops, Math.max(1, tropas + modDefensa(b, id)));
+    if (p > peor) peor = p;
+  }
+  return peor * valor;
+}
+
+/**
+ * Oportunidad: mejor asalto que se abre desde ese sector si tuviera `tropas`,
+ * medido como probabilidad de tomarlo por el valor del objetivo.
+ */
+export function oportunidadDe(
+  b: AiBoard,
+  id: string,
+  tropas: number,
+  tuning = NIVEL_TUNING.capo,
+): number {
+  let mejor = 0;
+  for (const n of vecinosDe(b, id)) {
+    const d = b.conquests[n];
+    if (!d || d.ownerId === b.botId) continue;
+    const odds = probTomar(tropas, Math.max(1, d.troops + modDefensa(b, n)));
+    const v = odds * valorSector(b, n, tuning);
+    if (v > mejor) mejor = v;
+  }
+  return mejor;
+}
+
+function utilidad(b: AiBoard, id: string, tropas: number, tuning: NivelTuning): number {
+  return oportunidadDe(b, id, tropas, tuning) - 1.25 * riesgoDe(b, id, tropas, tuning);
+}
+
+/**
+ * Reparte los refuerzos ficha por ficha, siempre donde más sube la utilidad
+ * marginal: tapar la brecha más peligrosa o abrir el asalto más rendidor.
+ * Sirve tanto para los capos rivales como para el consejero del jugador.
+ */
+export function planDeployment(
+  b: AiBoard,
+  refuerzos: number,
+  tuning = NIVEL_TUNING.capo,
+): DeployStep[] {
   if (refuerzos <= 0) return [];
   const propios = Object.values(b.conquests).filter((c) => c.ownerId === b.botId);
+  if (!propios.length) return [];
   const frontera = propios.filter((c) =>
     vecinosDe(b, c.id).some((n) => b.conquests[n] && b.conquests[n].ownerId !== b.botId),
   );
   const base = frontera.length ? frontera : propios;
-  if (!base.length) return [];
 
-  const puntaje = new Map<string, number>();
-  for (const c of base) {
-    const th = amenaza(b, c.id);
-    const defensa = th - c.troops; // negativo = está cubierto
-    // Objetivo más apetecible al lado.
-    const mejorObjetivo = vecinosDe(b, c.id)
-      .filter((n) => b.conquests[n] && b.conquests[n].ownerId !== b.botId)
-      .map((n) => valorSector(b, n, tuning) - b.conquests[n].troops * 0.6)
-      .sort((x, y) => y - x)[0] ?? 0;
-    puntaje.set(c.id, defensa * 1.2 + mejorObjetivo + valorSector(b, c.id, tuning) * 0.5);
-  }
-
-  // Reparto goloso: siempre al sector con mejor puntaje marginal.
+  const tropas: Record<string, number> = Object.fromEntries(base.map((c) => [c.id, c.troops]));
   const asignado: Record<string, number> = {};
-  const tropasSim: Record<string, number> = Object.fromEntries(base.map((c) => [c.id, c.troops]));
+  const razon: Record<string, string> = {};
+
   for (let i = 0; i < refuerzos; i++) {
-    let mejor = base[0].id;
-    let mejorVal = -Infinity;
+    let mejorId = base[0].id;
+    let mejorGanancia = -Infinity;
+    let mejorMotivo = "";
     for (const c of base) {
-      const val = (puntaje.get(c.id) ?? 0) - tropasSim[c.id] * 0.8;
-      if (val > mejorVal) {
-        mejorVal = val;
-        mejor = c.id;
+      const t = tropas[c.id];
+      const antes = utilidad(b, c.id, t, tuning);
+      const despues = utilidad(b, c.id, t + 1, tuning);
+      const ganancia = despues - antes;
+      if (ganancia > mejorGanancia) {
+        mejorGanancia = ganancia;
+        mejorId = c.id;
+        const bajaRiesgo = riesgoDe(b, c.id, t, tuning) - riesgoDe(b, c.id, t + 1, tuning);
+        const subeAtaque = oportunidadDe(b, c.id, t + 1, tuning) - oportunidadDe(b, c.id, t, tuning);
+        mejorMotivo = bajaRiesgo >= subeAtaque ? "tapa una brecha" : "abre un asalto";
       }
     }
-    tropasSim[mejor]++;
-    asignado[mejor] = (asignado[mejor] ?? 0) + 1;
+    tropas[mejorId]++;
+    asignado[mejorId] = (asignado[mejorId] ?? 0) + 1;
+    razon[mejorId] = mejorMotivo;
   }
-  return Object.entries(asignado).map(([id, troops]) => ({ id, troops }));
+
+  return Object.entries(asignado).map(([id, troops]) => ({ id, troops, motivo: razon[id] }));
 }
+
+/**
+ * Consejo de despliegue para el jugador: mismo cerebro que los capos, pero
+ * siempre en modo "consejero" y con el motivo escrito para mostrarlo.
+ */
+export function sugerirDespliegue(
+  b: AiBoard,
+  refuerzos: number,
+  nivel: AiNivel = "consejero",
+): DeployStep[] {
+  return planDeployment(b, refuerzos, NIVEL_TUNING[nivel] ?? NIVEL_TUNING.consejero);
+}
+
 
 export interface AttackPlan {
   from: string;

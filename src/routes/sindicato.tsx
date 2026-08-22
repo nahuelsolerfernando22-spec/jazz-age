@@ -1,4 +1,6 @@
 import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
+import { normalizarReglas } from "@/lib/sindicato-variantes";
+import { sugerirDespliegue } from "@/lib/sindicato-ai";
 import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
@@ -343,12 +345,17 @@ function SindicatoPage() {
     hasMovedFortification,
     sectorRasgos,
     mapaVariante,
+    reglas,
 
   } = useSyndicate();
+
+  /** Reglamento de la mesa elegido en el sorteo (con respaldo clásico). */
+  const reglasMesa = useMemo(() => normalizarReglas(reglas), [reglas]);
 
   const currentPlayer = players[currentPlayerIndex];
   const myCards = currentPlayer?.cards || [];
   const myFaction = faccionDe(currentPlayer?.faction);
+
   const [bribeActive, setBribeActive] = useState(false);
 
   const controlCounts = useMemo(() => {
@@ -365,6 +372,41 @@ function SindicatoPage() {
   );
 
   const haptics = useHaptics();
+
+  /**
+   * Consejo de despliegue: el mismo cerebro de los capos, en modo consejero,
+   * reparte las fichas del jugador según riesgo, rasgos y frentes abiertos.
+   */
+  const pedirConsejo = useCallback(() => {
+    const pozo = useSyndicate.getState().unassignedTroops;
+    if (pozo <= 0) return;
+    const st = useSyndicate.getState();
+    const pasos = sugerirDespliegue(
+      {
+        botId: 0,
+        conquests: st.conquests,
+        territories: st.activeTerritories,
+        rasgos: st.sectorRasgos,
+      },
+      pozo,
+    );
+    if (!pasos.length) {
+      toast.info("No hay frente claro: repartí donde quieras.");
+      return;
+    }
+    haptics("tap");
+    const texto = pasos
+      .slice(0, 3)
+      .map(
+        (paso) =>
+          `${st.activeTerritories.find((t) => t.id === paso.id)?.nombre ?? paso.id}: ${paso.troops}`,
+      )
+      .join(" · ");
+    toast.info(`Consejo del contador — ${texto}`, {
+      description: pasos[0]?.motivo,
+    });
+  }, [haptics]);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** Sector propio elegido como cabecera del asalto (paso 1 de 2). */
   const [attackFrom, setAttackFrom] = useState<string | null>(null);
@@ -462,10 +504,16 @@ function SindicatoPage() {
   // La mesa arranca recién cuando el jugador elige color y sortea el orden.
   const empezarConSorteo = useCallback(
     (r: SorteoResultado) => {
-      startGame(ola.rivales, r.color, ola.ventajaBot, ola.mapSeed, ola.sectores, {
-        turnOrder: r.turnOrder,
-        dados: r.dados,
-      });
+      startGame(
+        ola.rivales,
+        r.color,
+        ola.ventajaBot,
+        ola.mapSeed,
+        ola.sectores,
+        { turnOrder: r.turnOrder, dados: r.dados },
+        r.reglas,
+      );
+
     },
     [startGame, ola],
   );
@@ -760,7 +808,7 @@ function SindicatoPage() {
 
       useSyndicate.getState().registerAssault();
 
-      const dadosAtaque = Math.min(3, atacante.troops - 1);
+      const dadosAtaque = Math.min(reglasMesa.maxDadosAtaque, atacante.troops - 1);
       const bajasAtacante = Math.min(aLoss, Math.max(0, atacante.troops - 1));
       const bajasDefensor = Math.min(dLoss, defensor.troops);
 
@@ -1569,6 +1617,14 @@ function SindicatoPage() {
                       </span>
                     </button>
                   )}
+                  {turnPhase === "deployment" && unassignedTroops > 0 && (
+                    <button
+                      onClick={pedirConsejo}
+                      className="col-span-2 min-h-[44px] rounded-lg border-2 border-[var(--oro)]/50 bg-black/50 px-3 font-bebas text-base uppercase tracking-wide text-[var(--oro)] touch-manipulation active:scale-95"
+                    >
+                      Pedir consejo al contador
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
@@ -1590,7 +1646,7 @@ function SindicatoPage() {
                   </button>
                   {attackerId && turnPhase === "attack" && (
                     <p className="col-span-2 text-center text-[11px] font-black uppercase tracking-[0.16em] text-[var(--oro-viejo)]">
-                      {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(3, (conquests[attackerId]?.troops || 1) - 1)} dados`}
+                      {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(reglasMesa.maxDadosAtaque, (conquests[attackerId]?.troops || 1) - 1)} dados`}
                     </p>
                   )}
                 </>
@@ -1627,13 +1683,22 @@ function SindicatoPage() {
                 onResult={onDiceResult}
                 attackerCount={Math.min(
                   4,
-                  Math.max(1, Math.min(3, (conquests[attackerId ?? ""]?.troops || 2) - 1)) +
+                  Math.max(
+                    1,
+                    Math.min(
+                      reglasMesa.maxDadosAtaque,
+                      (conquests[attackerId ?? ""]?.troops || 2) - 1,
+                    ),
+                  ) +
                     desafioBonus.atk,
                 )}
 
                 defenderCount={Math.min(
                   4,
-                  dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]) +
+                  Math.min(
+                    reglasMesa.maxDadosDefensa,
+                    dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]),
+                  ) +
                     desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}
@@ -1691,6 +1756,7 @@ function SindicatoPage() {
       {/* HUD superior: una sola columna medida, así nada se solapa en ninguna pantalla. */}
       <div ref={hudRef} className="pointer-events-none fixed inset-x-0 top-0 z-[70]">
         <TurnBanner
+          rondasSinAsalto={reglasMesa.rondasSinAsalto}
           playerName={currentPlayer?.name ?? "Sindicato"}
           playerColor={currentPlayer?.color ?? "var(--cd-gold-mid)"}
           factionId={currentPlayer?.faction}

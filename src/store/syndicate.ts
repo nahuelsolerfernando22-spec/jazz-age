@@ -28,7 +28,14 @@ import {
   type AiBoard,
   type AiNivel,
 } from "@/lib/sindicato-ai";
+import {
+  VARIANTE_CLASICA,
+  fichasDeRonda,
+  normalizarReglas,
+  type ReglasVariante,
+} from "@/lib/sindicato-variantes";
 import { useCasino } from "@/store/casino";
+
 import {
   evaluarObjetivo,
   repartirObjetivos,
@@ -99,7 +106,20 @@ interface SyndicateState {
   /** Cabeza de los capos rivales: matón, capo o consejero. */
   aiNivel: AiNivel;
   setAiNivel: (n: AiNivel) => void;
+  /** Reglamentación de la mesa (variante del T.E.G. elegida). */
+  reglas: ReglasVariante;
+  setReglas: (r: ReglasVariante) => void;
   tradeCount: number;
+  /** Detalle del último canje, para avisarle al jugador qué cobró. */
+  ultimoCanje: {
+    playerId: number;
+    fichas: number;
+    bonoSectores: number;
+    destino: string | null;
+    at: number;
+  } | null;
+
+
 
   /** Objetivo tapado de cada capo (id de jugador -> objetivo). */
   objectives: Record<number, Objetivo>;
@@ -130,7 +150,9 @@ interface SyndicateState {
     mapSeed?: string,
     mapSize?: number,
     sorteo?: { turnOrder: number[]; dados: Record<number, number> },
+    reglas?: ReglasVariante,
   ) => void;
+
 
   conquerTerritory: (id: string, troopsRemaining: number, playerId: number) => void;
   updateTroops: (id: string, delta: number) => void;
@@ -218,11 +240,16 @@ export const useSyndicate = create<SyndicateState>()(
       assaultsThisTurn: 0,
       aiNivel: "capo",
       setAiNivel: (aiNivel) => set({ aiNivel }),
+      reglas: VARIANTE_CLASICA,
+      setReglas: (reglas) => set({ reglas: normalizarReglas(reglas) }),
+
       sectorRasgos: {},
       mapaVariante: null,
       tuneles: [],
       rencor: {},
       tradeCount: 0,
+      ultimoCanje: null,
+
       pendingDeployment: {},
       activeEffects: {},
 
@@ -296,11 +323,15 @@ export const useSyndicate = create<SyndicateState>()(
 
       canAttack: (fromId: string, toId: string) => {
         const state = get();
+        const reglas = normalizarReglas(state.reglas);
         const from = state.conquests[fromId];
         const to = state.conquests[toId];
-        if (!from || !to || from.ownerId === to.ownerId || from.troops <= 1) return false;
-        // Rondas de acomodo: nadie asalta hasta la tercera vuelta.
-        if (!puedeAsaltar(state.roundNumber)) return false;
+        if (!from || !to || from.ownerId === to.ownerId) return false;
+        // Mínimo de tropas para salir a la calle (la variante lo define).
+        if (from.troops < reglas.minTropasAtaque) return false;
+        // Rondas de acomodo: nadie asalta hasta que la variante lo habilite.
+        if (!puedeAsaltar(state.roundNumber, reglas.rondasSinAsalto)) return false;
+
 
         // Efecto del naipe: Toque de Queda (lockdown global)
         const activeLockdowns = Object.values(state.activeEffects).filter(
@@ -342,8 +373,10 @@ export const useSyndicate = create<SyndicateState>()(
 
       setPhase: (phase) => set({ turnPhase: phase }),
 
-      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize, sorteo) =>
-        set(() => {
+      startGame: (playerCount, userColor, botBonusTroops = 0, mapSeed, mapSize, sorteo, reglasIn) =>
+        set((prev) => {
+          const reglas = normalizarReglas(reglasIn ?? prev.reglas);
+
           // Determinar territorios activos
           let activeTerrs = TERRITORIOS;
           let rasgos: MapaRasgos = {};
@@ -413,12 +446,14 @@ export const useSyndicate = create<SyndicateState>()(
             players,
             conquests,
             gameStarted: true,
+            reglas,
             activeTerritories: activeTerrs,
-            turnPhase: "deployment",
+            turnPhase: "deployment" as const,
             currentPlayerIndex: turnOrder[0],
             turnOrder,
             ordenDados: sorteo?.dados ?? {},
-            unassignedTroops: 5,
+            unassignedTroops: reglas.fichasRonda1,
+
 
             winner: null,
             // El mazo sólo lleva naipes de sectores que existen esta noche.
@@ -446,16 +481,23 @@ export const useSyndicate = create<SyndicateState>()(
             conquestsThisTurn: 0,
             lastConqueredId: null,
             tradeCount: 0,
+            ultimoCanje: null,
+
             activeEffects: {},
           };
         }),
 
       nextTurn: () =>
         set((state) => {
-          // T.E.G.: en las dos primeras rondas sólo se colocan fichas, nadie asalta.
+          const reglas = normalizarReglas(state.reglas);
+          // Acomodo: en las primeras rondas sólo se colocan fichas, nadie asalta.
           if (state.turnPhase === "deployment")
-            return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
-          if (state.turnPhase === "attack") return { turnPhase: "fortification" };
+            return {
+              turnPhase: puedeAsaltar(state.roundNumber, reglas.rondasSinAsalto)
+                ? ("attack" as const)
+                : ("fortification" as const),
+            };
+          if (state.turnPhase === "attack") return { turnPhase: "fortification" as const };
 
           // El turno sigue el orden que salió del sorteo de dados.
           const orden =
@@ -480,9 +522,9 @@ export const useSyndicate = create<SyndicateState>()(
           const playerTerritories = Object.values(state.conquests).filter(
             (c) => c.ownerId === nextIndex,
           );
-          // Refuerzos T.E.G.: 5 la primera ronda, 3 la segunda, después mitad de sectores.
-          const terrCountBonus =
-            roundNumber === 1 ? 5 : roundNumber === 2 ? 3 : Math.max(3, Math.floor(playerTerritories.length / 2));
+          // Refuerzos según la variante: acomodo fijo y después reparto por sectores.
+          const terrCountBonus = fichasDeRonda(reglas, roundNumber, playerTerritories.length);
+
           const faccion = faccionDe(state.players[nextIndex]?.faction);
 
           // --- TALISMANES y RUMORES ---
@@ -547,12 +589,13 @@ export const useSyndicate = create<SyndicateState>()(
 
       moveTroops: (fromId, toId, amount) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           const from = state.conquests[fromId];
           const to = state.conquests[toId];
           if (!from || !to || from.ownerId !== to.ownerId || from.troops <= amount) return state;
           if (state.turnPhase === "fortification" && state.hasMovedFortification) return state;
 
-          // Reagrupe T.E.G.: hasta 3 movimientos por fase de fortificación.
+          // Reagrupe: la variante define cuántos movimientos entran por fase.
           const fortifyMoves =
             state.turnPhase === "fortification" ? state.fortifyMoves + 1 : state.fortifyMoves;
 
@@ -564,19 +607,23 @@ export const useSyndicate = create<SyndicateState>()(
             },
             fortifyMoves,
             hasMovedFortification:
-              state.turnPhase === "fortification" ? fortifyMoves >= 3 : state.hasMovedFortification,
+              state.turnPhase === "fortification"
+                ? fortifyMoves >= reglas.reagrupesPorTurno
+                : state.hasMovedFortification,
           };
         }),
 
       drawCard: (playerId) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           if (state.deck.length === 0) return state;
           // Un solo naipe por turno, como manda la mesa.
           if (playerId === state.currentPlayerIndex && state.cardDrawnThisTurn) return state;
-          // T.E.G.: hace falta 1 sector tomado, o 2 si ya hiciste 3 canjes o más.
+          // T.E.G.: hace falta 1 sector tomado, o 2 si ya hiciste varios canjes.
           if (
             playerId === state.currentPlayerIndex &&
-            state.conquestsThisTurn < naipesRequeridos(state.tradeCount)
+            state.conquestsThisTurn <
+              naipesRequeridos(state.tradeCount, reglas.canjesParaDobleConquista)
           )
             return state;
           const newDeck = [...state.deck];
@@ -594,11 +641,13 @@ export const useSyndicate = create<SyndicateState>()(
 
       tradeCards: (playerId, cardIds) =>
         set((state) => {
+          const reglas = normalizarReglas(state.reglas);
           const player = state.players.find((p) => p.id === playerId);
           if (!player) return state;
 
           const tradedCards = player.cards.filter((c) => cardIds.includes(c.id));
-          // La mesa sólo acepta tríos legales: tres iguales, tres distintos o con comodín.
+          // La mesa sólo acepta tríos legales: tres iguales, tres distintos
+          // o cualquier combinación completada por un comodín.
           if (!esTrioValido(tradedCards)) return state;
           const remainingCards = player.cards.filter((c) => !cardIds.includes(c.id));
 
@@ -607,21 +656,22 @@ export const useSyndicate = create<SyndicateState>()(
           );
 
           const newDeck = [...state.deck, ...tradedCards].sort(() => Math.random() - 0.5);
-          const reinforcementsList = [4, 7, 10, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+          const escalera = reglas.canjeProgresion;
           const bonus =
-            reinforcementsList[Math.min(state.tradeCount, reinforcementsList.length - 1)] +
+            escalera[Math.min(state.tradeCount, escalera.length - 1)] +
             faccionDe(player.faction).tradeBonus;
 
-          // Contrabando (efecto pasivo de naipe extra si estuviera activo)
-          // Por ahora lo simplificamos a la lógica base de trade.
-
+          // T.E.G.: cada naipe canjeado que dibuje un sector propio deja
+          // fichas extra directamente sobre ese sector.
           const updatedConquests = { ...state.conquests };
+          let bonoSectores = 0;
           tradedCards.forEach((card) => {
             if (updatedConquests[card.territoryId]?.ownerId === playerId) {
               updatedConquests[card.territoryId] = {
                 ...updatedConquests[card.territoryId],
-                troops: updatedConquests[card.territoryId].troops + 2,
+                troops: updatedConquests[card.territoryId].troops + reglas.bonoSectorCanje,
               };
+              bonoSectores += reglas.bonoSectorCanje;
             }
           });
 
@@ -647,9 +697,17 @@ export const useSyndicate = create<SyndicateState>()(
               ? state.unassignedTroops
               : state.unassignedTroops + bonus,
             tradeCount: state.tradeCount + 1,
+            ultimoCanje: {
+              playerId,
+              fichas: bonus,
+              bonoSectores,
+              destino: destinoForzado,
+              at: Date.now(),
+            },
             conquests: updatedConquests,
           };
         }),
+
 
       conquerTerritory: (id, troopsRemaining, playerId) =>
         set((state) => {
@@ -877,11 +935,16 @@ export const useSyndicate = create<SyndicateState>()(
 
             const origen = plan.from;
             const destino = plan.to;
-            const atkDados = Math.min(3, get().conquests[origen].troops - 1);
-            const defDados = dadosDefensa(
-              get().conquests[destino].troops,
-              get().sectorRasgos[destino],
+            const reglasMesa = normalizarReglas(get().reglas);
+            const atkDados = Math.min(
+              reglasMesa.maxDadosAtaque,
+              get().conquests[origen].troops - 1,
             );
+            const defDados = Math.min(
+              reglasMesa.maxDadosDefensa,
+              dadosDefensa(get().conquests[destino].troops, get().sectorRasgos[destino]),
+            );
+
             const { bajasAtacante, bajasDefensor } = tirarAsalto(atkDados, defDados);
 
             get().updateTroops(origen, -bajasAtacante);
@@ -943,44 +1006,67 @@ export function tirarAsalto(dadosAtacante: number, dadosDefensor: number) {
 /**
  * Rondas de acomodo del T.E.G. original: en la primera se colocan 5 fichas y en
  * la segunda 3, sin poder asaltar. Recién en la tercera se abre el fuego.
+ * La variante elegida puede acortar o eliminar el acomodo.
  */
 export const RONDAS_SIN_ASALTO = 2;
-export function puedeAsaltar(roundNumber: number): boolean {
-  return roundNumber > RONDAS_SIN_ASALTO;
+export function puedeAsaltar(roundNumber: number, rondasSinAsalto = RONDAS_SIN_ASALTO): boolean {
+  return roundNumber > rondasSinAsalto;
 }
 
 /**
  * T.E.G.: para llevarte un naipe hace falta haber tomado al menos un sector,
  * o dos si ya canjeaste tres veces o más en la partida.
  */
-export function naipesRequeridos(tradeCount: number): number {
-  return tradeCount >= 3 ? 2 : 1;
+export function naipesRequeridos(tradeCount: number, canjesParaDoble = 3): number {
+  return tradeCount >= canjesParaDoble ? 2 : 1;
 }
 
-/** ¿Tres naipes forman un canje legal? */
+/**
+ * ¿Tres naipes forman un canje legal? T.E.G.: tres símbolos iguales, tres
+ * distintos, o cualquier combinación completada por un comodín.
+ */
 export function esTrioValido(cards: SyndicateCard[]): boolean {
   if (cards.length !== 3) return false;
   const symbols = cards.map((c) => c.symbol);
-  return (
-    new Set(symbols).size === 1 || new Set(symbols).size === 3 || symbols.includes("wildcard")
-  );
+  const comodines = symbols.filter((s) => s === "wildcard").length;
+  const reales = symbols.filter((s) => s !== "wildcard");
+  // Con dos o más comodines siempre se arma el trío.
+  if (comodines >= 2) return true;
+  if (comodines === 1) {
+    // El comodín completa tanto un trío igual como uno de tres distintos.
+    return reales.length === 2;
+  }
+  return new Set(reales).size === 1 || new Set(reales).size === 3;
 }
 
-function findValidSet(cards: SyndicateCard[]) {
-
-
+/** Mejor trío canjeable de una mano (o null si no hay). Prioriza no gastar comodines. */
+export function mejorTrio(cards: SyndicateCard[]): SyndicateCard[] | null {
   if (cards.length < 3) return null;
+  let mejor: SyndicateCard[] | null = null;
+  let mejorComodines = 99;
   for (let i = 0; i < cards.length; i++) {
     for (let j = i + 1; j < cards.length; j++) {
       for (let k = j + 1; k < cards.length; k++) {
         const trio = [cards[i], cards[j], cards[k]];
-        const symbols = trio.map((c) => c.symbol);
-        const allSame = new Set(symbols).size === 1;
-        const allDifferent = new Set(symbols).size === 3;
-        const hasWildcard = symbols.includes("wildcard");
-        if (allSame || allDifferent || hasWildcard) return trio;
+        if (!esTrioValido(trio)) continue;
+        const comodines = trio.filter((c) => c.symbol === "wildcard").length;
+        if (comodines < mejorComodines) {
+          mejor = trio;
+          mejorComodines = comodines;
+        }
       }
     }
   }
-  return null;
+  return mejor;
 }
+
+/** T.E.G.: con la mano llena hay que canjear sí o sí antes de seguir. */
+export function debeCanjearObligado(cards: SyndicateCard[], maxNaipes = 5): boolean {
+  return cards.length >= maxNaipes && mejorTrio(cards) !== null;
+}
+
+
+function findValidSet(cards: SyndicateCard[]) {
+  return mejorTrio(cards);
+}
+

@@ -1308,12 +1308,19 @@ function SindicatoPage() {
 
 
 
-                    {/* Cartucho déco con el nombre del sector */}
+                    {/* Cartucho déco: sólo en los sectores que importan ahora,
+                        para que el tablero no sea un muro de nombres. */}
                     {(() => {
+                      const relevante =
+                        isSelected ||
+                        esOrigen ||
+                        esObjetivo ||
+                        puedeRecibir ||
+                        transform.scale >= 1.35;
+                      if (!relevante) return null;
                       const esc = Math.min(2.2, Math.max(1, 1 / transform.scale));
-                      const marca = sectorRasgos[t.id]
-                        ? RASGO_POR_ID[sectorRasgos[t.id]].icono
-                        : "";
+                      const marca = "";
+
                       const w = Math.max(52, t.nombre.length * 6.6 + 18);
                       const h = 17;
                       // El cartucho se mantiene dentro del área jugable visible

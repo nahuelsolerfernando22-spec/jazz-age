@@ -1,7 +1,6 @@
 import { RASGO_POR_ID, dadosDefensa } from "@/lib/sindicato-rasgos";
 import { normalizarReglas } from "@/lib/sindicato-variantes";
 import { sugerirDespliegue } from "@/lib/sindicato-ai";
-import { VARIANTE_NOMBRE } from "@/lib/sindicato-map-gen";
 import { useCasino } from "@/store/casino";
 import { useSyndicate, puedeAsaltar } from "@/store/syndicate";
 import {

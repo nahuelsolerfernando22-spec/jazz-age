@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { reportSingleScore } from "@/store/single-scores";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Hand as HandIcon, HelpCircle, Users } from "lucide-react";
@@ -163,10 +164,6 @@ function TrucoParejasPage() {
     void import("@/store/league-progress").then(({ awardLeaguePoints }) => {
       const pts = won ? 80 + spread * 4 : Math.max(0, 20 - spread);
       if (pts > 0) awardLeaguePoints("truco-parejas", pts);
-    });
-    void import("@/lib/daily-tournament").then(({ submitTourneyScore, activeTourneyGame }) => {
-      if (activeTourneyGame() !== "truco-parejas") return;
-      void submitTourneyScore("truco-parejas", won ? 150 + spread * 15 : Math.max(0, spread * 3));
     });
   }, [g]);
 

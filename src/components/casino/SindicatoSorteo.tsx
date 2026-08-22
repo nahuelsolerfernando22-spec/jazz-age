@@ -104,6 +104,9 @@ export function SindicatoSorteo({
               </button>
             ))}
           </div>
+        </div>
+
+
 
         <div className="mt-4">
           <p className="text-[11px] uppercase tracking-wider text-[var(--oro)]/60">

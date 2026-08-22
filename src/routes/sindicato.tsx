@@ -664,6 +664,18 @@ function SindicatoPage() {
     setAttackFrom(null);
   }, [turnPhase, currentPlayerIndex]);
 
+  // La racha de conquistas vive dentro del turno.
+  useEffect(() => {
+    rachaRef.current = 0;
+  }, [currentPlayerIndex]);
+
+  // El cartel de conquista se retira solo.
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 1700);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
   /** Texto guía: siempre dice el próximo paso concreto. */
   const guia = useMemo(() => {
     if (currentPlayer?.isBot) return "Juega el rival…";

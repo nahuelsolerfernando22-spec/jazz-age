@@ -248,6 +248,8 @@ export const useSyndicate = create<SyndicateState>()(
       tuneles: [],
       rencor: {},
       tradeCount: 0,
+      ultimoCanje: null,
+
       pendingDeployment: {},
       activeEffects: {},
 

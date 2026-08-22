@@ -335,6 +335,8 @@ function SindicatoPage() {
     activeEffects,
     activeTerritories,
     hasMovedFortification,
+    sectorRasgos,
+    mapaVariante,
 
   } = useSyndicate();
 
@@ -1463,6 +1465,15 @@ function SindicatoPage() {
                 <h2 className="font-serif italic font-bold text-3xl text-[var(--crema-brillo)] uppercase leading-none drop-shadow-sm">
                   {selectedTerritory.nombre}
                 </h2>
+                {sectorRasgos[selectedTerritory.id] && (
+                  <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--oro)]/90">
+                    {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].icono}{" "}
+                    {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].nombre}
+                    <span className="block normal-case tracking-normal text-[10px] text-[var(--crema-brillo)]/70 font-medium">
+                      {RASGO_POR_ID[sectorRasgos[selectedTerritory.id]].desc}
+                    </span>
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => setSelectedId(null)}
@@ -1589,7 +1600,8 @@ function SindicatoPage() {
 
                 defenderCount={Math.min(
                   4,
-                  Math.min(3, conquests[selectedId!]?.troops || 1) + desafioBonus.def,
+                  dadosDefensa(conquests[selectedId!]?.troops || 1, sectorRasgos[selectedId!]) +
+                    desafioBonus.def,
                 )}
                 bribeUsed={bribeActive}
                 bribeDice={myFaction.bribeDice}

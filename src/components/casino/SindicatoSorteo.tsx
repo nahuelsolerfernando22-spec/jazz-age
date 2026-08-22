@@ -64,7 +64,7 @@ export function SindicatoSorteo({
   };
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/85 px-4 py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 px-4 py-6">
       <div className="w-full max-w-md rounded-2xl border border-[var(--oro)]/40 bg-[#12100c]/95 p-4 shadow-2xl">
         <h2 className="paria-sign text-center text-xl">Mesa del Sindicato</h2>
         <p className="mt-1 text-center text-[11px] text-[var(--oro)]/70">

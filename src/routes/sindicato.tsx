@@ -1464,34 +1464,67 @@ function SindicatoPage() {
           canAssault={puedeAsaltar(roundNumber)}
         />
 
-        <ControlBar
-          players={players}
-          counts={controlCounts}
-          total={activeTerritories.length}
-          currentPlayerId={currentPlayerIndex}
-        />
-
-        <BarriosPanel
-          territories={activeTerritories}
-          conquests={conquests}
-          myPlayerId={0}
-          myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
-        />
-
-        <div className="mt-1.5 flex items-start gap-2 px-2">
-          <ObjetivoCard />
-          <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
-            <span className="text-sm text-[var(--oro)]">&#9824;</span>
-            <span className="min-w-0">
-              <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
-                {ola.titulo}
-              </span>
-              <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
-                {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
-              </span>
-            </span>
-          </div>
+        {/* Guía de una línea: siempre dice qué hacer ahora. */}
+        <div className="mt-1.5 flex items-center gap-2 px-2">
+          <p className="pointer-events-none min-w-0 flex-1 truncate rounded-xl border border-[var(--oro)]/40 bg-black/85 px-3 py-1.5 font-bebas text-base leading-none text-[var(--oro-palido)] backdrop-blur-md">
+            {guia}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setInfoOpen((v) => !v);
+              haptics("tap");
+            }}
+            aria-label="Ver barrios, control y objetivo"
+            aria-pressed={infoOpen}
+            className={`pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 backdrop-blur-md touch-manipulation ${
+              infoOpen
+                ? "border-[var(--oro-palido)] bg-[var(--oro)]/25 text-[var(--oro-palido)]"
+                : "border-[var(--oro)]/50 bg-black/85 text-[var(--oro)]"
+            }`}
+          >
+            <Info size={16} />
+          </button>
         </div>
+
+        <AnimatePresence>
+          {infoOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <ControlBar
+                players={players}
+                counts={controlCounts}
+                total={activeTerritories.length}
+                currentPlayerId={currentPlayerIndex}
+              />
+
+              <BarriosPanel
+                territories={activeTerritories}
+                conquests={conquests}
+                myPlayerId={0}
+                myColor={players[0]?.color ?? "var(--cd-gold-mid)"}
+              />
+
+              <div className="mt-1.5 flex items-start gap-2 px-2">
+                <ObjetivoCard />
+                <div className="pointer-events-none flex max-w-[46%] shrink-0 items-center gap-2 rounded-2xl border-2 border-[var(--oro)]/60 bg-black/85 px-3 py-2 backdrop-blur-md">
+                  <span className="text-sm text-[var(--oro)]">&#9824;</span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-bebas text-sm leading-none text-[var(--oro-palido)]">
+                      {ola.titulo}
+                    </span>
+                    <span className="block truncate text-[11px] font-black uppercase tracking-widest text-[var(--oro)]/80">
+                      {`Oleada ${runOla}/${OLAS_TOTALES} · meta ${ola.objetivo}`}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
 

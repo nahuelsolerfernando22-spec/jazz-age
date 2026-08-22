@@ -344,7 +344,7 @@ function SindicatoPage() {
     activeTerritories,
     hasMovedFortification,
     sectorRasgos,
-    mapaVariante,
+    reglas,
 
   } = useSyndicate();
 

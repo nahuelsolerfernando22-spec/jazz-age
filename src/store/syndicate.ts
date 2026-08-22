@@ -457,15 +457,25 @@ export const useSyndicate = create<SyndicateState>()(
             return { turnPhase: puedeAsaltar(state.roundNumber) ? "attack" : "fortification" };
           if (state.turnPhase === "attack") return { turnPhase: "fortification" };
 
-          let nextIndex = (state.currentPlayerIndex + 1) % state.players.length;
-          while (state.players[nextIndex].eliminated) {
-            nextIndex = (nextIndex + 1) % state.players.length;
-            if (nextIndex === state.currentPlayerIndex) break;
+          // El turno sigue el orden que salió del sorteo de dados.
+          const orden =
+            state.turnOrder.length === state.players.length
+              ? state.turnOrder
+              : state.players.map((p) => p.id);
+          const pos = Math.max(0, orden.indexOf(state.currentPlayerIndex));
+          let siguiente = (pos + 1) % orden.length;
+          let vueltas = 0;
+          let dioVuelta = siguiente === 0;
+          while (state.players[orden[siguiente]]?.eliminated && vueltas < orden.length) {
+            siguiente = (siguiente + 1) % orden.length;
+            if (siguiente === 0) dioVuelta = true;
+            vueltas++;
           }
+          const nextIndex = orden[siguiente];
 
-          // Nueva ronda cuando la mesa vuelve a dar la vuelta.
-          const roundNumber =
-            nextIndex <= state.currentPlayerIndex ? state.roundNumber + 1 : state.roundNumber;
+          // Nueva ronda cuando la mesa vuelve al primero del orden.
+          const roundNumber = dioVuelta ? state.roundNumber + 1 : state.roundNumber;
+
 
           const playerTerritories = Object.values(state.conquests).filter(
             (c) => c.ownerId === nextIndex,

@@ -187,9 +187,9 @@ export function GamesSheet({ open, onClose }: Props) {
         </div>
         <header className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 pb-2 pt-3 sm:px-5">
           <div className="min-w-0">
-            <p className="paria-eyebrow">— Sala completa · {SINGLE_GAMES.length} mesas —</p>
+            <p className="paria-eyebrow truncate">— Sala completa —</p>
             <h2 id={TITLE_ID} className="paria-sign mt-0.5 truncate text-[1.35rem] sm:text-2xl">
-              Todos los juegos
+              Todos los juegos · {SINGLE_GAMES.length}
             </h2>
           </div>
           <button

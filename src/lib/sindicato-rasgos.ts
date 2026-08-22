@@ -34,7 +34,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "fortin",
     nombre: "Fortín",
-    icono: "🛡",
+    icono: "▣",
     desc: "Muros viejos: el defensor tira un dado extra.",
     defensa: 1,
     renta: 0,
@@ -45,7 +45,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "contrabando",
     nombre: "Contrabando",
-    icono: "📦",
+    icono: "◆",
     desc: "Mercadería que no figura: +25 fichas por turno.",
     defensa: 0,
     renta: 25,
@@ -56,7 +56,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "cuartel",
     nombre: "Cuartel",
-    icono: "⚑",
+    icono: "✚",
     desc: "Gente siempre lista: +1 refuerzo por turno.",
     defensa: 0,
     renta: 0,
@@ -67,7 +67,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "tunel",
     nombre: "Túnel",
-    icono: "⛓",
+    icono: "≡",
     desc: "Pasaje clandestino a otro túnel del mapa.",
     defensa: 0,
     renta: 10,
@@ -78,7 +78,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "nido",
     nombre: "Nido de ratas",
-    icono: "🐀",
+    icono: "•",
     desc: "Soplones por todos lados: +15 fichas y +1 refuerzo, pero se defiende mal.",
     defensa: -1,
     renta: 15,
@@ -89,7 +89,7 @@ export const RASGOS: Rasgo[] = [
   {
     id: "ruina",
     nombre: "Ruina",
-    icono: "🕳",
+    icono: "×",
     desc: "Escombros: no rinde nada y el defensor tira un dado menos.",
     defensa: -1,
     renta: -5,

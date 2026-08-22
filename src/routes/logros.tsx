@@ -485,12 +485,6 @@ function StreaksTab() {
               Mejor: {login.bestStreak}
             </p>
           </div>
-          <Link
-            to="/single"
-            className="rounded-full border border-[var(--oro)]/40 px-3 py-1 text-xs uppercase tracking-[0.2em] text-[var(--oro)]"
-          >
-            Volver al salón
-          </Link>
         </div>
       </Card>
       <div className="grid gap-3 sm:grid-cols-2">

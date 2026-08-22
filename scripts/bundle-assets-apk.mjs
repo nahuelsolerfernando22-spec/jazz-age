@@ -6,7 +6,9 @@ import { createHash } from "node:crypto";
 
 const DIST = process.argv[2] ?? "dist/client";
 const SRC_ROOTS = ["src/assets", "public"];
-const CDN_HOST = process.env.APK_ASSETS_CDN ?? "";
+const CDN_HOST = (
+  process.env.APK_ASSETS_CDN ?? "https://id-preview--e6ad7ff0-65b4-494b-b3e4-b5c147b2b660.lovable.app"
+).replace(/\/$/, "");
 
 async function walk(dir) {
   const out = [];

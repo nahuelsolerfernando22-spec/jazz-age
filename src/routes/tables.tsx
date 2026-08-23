@@ -212,6 +212,14 @@ function TablesPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [activePowerUps, setActivePowerUps] = useState<BlackjackPowerUp[]>([]);
 
+  // Duelo de reputación: la mesa se juega a nueve manos y lo que se lleva
+  // el ganador es palabra, no plata.
+  const [duelo, setDuelo] = useState({ manos: 0, reputacion: 0 });
+  const [tell, setTell] = useState<TellBJ | null>(null);
+  const legajoRef = useRef<LegajoBJ>({ ...LEGAJO_BJ_VACIO });
+  const tellRef = useRef<TellBJ | null>(null);
+  const dueloCerrado = duelo.manos >= MANOS_DUELO;
+
   useLockGame(phase === "player" || phase === "dealer" || phase === "insurance");
 
   // Persistir solo la apuesta preferida; las fichas viven en la caja del casino.

@@ -23,6 +23,7 @@ import { TurnBanner } from "@/components/casino/sindicato/TurnBanner";
 import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
+import { buscarRuta } from "@/lib/sindicato-rutas";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
 import { TroopMover } from "@/components/casino/sindicato/TroopMover";
 import { ConquistaFlash, type ConquistaAviso } from "@/components/casino/sindicato/ConquistaFlash";
@@ -601,15 +602,38 @@ function SindicatoPage() {
 
   // Puentes tendidos por el generador: sectores que si no quedaban incomunicados.
   const puentes = useSyndicate((s) => s.puentes);
+  const puentesBloqueados = useSyndicate((s) => s.puentesBloqueados);
+  const bloqueoUsado = useSyndicate((s) => s.bloqueoUsado);
+  const bloquearPuente = useSyndicate((s) => s.bloquearPuente);
   const clavesPuente = useMemo(
     () => new Set((puentes ?? []).map(([a, b]) => [a, b].sort().join("|"))),
     [puentes],
   );
+  const esPuenteEntre = useCallback(
+    (a: string, b: string) => clavesPuente.has([a, b].sort().join("|")),
+    [clavesPuente],
+  );
+  const retenEn = useCallback(
+    (a: string, b: string) => useSyndicate.getState().puenteBloqueadoPor(a, b),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [puentesBloqueados, conquests],
+  );
+
+  /** Puentes que salen del sector elegido (para tomarlos o ver quién los tiene). */
+  const puentesDelSector = useMemo(() => {
+    if (!selectedId) return [] as Array<{ otro: string; reten: number | null }>;
+    return (puentes ?? [])
+      .filter(([a, b]) => a === selectedId || b === selectedId)
+      .map(([a, b]) => {
+        const otro = a === selectedId ? b : a;
+        return { otro, reten: retenEn(a, b) };
+      });
+  }, [selectedId, puentes, retenEn]);
 
   // Rutas punteadas entre sectores vecinos (una sola por par).
   const conexiones = useMemo(() => {
     const vistas = new Set<string>();
-    const out: { id: string; a: Point; b: Point; puente: boolean }[] = [];
+    const out: { id: string; a: Point; b: Point; puente: boolean; reten: number | null }[] = [];
     activeTerritories.forEach((t) => {
       t.vecinos.forEach((vId) => {
         const key = [t.id, vId].sort().join("|");
@@ -618,11 +642,12 @@ function SindicatoPage() {
         const b = centros[vId];
         if (!a || !b) return;
         vistas.add(key);
-        out.push({ id: key, a, b, puente: clavesPuente.has(key) });
+        const puente = clavesPuente.has(key);
+        out.push({ id: key, a, b, puente, reten: puente ? retenEn(t.id, vId) : null });
       });
     });
     return out;
-  }, [activeTerritories, centros, clavesPuente]);
+  }, [activeTerritories, centros, clavesPuente, retenEn]);
 
   // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
@@ -660,6 +685,33 @@ function SindicatoPage() {
     (id: string) => activeTerritories.find((t) => t.id === id)?.nombre ?? id,
     [activeTerritories],
   );
+
+  /** Indicador de ruta: por dónde llego al blanco elegido y si hay puente en el medio. */
+  const rutaAlBlanco = useMemo(() => {
+    if (!selectedId || conquests[selectedId]?.ownerId === currentPlayerIndex) return null;
+    const duenos: Record<string, number | undefined> = {};
+    activeTerritories.forEach((t) => {
+      duenos[t.id] = conquests[t.id]?.ownerId;
+    });
+    return buscarRuta({
+      territorios: activeTerritories,
+      duenos,
+      ownerId: currentPlayerIndex,
+      destino: selectedId,
+      esPuente: esPuenteEntre,
+      bloqueadoPor: retenEn,
+    });
+  }, [selectedId, conquests, currentPlayerIndex, activeTerritories, esPuenteEntre, retenEn]);
+
+  /** Tramos que resalta el indicador de ruta. */
+  const rutaEnTramo = useMemo(() => {
+    const set = new Set<string>();
+    const pasos = rutaAlBlanco?.pasos ?? [];
+    for (let i = 1; i < pasos.length; i++) {
+      set.add([pasos[i - 1].id, pasos[i].id].sort().join("|"));
+    }
+    return set;
+  }, [rutaAlBlanco]);
 
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
@@ -1082,37 +1134,64 @@ function SindicatoPage() {
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
               <g className="pointer-events-none">
-                {conexiones.map((c) => (
-                  <g key={c.id} opacity={c.puente ? 0.75 : 0.2}>
-                    {c.puente && (
+                {conexiones.map((c) => {
+                  const reten = c.puente ? c.reten : null;
+                  const color =
+                    reten !== null ? (players[reten]?.color ?? "#c5a059") : "#c5a059";
+                  const enRuta = rutaEnTramo.has(c.id);
+                  return (
+                    <g key={c.id} opacity={c.puente ? (reten !== null ? 0.95 : 0.75) : 0.2}>
+                      {c.puente && (
+                        <line
+                          x1={c.a.x}
+                          y1={c.a.y}
+                          x2={c.b.x}
+                          y2={c.b.y}
+                          stroke="#1a1410"
+                          strokeWidth={6}
+                          strokeLinecap="round"
+                        />
+                      )}
                       <line
                         x1={c.a.x}
                         y1={c.a.y}
                         x2={c.b.x}
                         y2={c.b.y}
-                        stroke="#1a1410"
-                        strokeWidth={6}
+                        stroke={enRuta ? "#f3e2b0" : color}
+                        strokeWidth={c.puente ? (enRuta ? 4 : 3) : enRuta ? 2.6 : 1.6}
+                        strokeDasharray={c.puente ? (reten !== null ? "5 4" : undefined) : "7 6"}
                         strokeLinecap="round"
                       />
-                    )}
-                    <line
-                      x1={c.a.x}
-                      y1={c.a.y}
-                      x2={c.b.x}
-                      y2={c.b.y}
-                      stroke="#c5a059"
-                      strokeWidth={c.puente ? 3 : 1.6}
-                      strokeDasharray={c.puente ? undefined : "7 6"}
-                      strokeLinecap="round"
-                    />
-                    {c.puente && (
-                      <>
-                        <circle cx={c.a.x} cy={c.a.y} r={2.4} fill="#c5a059" />
-                        <circle cx={c.b.x} cy={c.b.y} r={2.4} fill="#c5a059" />
-                      </>
-                    )}
-                  </g>
-                ))}
+                      {c.puente && (
+                        <>
+                          <circle cx={c.a.x} cy={c.a.y} r={2.4} fill={color} />
+                          <circle cx={c.b.x} cy={c.b.y} r={2.4} fill={color} />
+                          {reten !== null && (
+                            <g>
+                              <circle
+                                cx={(c.a.x + c.b.x) / 2}
+                                cy={(c.a.y + c.b.y) / 2}
+                                r={5}
+                                fill="#0c0906"
+                                stroke={color}
+                                strokeWidth={1.4}
+                              />
+                              <text
+                                x={(c.a.x + c.b.x) / 2}
+                                y={(c.a.y + c.b.y) / 2 + 2.4}
+                                textAnchor="middle"
+                                fontSize={6}
+                                fill={color}
+                              >
+                                ⛔
+                              </text>
+                            </g>
+                          )}
+                        </>
+                      )}
+                    </g>
+                  );
+                })}
               </g>
 
               {activeTerritories.map((t) => {
@@ -1610,6 +1689,36 @@ function SindicatoPage() {
                       </span>
                     </button>
                   )}
+                  {puentesDelSector.length > 0 && (
+                    <div className="col-span-2 rounded-lg border border-[var(--oro)]/30 bg-black/50 p-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--oro-viejo)]">
+                        Puentes de este sector
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {puentesDelSector.map(({ otro, reten }) => (
+                          <button
+                            key={otro}
+                            onClick={() => {
+                              if (bloquearPuente(selectedId!, otro)) {
+                                haptics("heavy");
+                                toast.success(`Retén puesto en el puente a ${nombreSector(otro)}`);
+                              } else {
+                                toast.error("No podés poner otro retén este turno");
+                              }
+                            }}
+                            disabled={bloqueoUsado || reten === currentPlayerIndex}
+                            className="min-h-[44px] rounded-lg border-2 border-[var(--oro-viejo)] bg-black/50 px-3 font-bebas text-sm uppercase text-[var(--oro)] disabled:opacity-40 touch-manipulation"
+                          >
+                            {reten === null
+                              ? `Tomar puente a ${nombreSector(otro)}`
+                              : reten === currentPlayerIndex
+                                ? `Puente a ${nombreSector(otro)}: tuyo`
+                                : `Puente a ${nombreSector(otro)}: ${players[reten]?.name ?? "rival"}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {turnPhase === "deployment" && unassignedTroops > 0 && (
                     <button
                       onClick={pedirConsejo}
@@ -1642,6 +1751,47 @@ function SindicatoPage() {
                       {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(reglasMesa.maxDadosAtaque, (conquests[attackerId]?.troops || 1) - 1)} dados`}
                     </p>
                   )}
+                  <div className="col-span-2 rounded-lg border border-[var(--oro)]/30 bg-black/50 p-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--oro-viejo)]">
+                      Ruta
+                    </p>
+                    {!rutaAlBlanco ? (
+                      <p className="text-[11px] italic text-[var(--crema-clara)]/70">
+                        Sin conexión desde tus sectores.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-[11px] leading-snug text-[var(--crema-brillo)]">
+                          {rutaAlBlanco.pasos.map((paso, i) => (
+                            <span key={paso.id}>
+                              {i > 0 && (
+                                <span
+                                  className={
+                                    paso.porPuente
+                                      ? "text-[var(--oro)] font-black"
+                                      : "text-[var(--crema-clara)]/50"
+                                  }
+                                >
+                                  {paso.porPuente ? " ═puente═ " : " › "}
+                                </span>
+                              )}
+                              {nombreSector(paso.id)}
+                            </span>
+                          ))}
+                        </p>
+                        {!rutaAlBlanco.transitable && (
+                          <p className="mt-1 text-[11px] font-black uppercase tracking-wide text-red-400">
+                            Puente con retén rival: por ahí no se pasa.
+                          </p>
+                        )}
+                        {rutaAlBlanco.transitable && rutaAlBlanco.usaPuente && (
+                          <p className="mt-1 text-[11px] uppercase tracking-wide text-[var(--oro)]/90">
+                            Llegás cruzando un puente.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>

@@ -103,6 +103,13 @@ interface SyndicateState {
   tuneles: Array<[string, string]>;
   /** Puentes tendidos entre sectores que quedaban aislados. */
   puentes: Array<[string, string]>;
+  /** Puentes tomados: clave "a|b" -> capo que puso el retén. */
+  puentesBloqueados: Record<string, number>;
+  /** Un retén de puente por turno. */
+  bloqueoUsado: boolean;
+  esPuente: (a: string, b: string) => boolean;
+  puenteBloqueadoPor: (a: string, b: string) => number | null;
+  bloquearPuente: (a: string, b: string) => boolean;
   /** Rencor: cuántos golpes le debe cada capo a cada rival. */
   rencor: Record<number, Record<number, number>>;
   /** Cabeza de los capos rivales: matón, capo o consejero. */
@@ -249,6 +256,8 @@ export const useSyndicate = create<SyndicateState>()(
       mapaVariante: null,
       tuneles: [],
       puentes: [],
+      puentesBloqueados: {},
+      bloqueoUsado: false,
       rencor: {},
       tradeCount: 0,
       ultimoCanje: null,
@@ -324,6 +333,38 @@ export const useSyndicate = create<SyndicateState>()(
           return { players: newPlayers, activeEffects: newEffects, conquests: newConquests };
         }),
 
+      esPuente: (a, b) => {
+        const k = clavePuente(a, b);
+        return (get().puentes ?? []).some(([x, y]) => clavePuente(x, y) === k);
+      },
+
+      /**
+       * Un retén sólo vale mientras el capo que lo puso siga en una de las
+       * dos cabeceras: si lo desalojan, el puente vuelve a estar libre.
+       */
+      puenteBloqueadoPor: (a, b) => {
+        const state = get();
+        const dueño = state.puentesBloqueados?.[clavePuente(a, b)];
+        if (dueño === undefined) return null;
+        const enPie =
+          state.conquests[a]?.ownerId === dueño || state.conquests[b]?.ownerId === dueño;
+        return enPie ? dueño : null;
+      },
+
+      bloquearPuente: (a, b) => {
+        const state = get();
+        if (state.bloqueoUsado) return false;
+        if (!get().esPuente(a, b)) return false;
+        const yo = state.currentPlayerIndex;
+        if (state.conquests[a]?.ownerId !== yo && state.conquests[b]?.ownerId !== yo) return false;
+        if (get().puenteBloqueadoPor(a, b) === yo) return false;
+        set({
+          puentesBloqueados: { ...state.puentesBloqueados, [clavePuente(a, b)]: yo },
+          bloqueoUsado: true,
+        });
+        return true;
+      },
+
       canAttack: (fromId: string, toId: string) => {
         const state = get();
         const reglas = normalizarReglas(state.reglas);
@@ -341,6 +382,12 @@ export const useSyndicate = create<SyndicateState>()(
           (e) => e.type === "lockdown" && e.ownerId !== from.ownerId,
         );
         if (activeLockdowns.length > 0) return false;
+
+        // Retén en el puente: si lo tomó otro capo, por ahí no se pasa.
+        if (get().esPuente(fromId, toId)) {
+          const reten = get().puenteBloqueadoPor(fromId, toId);
+          if (reten !== null && reten !== from.ownerId) return false;
+        }
 
         return esVecinoActivo(state.activeTerritories, fromId, toId);
       },
@@ -472,6 +519,8 @@ export const useSyndicate = create<SyndicateState>()(
             mapaVariante: variante,
             tuneles,
             puentes,
+            puentesBloqueados: {},
+            bloqueoUsado: false,
             rencor: {},
             objectives: repartirObjetivos(
               `${Date.now()}-${activeTerrs.length}`,
@@ -580,6 +629,7 @@ export const useSyndicate = create<SyndicateState>()(
             unassignedTroops: reinforcements,
             hasMovedFortification: false,
             assaultsThisTurn: 0,
+            bloqueoUsado: false,
             roundNumber,
             cardDrawnThisTurn: false,
             fortifyMoves: 0,
@@ -599,6 +649,11 @@ export const useSyndicate = create<SyndicateState>()(
           const from = state.conquests[fromId];
           const to = state.conquests[toId];
           if (!from || !to || from.ownerId !== to.ownerId || from.troops <= amount) return state;
+          // Reagrupe por puente: también lo corta el retén rival.
+          if (get().esPuente(fromId, toId)) {
+            const reten = get().puenteBloqueadoPor(fromId, toId);
+            if (reten !== null && reten !== from.ownerId) return state;
+          }
           if (state.turnPhase === "fortification" && state.hasMovedFortification) return state;
 
           // Reagrupe: la variante define cuántos movimientos entran por fase.
@@ -974,6 +1029,20 @@ export const useSyndicate = create<SyndicateState>()(
         }
 
         if (state.turnPhase === "fortification") {
+          // Los rivales también toman puentes: cortan el paso donde los aprietan.
+          const st = get();
+          const amenazado = (st.puentes ?? []).find(([a, b]) => {
+            const ca = st.conquests[a];
+            const cb = st.conquests[b];
+            if (!ca || !cb) return false;
+            const mio = ca.ownerId === bot.id ? a : cb.ownerId === bot.id ? b : null;
+            if (!mio) return false;
+            const otro = mio === a ? b : a;
+            if (st.conquests[otro].ownerId === bot.id) return false;
+            return st.conquests[otro].troops >= st.conquests[mio].troops;
+          });
+          if (amenazado) get().bloquearPuente(amenazado[0], amenazado[1]);
+
           const plan = planFortify(board(), tuning);
           if (plan) get().moveTroops(plan.from, plan.to, plan.amount);
           await new Promise((r) => setTimeout(r, 400));
@@ -984,6 +1053,11 @@ export const useSyndicate = create<SyndicateState>()(
     { name: "syndicate-storage" },
   ),
 );
+
+/** Clave estable de un puente (mismo par, mismo id). */
+export function clavePuente(a: string, b: string): string {
+  return [a, b].sort().join("|");
+}
 
 /** Vecindad de la noche: incluye los túneles que abrió el mapa procedural. */
 export function esVecinoActivo(territories: Territorio[], a: string, b: string): boolean {

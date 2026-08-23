@@ -62,6 +62,17 @@ import { useBlackjackHistory, summarizeHistory } from "@/store/games/blackjack/b
 import { useSingleDifficulty } from "@/store/single-difficulty";
 import { useCpuTraining } from "@/store/cpu-training";
 import { useHaptics } from "@/hooks/use-haptics";
+import {
+  LEGAJO_BJ_VACIO,
+  leerCroupier,
+  verdadDelCroupier,
+  type LegajoBJ,
+  type TellBJ,
+} from "@/lib/games/blackjack/blackjack-tells";
+import {
+  DueloReputacionBar,
+  DueloReputacionCierre,
+} from "@/components/casino/blackjack/DueloReputacion";
 
 export const Route = createFileRoute("/tables")({
   head: () => ({

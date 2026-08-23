@@ -1100,11 +1100,8 @@ function SindicatoPage() {
                 const esObjetivo = objetivosValidos.has(t.id);
                 const puedeRecibir = turnPhase === "deployment" && isMine && unassignedTroops > 0;
                 const d = bordeIrregular(t.points, t.id);
-                const canSeeTroops =
-                  isMine ||
-                  Object.values(activeEffects).some(
-                    (e) => e.type === "informant" && e.ownerId === currentPlayerIndex,
-                  );
+                // Como en el T.E.G. de mesa: las fichas están a la vista de todos.
+                const canSeeTroops = true;
 
                 const center = t.points.reduce(
                   (acc: Point, p: Point) => ({
@@ -1865,6 +1862,20 @@ function SindicatoPage() {
               if ((card.type === "surprise" || card.type === "informant") && !selectedId) {
                 toast.error("Selecciona un territorio primero");
                 return;
+              }
+              // El chivato ya no sirve para contar fichas (están a la vista):
+              // ahora delata el objetivo tapado del capo dueño del sector.
+              if (card.type === "informant" && selectedId) {
+                const dueño = conquests[selectedId]?.ownerId;
+                const objetivo =
+                  dueño != null ? useSyndicate.getState().objectives[dueño] : undefined;
+                const nombre = dueño != null ? players[dueño]?.name : null;
+                toast.info(
+                  objetivo
+                    ? `Chivato: ${nombre ?? "ese capo"} busca "${objetivo.titulo}" — ${objetivo.desc}`
+                    : "El chivato volvió con las manos vacías.",
+                  { duration: 6000 },
+                );
               }
               playSpecialCard(cardId, selectedId || undefined);
               setIsCardsOpen(false);

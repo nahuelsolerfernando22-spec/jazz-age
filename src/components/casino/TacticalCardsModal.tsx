@@ -126,7 +126,7 @@ export const TacticalCardsModal = ({
                     {card.type === "bribe"
                       ? "SOBORNO (+1 DADO)"
                       : card.type === "informant"
-                        ? "CHIVATO (VER TROPAS)"
+                        ? "CHIVATO (VER OBJETIVO)"
                         : card.type === "surprise"
                           ? "GOLPE (+3 TROPAS)"
                           : card.territoryId.replace("terr-", "ZONA ")}

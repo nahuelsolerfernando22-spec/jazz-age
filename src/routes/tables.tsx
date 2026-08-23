@@ -939,7 +939,21 @@ function TablesPage() {
               Apuesta · <span className="font-bold text-[var(--cd-gold-warm)]">{bet}</span>
             </span>
           </div>
-          {phase === "bet" || phase === "settled" ? (
+          <DueloReputacionBar
+            manos={duelo.manos}
+            total={MANOS_DUELO}
+            reputacion={duelo.reputacion}
+            tell={phase === "settled" || phase === "bet" ? null : tell}
+            croupier={nemesis.name}
+          />
+          {dueloCerrado ? (
+            <DueloReputacionCierre
+              reputacion={duelo.reputacion}
+              total={MANOS_DUELO}
+              onNuevo={reiniciarDuelo}
+            />
+          ) : null}
+          {(phase === "bet" || phase === "settled") && !dueloCerrado ? (
             <div className="flex flex-wrap items-center gap-2">
               {BET_UNITS.map((u) => (
                 <button

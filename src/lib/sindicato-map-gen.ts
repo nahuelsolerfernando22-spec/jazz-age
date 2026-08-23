@@ -1,4 +1,4 @@
-import { TERRITORIOS, type Territorio, type BarrioId, BARRIOS } from "./sindicato-data";
+import { TERRITORIOS, type Territorio, type BarrioId, type Point, BARRIOS } from "./sindicato-data";
 import { rngFromSeed, rngInt, type RngFn } from "./rng";
 import { aplicarTuneles, generarRasgos, type MapaRasgos } from "./sindicato-rasgos";
 

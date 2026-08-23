@@ -91,6 +91,8 @@ export const Route = createFileRoute("/tables")({
 
 const GAME_ID = "blackjack";
 const MAX_SPLIT_HANDS = 4;
+/** Manos que dura un duelo de reputación completo. */
+const MANOS_DUELO = 9;
 
 const RANKS: Array<{ rank: string; value: number }> = [
   { rank: "A", value: 11 },

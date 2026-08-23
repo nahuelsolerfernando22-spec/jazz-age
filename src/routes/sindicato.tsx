@@ -633,7 +633,7 @@ function SindicatoPage() {
   // Rutas punteadas entre sectores vecinos (una sola por par).
   const conexiones = useMemo(() => {
     const vistas = new Set<string>();
-    const out: { id: string; a: Point; b: Point; puente: boolean }[] = [];
+    const out: { id: string; a: Point; b: Point; puente: boolean; reten: number | null }[] = [];
     activeTerritories.forEach((t) => {
       t.vecinos.forEach((vId) => {
         const key = [t.id, vId].sort().join("|");
@@ -642,11 +642,12 @@ function SindicatoPage() {
         const b = centros[vId];
         if (!a || !b) return;
         vistas.add(key);
-        out.push({ id: key, a, b, puente: clavesPuente.has(key) });
+        const puente = clavesPuente.has(key);
+        out.push({ id: key, a, b, puente, reten: puente ? retenEn(t.id, vId) : null });
       });
     });
     return out;
-  }, [activeTerritories, centros, clavesPuente]);
+  }, [activeTerritories, centros, clavesPuente, retenEn]);
 
   // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
@@ -1123,37 +1124,64 @@ function SindicatoPage() {
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
               <g className="pointer-events-none">
-                {conexiones.map((c) => (
-                  <g key={c.id} opacity={c.puente ? 0.75 : 0.2}>
-                    {c.puente && (
+                {conexiones.map((c) => {
+                  const reten = c.puente ? c.reten : null;
+                  const color =
+                    reten !== null ? (players[reten]?.color ?? "#c5a059") : "#c5a059";
+                  const enRuta = rutaEnTramo.has(c.id);
+                  return (
+                    <g key={c.id} opacity={c.puente ? (reten !== null ? 0.95 : 0.75) : 0.2}>
+                      {c.puente && (
+                        <line
+                          x1={c.a.x}
+                          y1={c.a.y}
+                          x2={c.b.x}
+                          y2={c.b.y}
+                          stroke="#1a1410"
+                          strokeWidth={6}
+                          strokeLinecap="round"
+                        />
+                      )}
                       <line
                         x1={c.a.x}
                         y1={c.a.y}
                         x2={c.b.x}
                         y2={c.b.y}
-                        stroke="#1a1410"
-                        strokeWidth={6}
+                        stroke={enRuta ? "#f3e2b0" : color}
+                        strokeWidth={c.puente ? (enRuta ? 4 : 3) : enRuta ? 2.6 : 1.6}
+                        strokeDasharray={c.puente ? (reten !== null ? "5 4" : undefined) : "7 6"}
                         strokeLinecap="round"
                       />
-                    )}
-                    <line
-                      x1={c.a.x}
-                      y1={c.a.y}
-                      x2={c.b.x}
-                      y2={c.b.y}
-                      stroke="#c5a059"
-                      strokeWidth={c.puente ? 3 : 1.6}
-                      strokeDasharray={c.puente ? undefined : "7 6"}
-                      strokeLinecap="round"
-                    />
-                    {c.puente && (
-                      <>
-                        <circle cx={c.a.x} cy={c.a.y} r={2.4} fill="#c5a059" />
-                        <circle cx={c.b.x} cy={c.b.y} r={2.4} fill="#c5a059" />
-                      </>
-                    )}
-                  </g>
-                ))}
+                      {c.puente && (
+                        <>
+                          <circle cx={c.a.x} cy={c.a.y} r={2.4} fill={color} />
+                          <circle cx={c.b.x} cy={c.b.y} r={2.4} fill={color} />
+                          {reten !== null && (
+                            <g>
+                              <circle
+                                cx={(c.a.x + c.b.x) / 2}
+                                cy={(c.a.y + c.b.y) / 2}
+                                r={5}
+                                fill="#0c0906"
+                                stroke={color}
+                                strokeWidth={1.4}
+                              />
+                              <text
+                                x={(c.a.x + c.b.x) / 2}
+                                y={(c.a.y + c.b.y) / 2 + 2.4}
+                                textAnchor="middle"
+                                fontSize={6}
+                                fill={color}
+                              >
+                                ⛔
+                              </text>
+                            </g>
+                          )}
+                        </>
+                      )}
+                    </g>
+                  );
+                })}
               </g>
 
               {activeTerritories.map((t) => {

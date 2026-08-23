@@ -659,6 +659,15 @@ function TablesPage() {
     setPhase("bet");
   }, []);
 
+  // Cierra el duelo y abre otro: la palabra vuelve a cero, el legajo queda.
+  const reiniciarDuelo = useCallback(() => {
+    setDuelo({ manos: 0, reputacion: 0 });
+    setTell(null);
+    tellRef.current = null;
+    nextHand();
+  }, [nextHand]);
+
+
   const handleSurrender = useCallback(() => {
     if (phase !== "player" && phase !== "dealer" && phase !== "insurance") return;
     // Rendirse: devuelve la mitad del wager (redondeo abajo, como settleHands),

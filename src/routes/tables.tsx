@@ -403,6 +403,20 @@ function TablesPage() {
         playerWon: net > 0,
         spread: Math.min(100, Math.abs(net)),
       });
+
+      // Duelo de reputación: la mano suma o resta palabra, y el legajo aprende
+      // si la lectura del croupier había sido correcta.
+      const leido = tellRef.current;
+      if (leido) {
+        const verdad = verdadDelCroupier(
+          score((finalDealer.slice(0, 2) as CardUI[]).length ? finalDealer.slice(0, 2) : finalDealer),
+        );
+        legajoRef.current = {
+          lecturas: legajoRef.current.lecturas + 1,
+          aciertos: legajoRef.current.aciertos + (leido.lectura === verdad ? 1 : 0),
+        };
+      }
+      setDuelo((d) => ({ manos: d.manos + 1, reputacion: d.reputacion + net }));
     },
     [record, addHistory, reportCpu],
   );

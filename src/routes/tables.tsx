@@ -408,9 +408,7 @@ function TablesPage() {
       // si la lectura del croupier había sido correcta.
       const leido = tellRef.current;
       if (leido) {
-        const verdad = verdadDelCroupier(
-          score((finalDealer.slice(0, 2) as CardUI[]).length ? finalDealer.slice(0, 2) : finalDealer),
-        );
+        const verdad = verdadDelCroupier(score(finalDealer.slice(0, 2)));
         legajoRef.current = {
           lecturas: legajoRef.current.lecturas + 1,
           aciertos: legajoRef.current.aciertos + (leido.lectura === verdad ? 1 : 0),

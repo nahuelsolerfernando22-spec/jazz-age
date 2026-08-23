@@ -703,6 +703,16 @@ function SindicatoPage() {
     });
   }, [selectedId, conquests, currentPlayerIndex, activeTerritories, esPuenteEntre, retenEn]);
 
+  /** Tramos que resalta el indicador de ruta. */
+  const rutaEnTramo = useMemo(() => {
+    const set = new Set<string>();
+    const pasos = rutaAlBlanco?.pasos ?? [];
+    for (let i = 1; i < pasos.length; i++) {
+      set.add([pasos[i - 1].id, pasos[i].id].sort().join("|"));
+    }
+    return set;
+  }, [rutaAlBlanco]);
+
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {
     if (!selectedId || !isMine) return [];
@@ -1679,6 +1689,36 @@ function SindicatoPage() {
                       </span>
                     </button>
                   )}
+                  {puentesDelSector.length > 0 && (
+                    <div className="col-span-2 rounded-lg border border-[var(--oro)]/30 bg-black/50 p-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--oro-viejo)]">
+                        Puentes de este sector
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {puentesDelSector.map(({ otro, reten }) => (
+                          <button
+                            key={otro}
+                            onClick={() => {
+                              if (bloquearPuente(selectedId!, otro)) {
+                                haptics("heavy");
+                                toast.success(`Retén puesto en el puente a ${nombreSector(otro)}`);
+                              } else {
+                                toast.error("No podés poner otro retén este turno");
+                              }
+                            }}
+                            disabled={bloqueoUsado || reten === currentPlayerIndex}
+                            className="min-h-[44px] rounded-lg border-2 border-[var(--oro-viejo)] bg-black/50 px-3 font-bebas text-sm uppercase text-[var(--oro)] disabled:opacity-40 touch-manipulation"
+                          >
+                            {reten === null
+                              ? `Tomar puente a ${nombreSector(otro)}`
+                              : reten === currentPlayerIndex
+                                ? `Puente a ${nombreSector(otro)}: tuyo`
+                                : `Puente a ${nombreSector(otro)}: ${players[reten]?.name ?? "rival"}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {turnPhase === "deployment" && unassignedTroops > 0 && (
                     <button
                       onClick={pedirConsejo}
@@ -1711,6 +1751,47 @@ function SindicatoPage() {
                       {`Desde ${activeTerritories.find((t) => t.id === attackerId)?.nombre} · ${Math.min(reglasMesa.maxDadosAtaque, (conquests[attackerId]?.troops || 1) - 1)} dados`}
                     </p>
                   )}
+                  <div className="col-span-2 rounded-lg border border-[var(--oro)]/30 bg-black/50 p-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--oro-viejo)]">
+                      Ruta
+                    </p>
+                    {!rutaAlBlanco ? (
+                      <p className="text-[11px] italic text-[var(--crema-clara)]/70">
+                        Sin conexión desde tus sectores.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-[11px] leading-snug text-[var(--crema-brillo)]">
+                          {rutaAlBlanco.pasos.map((paso, i) => (
+                            <span key={paso.id}>
+                              {i > 0 && (
+                                <span
+                                  className={
+                                    paso.porPuente
+                                      ? "text-[var(--oro)] font-black"
+                                      : "text-[var(--crema-clara)]/50"
+                                  }
+                                >
+                                  {paso.porPuente ? " ═puente═ " : " › "}
+                                </span>
+                              )}
+                              {nombreSector(paso.id)}
+                            </span>
+                          ))}
+                        </p>
+                        {!rutaAlBlanco.transitable && (
+                          <p className="mt-1 text-[11px] font-black uppercase tracking-wide text-red-400">
+                            Puente con retén rival: por ahí no se pasa.
+                          </p>
+                        )}
+                        {rutaAlBlanco.transitable && rutaAlBlanco.usaPuente && (
+                          <p className="mt-1 text-[11px] uppercase tracking-wide text-[var(--oro)]/90">
+                            Llegás cruzando un puente.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>

@@ -62,6 +62,17 @@ import { useBlackjackHistory, summarizeHistory } from "@/store/games/blackjack/b
 import { useSingleDifficulty } from "@/store/single-difficulty";
 import { useCpuTraining } from "@/store/cpu-training";
 import { useHaptics } from "@/hooks/use-haptics";
+import {
+  LEGAJO_BJ_VACIO,
+  leerCroupier,
+  verdadDelCroupier,
+  type LegajoBJ,
+  type TellBJ,
+} from "@/lib/games/blackjack/blackjack-tells";
+import {
+  DueloReputacionBar,
+  DueloReputacionCierre,
+} from "@/components/casino/blackjack/DueloReputacion";
 
 export const Route = createFileRoute("/tables")({
   head: () => ({
@@ -80,6 +91,8 @@ export const Route = createFileRoute("/tables")({
 
 const GAME_ID = "blackjack";
 const MAX_SPLIT_HANDS = 4;
+/** Manos que dura un duelo de reputación completo. */
+const MANOS_DUELO = 9;
 
 const RANKS: Array<{ rank: string; value: number }> = [
   { rank: "A", value: 11 },
@@ -211,6 +224,14 @@ function TablesPage() {
   const [hostessLine, setHostessLine] = useState<string | undefined>();
   const [showHistory, setShowHistory] = useState(false);
   const [activePowerUps, setActivePowerUps] = useState<BlackjackPowerUp[]>([]);
+
+  // Duelo de reputación: la mesa se juega a nueve manos y lo que se lleva
+  // el ganador es palabra, no plata.
+  const [duelo, setDuelo] = useState({ manos: 0, reputacion: 0 });
+  const [tell, setTell] = useState<TellBJ | null>(null);
+  const legajoRef = useRef<LegajoBJ>({ ...LEGAJO_BJ_VACIO });
+  const tellRef = useRef<TellBJ | null>(null);
+  const dueloCerrado = duelo.manos >= MANOS_DUELO;
 
   useLockGame(phase === "player" || phase === "dealer" || phase === "insurance");
 
@@ -382,6 +403,18 @@ function TablesPage() {
         playerWon: net > 0,
         spread: Math.min(100, Math.abs(net)),
       });
+
+      // Duelo de reputación: la mano suma o resta palabra, y el legajo aprende
+      // si la lectura del croupier había sido correcta.
+      const leido = tellRef.current;
+      if (leido) {
+        const verdad = verdadDelCroupier(score(finalDealer.slice(0, 2)));
+        legajoRef.current = {
+          lecturas: legajoRef.current.lecturas + 1,
+          aciertos: legajoRef.current.aciertos + (leido.lectura === verdad ? 1 : 0),
+        };
+      }
+      setDuelo((d) => ({ manos: d.manos + 1, reputacion: d.reputacion + net }));
     },
     [record, addHistory, reportCpu],
   );
@@ -460,6 +493,11 @@ function TablesPage() {
     setInsuranceBet(0);
     setMessage(null);
     setHostessLine(undefined);
+
+    // Lectura de la mano tapada: la mesa arriesga qué esconde el croupier.
+    const lectura = leerCroupier(verdadDelCroupier(score(d)), legajoRef.current);
+    tellRef.current = lectura;
+    setTell(lectura);
 
     if (d[0].rank === "A" && !encargoRestrictions.noInsurance) {
       setPhase("insurance");
@@ -618,6 +656,15 @@ function TablesPage() {
     setMessage(null);
     setPhase("bet");
   }, []);
+
+  // Cierra el duelo y abre otro: la palabra vuelve a cero, el legajo queda.
+  const reiniciarDuelo = useCallback(() => {
+    setDuelo({ manos: 0, reputacion: 0 });
+    setTell(null);
+    tellRef.current = null;
+    nextHand();
+  }, [nextHand]);
+
 
   const handleSurrender = useCallback(() => {
     if (phase !== "player" && phase !== "dealer" && phase !== "insurance") return;
@@ -899,7 +946,21 @@ function TablesPage() {
               Apuesta · <span className="font-bold text-[var(--cd-gold-warm)]">{bet}</span>
             </span>
           </div>
-          {phase === "bet" || phase === "settled" ? (
+          <DueloReputacionBar
+            manos={duelo.manos}
+            total={MANOS_DUELO}
+            reputacion={duelo.reputacion}
+            tell={phase === "settled" || phase === "bet" ? null : tell}
+            croupier={nemesis.name}
+          />
+          {dueloCerrado ? (
+            <DueloReputacionCierre
+              reputacion={duelo.reputacion}
+              total={MANOS_DUELO}
+              onNuevo={reiniciarDuelo}
+            />
+          ) : null}
+          {(phase === "bet" || phase === "settled") && !dueloCerrado ? (
             <div className="flex flex-wrap items-center gap-2">
               {BET_UNITS.map((u) => (
                 <button

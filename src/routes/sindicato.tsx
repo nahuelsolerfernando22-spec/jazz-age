@@ -599,10 +599,17 @@ function SindicatoPage() {
     return m;
   }, [activeTerritories]);
 
+  // Puentes tendidos por el generador: sectores que si no quedaban incomunicados.
+  const puentes = useSyndicate((s) => s.puentes);
+  const clavesPuente = useMemo(
+    () => new Set((puentes ?? []).map(([a, b]) => [a, b].sort().join("|"))),
+    [puentes],
+  );
+
   // Rutas punteadas entre sectores vecinos (una sola por par).
   const conexiones = useMemo(() => {
     const vistas = new Set<string>();
-    const out: { id: string; a: Point; b: Point }[] = [];
+    const out: { id: string; a: Point; b: Point; puente: boolean }[] = [];
     activeTerritories.forEach((t) => {
       t.vecinos.forEach((vId) => {
         const key = [t.id, vId].sort().join("|");
@@ -611,11 +618,11 @@ function SindicatoPage() {
         const b = centros[vId];
         if (!a || !b) return;
         vistas.add(key);
-        out.push({ id: key, a, b });
+        out.push({ id: key, a, b, puente: clavesPuente.has(key) });
       });
     });
     return out;
-  }, [activeTerritories, centros]);
+  }, [activeTerritories, centros, clavesPuente]);
 
   // Sector propio que lidera el asalto: primero el que eligió el jugador, si sirve.
   const attackerId = useMemo(() => {
@@ -1074,19 +1081,37 @@ function SindicatoPage() {
               </defs>
 
               {/* Rutas de contrabando: conexiones punteadas entre sectores vecinos */}
-              <g className="pointer-events-none" opacity="0.2">
+              <g className="pointer-events-none">
                 {conexiones.map((c) => (
-                  <line
-                    key={c.id}
-                    x1={c.a.x}
-                    y1={c.a.y}
-                    x2={c.b.x}
-                    y2={c.b.y}
-                    stroke="#c5a059"
-                    strokeWidth={1.6}
-                    strokeDasharray="7 6"
-                    strokeLinecap="round"
-                  />
+                  <g key={c.id} opacity={c.puente ? 0.75 : 0.2}>
+                    {c.puente && (
+                      <line
+                        x1={c.a.x}
+                        y1={c.a.y}
+                        x2={c.b.x}
+                        y2={c.b.y}
+                        stroke="#1a1410"
+                        strokeWidth={6}
+                        strokeLinecap="round"
+                      />
+                    )}
+                    <line
+                      x1={c.a.x}
+                      y1={c.a.y}
+                      x2={c.b.x}
+                      y2={c.b.y}
+                      stroke="#c5a059"
+                      strokeWidth={c.puente ? 3 : 1.6}
+                      strokeDasharray={c.puente ? undefined : "7 6"}
+                      strokeLinecap="round"
+                    />
+                    {c.puente && (
+                      <>
+                        <circle cx={c.a.x} cy={c.a.y} r={2.4} fill="#c5a059" />
+                        <circle cx={c.b.x} cy={c.b.y} r={2.4} fill="#c5a059" />
+                      </>
+                    )}
+                  </g>
                 ))}
               </g>
 

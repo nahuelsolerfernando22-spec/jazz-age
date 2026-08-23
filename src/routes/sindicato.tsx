@@ -23,6 +23,7 @@ import { TurnBanner } from "@/components/casino/sindicato/TurnBanner";
 import { ControlBar } from "@/components/casino/sindicato/ControlBar";
 import { BarriosPanel } from "@/components/casino/sindicato/BarriosPanel";
 import { ActionDock } from "@/components/casino/sindicato/ActionDock";
+import { buscarRuta } from "@/lib/sindicato-rutas";
 import { PlacaDeTurno } from "@/components/casino/sindicato/PlacaDeTurno";
 import { TroopMover } from "@/components/casino/sindicato/TroopMover";
 import { ConquistaFlash, type ConquistaAviso } from "@/components/casino/sindicato/ConquistaFlash";
@@ -601,10 +602,33 @@ function SindicatoPage() {
 
   // Puentes tendidos por el generador: sectores que si no quedaban incomunicados.
   const puentes = useSyndicate((s) => s.puentes);
+  const puentesBloqueados = useSyndicate((s) => s.puentesBloqueados);
+  const bloqueoUsado = useSyndicate((s) => s.bloqueoUsado);
+  const bloquearPuente = useSyndicate((s) => s.bloquearPuente);
   const clavesPuente = useMemo(
     () => new Set((puentes ?? []).map(([a, b]) => [a, b].sort().join("|"))),
     [puentes],
   );
+  const esPuenteEntre = useCallback(
+    (a: string, b: string) => clavesPuente.has([a, b].sort().join("|")),
+    [clavesPuente],
+  );
+  const retenEn = useCallback(
+    (a: string, b: string) => useSyndicate.getState().puenteBloqueadoPor(a, b),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [puentesBloqueados, conquests],
+  );
+
+  /** Puentes que salen del sector elegido (para tomarlos o ver quién los tiene). */
+  const puentesDelSector = useMemo(() => {
+    if (!selectedId) return [] as Array<{ otro: string; reten: number | null }>;
+    return (puentes ?? [])
+      .filter(([a, b]) => a === selectedId || b === selectedId)
+      .map(([a, b]) => {
+        const otro = a === selectedId ? b : a;
+        return { otro, reten: retenEn(a, b) };
+      });
+  }, [selectedId, puentes, retenEn]);
 
   // Rutas punteadas entre sectores vecinos (una sola por par).
   const conexiones = useMemo(() => {
@@ -660,6 +684,23 @@ function SindicatoPage() {
     (id: string) => activeTerritories.find((t) => t.id === id)?.nombre ?? id,
     [activeTerritories],
   );
+
+  /** Indicador de ruta: por dónde llego al blanco elegido y si hay puente en el medio. */
+  const rutaAlBlanco = useMemo(() => {
+    if (!selectedId || conquests[selectedId]?.ownerId === currentPlayerIndex) return null;
+    const duenos: Record<string, number | undefined> = {};
+    activeTerritories.forEach((t) => {
+      duenos[t.id] = conquests[t.id]?.ownerId;
+    });
+    return buscarRuta({
+      territorios: activeTerritories,
+      duenos,
+      ownerId: currentPlayerIndex,
+      destino: selectedId,
+      esPuente: esPuenteEntre,
+      bloqueadoPor: retenEn,
+    });
+  }, [selectedId, conquests, currentPlayerIndex, activeTerritories, esPuenteEntre, retenEn]);
 
   // Vecinos propios para el reagrupe (mover tropas al final del turno).
   const fortifyTargets = useMemo(() => {

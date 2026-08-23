@@ -1100,11 +1100,8 @@ function SindicatoPage() {
                 const esObjetivo = objetivosValidos.has(t.id);
                 const puedeRecibir = turnPhase === "deployment" && isMine && unassignedTroops > 0;
                 const d = bordeIrregular(t.points, t.id);
-                const canSeeTroops =
-                  isMine ||
-                  Object.values(activeEffects).some(
-                    (e) => e.type === "informant" && e.ownerId === currentPlayerIndex,
-                  );
+                // Como en el T.E.G. de mesa: las fichas están a la vista de todos.
+                const canSeeTroops = true;
 
                 const center = t.points.reduce(
                   (acc: Point, p: Point) => ({

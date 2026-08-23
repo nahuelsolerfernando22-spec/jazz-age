@@ -142,10 +142,9 @@ export function generateSubMap(seed: string, targetCount: number): ProceduralMap
 
   crecer(sel, objetivo, rng, variante);
 
-  // Nos quedamos con la parte conexa y, si quedó chica, la seguimos empujando.
-  let final = mayorComponente(sel);
-  if (final.size < objetivo) crecer(final, objetivo, rng, variante);
-  final = mayorComponente(final);
+  // Ya no descartamos las islas: se quedan y después se unen con puentes.
+  if (mayorComponente(sel).size < objetivo) crecer(sel, objetivo, rng, variante);
+  const final = sel;
 
   const base: Territorio[] = TERRITORIOS.filter((t) => final.has(t.id)).map((t) => ({
     ...t,
@@ -153,10 +152,104 @@ export function generateSubMap(seed: string, targetCount: number): ProceduralMap
   }));
 
   const rasgos = generarRasgos(`${seed}:${variante}`, base);
-  const { territorios, pares } = aplicarTuneles(seed, base, rasgos);
+  const { territorios: conTuneles, pares } = aplicarTuneles(seed, base, rasgos);
+  const { territorios, puentes } = tenderPuentes(conTuneles);
 
-  return { territorios, seed, variante, rasgos, tuneles: pares };
+  return { territorios, seed, variante, rasgos, tuneles: pares, puentes };
 }
+
+function centroide(t: Territorio): Point {
+  return t.points.reduce(
+    (acc, p) => ({ x: acc.x + p.x / t.points.length, y: acc.y + p.y / t.points.length }),
+    { x: 0, y: 0 },
+  );
+}
+
+/**
+ * Tiende puentes hasta que la ciudad sea una sola pieza y ningún sector quede
+ * con una única salida. Sin esto quedaban barrios imposibles de atacar.
+ */
+export function tenderPuentes(territorios: Territorio[]): {
+  territorios: Territorio[];
+  puentes: Array<[string, string]>;
+} {
+  const porId = new Map(territorios.map((t) => [t.id, { ...t, vecinos: [...t.vecinos] }]));
+  const centros = new Map([...porId.values()].map((t) => [t.id, centroide(t)] as const));
+  const puentes: Array<[string, string]> = [];
+
+  const dist = (a: string, b: string) => {
+    const pa = centros.get(a)!;
+    const pb = centros.get(b)!;
+    return Math.hypot(pa.x - pb.x, pa.y - pb.y);
+  };
+
+  const unir = (a: string, b: string) => {
+    const ta = porId.get(a)!;
+    const tb = porId.get(b)!;
+    if (ta.vecinos.includes(b)) return;
+    ta.vecinos.push(b);
+    tb.vecinos.push(a);
+    puentes.push([a, b]);
+  };
+
+  // Componentes actuales del grafo.
+  const componentes = (): string[][] => {
+    const visto = new Set<string>();
+    const out: string[][] = [];
+    for (const id of porId.keys()) {
+      if (visto.has(id)) continue;
+      const comp: string[] = [id];
+      const cola = [id];
+      visto.add(id);
+      while (cola.length) {
+        const cur = cola.pop()!;
+        for (const v of porId.get(cur)?.vecinos ?? []) {
+          if (!porId.has(v) || visto.has(v)) continue;
+          visto.add(v);
+          comp.push(v);
+          cola.push(v);
+        }
+      }
+      out.push(comp);
+    }
+    return out;
+  };
+
+  // 1) Unir islas: siempre por el par de sectores más cercano entre ellas.
+  let comps = componentes();
+  while (comps.length > 1) {
+    comps.sort((a, b) => b.length - a.length);
+    const principal = comps[0];
+    let mejor: [string, string] | null = null;
+    let mejorD = Infinity;
+    for (let i = 1; i < comps.length; i++) {
+      for (const a of principal) {
+        for (const b of comps[i]) {
+          const d = dist(a, b);
+          if (d < mejorD) {
+            mejorD = d;
+            mejor = [a, b];
+          }
+        }
+      }
+    }
+    if (!mejor) break;
+    unir(mejor[0], mejor[1]);
+    comps = componentes();
+  }
+
+  // 2) Callejones sin salida: todo sector debe tener al menos dos accesos.
+  for (const t of porId.values()) {
+    if (t.vecinos.length >= 2) continue;
+    const cand = [...porId.keys()]
+      .filter((id) => id !== t.id && !t.vecinos.includes(id))
+      .sort((a, b) => dist(t.id, a) - dist(t.id, b))[0];
+    if (cand) unir(t.id, cand);
+  }
+
+  return { territorios: [...porId.values()], puentes };
+}
+
 
 export function getActiveBarrios(territorios: Territorio[]) {
   const barrioIds = new Set(territorios.map((t) => t.barrio));

@@ -101,6 +101,8 @@ interface SyndicateState {
   mapaVariante: VarianteMapa | null;
   /** Pares de sectores unidos por túnel. */
   tuneles: Array<[string, string]>;
+  /** Puentes tendidos entre sectores que quedaban aislados. */
+  puentes: Array<[string, string]>;
   /** Rencor: cuántos golpes le debe cada capo a cada rival. */
   rencor: Record<number, Record<number, number>>;
   /** Cabeza de los capos rivales: matón, capo o consejero. */
@@ -246,6 +248,7 @@ export const useSyndicate = create<SyndicateState>()(
       sectorRasgos: {},
       mapaVariante: null,
       tuneles: [],
+      puentes: [],
       rencor: {},
       tradeCount: 0,
       ultimoCanje: null,
@@ -382,6 +385,7 @@ export const useSyndicate = create<SyndicateState>()(
           let rasgos: MapaRasgos = {};
           let variante: VarianteMapa | null = null;
           let tuneles: Array<[string, string]> = [];
+          let puentes: Array<[string, string]> = [];
           if (mapSeed) {
             // El tamaño del mapa crece con la oleada de la noche.
             const target = Math.max(10, Math.min(TERRITORIOS.length, mapSize ?? 20));
@@ -390,6 +394,7 @@ export const useSyndicate = create<SyndicateState>()(
             rasgos = gen.rasgos;
             variante = gen.variante;
             tuneles = gen.tuneles;
+            puentes = gen.puentes;
           }
 
           const colors = ["var(--cd-gold-mid)", "#A83A3A", "var(--cd-teal)", "#6B7A3A", "#5B4B8A"];
@@ -466,6 +471,7 @@ export const useSyndicate = create<SyndicateState>()(
             sectorRasgos: rasgos,
             mapaVariante: variante,
             tuneles,
+            puentes,
             rencor: {},
             objectives: repartirObjetivos(
               `${Date.now()}-${activeTerrs.length}`,

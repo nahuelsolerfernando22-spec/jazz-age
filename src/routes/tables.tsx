@@ -496,6 +496,11 @@ function TablesPage() {
     setMessage(null);
     setHostessLine(undefined);
 
+    // Lectura de la mano tapada: la mesa arriesga qué esconde el croupier.
+    const lectura = leerCroupier(verdadDelCroupier(score(d)), legajoRef.current);
+    tellRef.current = lectura;
+    setTell(lectura);
+
     if (d[0].rank === "A" && !encargoRestrictions.noInsurance) {
       setPhase("insurance");
       return;

@@ -28,7 +28,10 @@ export interface ProceduralMap {
   rasgos: MapaRasgos;
   /** Pares de túneles conectados. */
   tuneles: Array<[string, string]>;
+  /** Puentes tendidos para que ningún sector quede aislado. */
+  puentes: Array<[string, string]>;
 }
+
 
 /** Vecindad simétrica: en los datos hay lindes cargadas de un solo lado. */
 const VECINOS_POR_ID: Record<string, string[]> = (() => {
